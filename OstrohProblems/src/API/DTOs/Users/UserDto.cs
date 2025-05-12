@@ -1,6 +1,4 @@
-﻿using API.DTOs;
-using API.DTOs.Problems;
-using Domain.Identity.Users;
+﻿using Domain.Identity.Users;
 
 namespace Api.Dtos.Users;
 
@@ -9,9 +7,7 @@ public record UserDto(
     string Email,
     string? Name,
     UserImageDto? Image,
-    List<RoleDto>? Roles,
-    List<ProblemDto>? Problems,
-    List<CommentDto>? Comments)
+    List<RoleDto>? Roles)
 {
     public static UserDto FromDomainModel(User user)
         => new(
@@ -19,7 +15,5 @@ public record UserDto(
             user.Email,
             user.FullName,
             user.UserImage != null ? UserImageDto.FromDomainModel(user.UserImage) : null,
-            user.Roles.Count == 0 ? null : user.Roles.Select(RoleDto.FromDomainModel).ToList(),
-            user.Problems.Count == 0 ? null : user.Problems.Select(ProblemDto.FromDomainModel).ToList(),
-            user.Comments.Count == 0 ? null : user.Comments.Select(CommentDto.FromDomainModel).ToList());
+            user.Roles.Count == 0 ? null : user.Roles.Select(RoleDto.FromDomainModel).ToList());
 }

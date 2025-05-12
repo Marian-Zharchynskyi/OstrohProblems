@@ -72,9 +72,11 @@ public class UsersController(ISender sender, IUserQueries userQueries) : Control
             e => e.ToObjectResult());
     }
 
-    [Authorize(Roles = AuthSettings.UserRole)]
+    [Authorize(Roles = $"{AuthSettings.AdminRole},{AuthSettings.UserRole}")]
     [HttpPut("image/{userId}")]
-    public async Task<ActionResult<JwtVm>> Upload([FromRoute] Guid userId, IFormFile imageFile,
+    public async Task<ActionResult<UserDto>> Upload(
+        [FromRoute] Guid userId,
+        IFormFile imageFile,
         CancellationToken cancellationToken)
     {
         var input = new UploadUserImageCommand
@@ -85,18 +87,19 @@ public class UsersController(ISender sender, IUserQueries userQueries) : Control
 
         var result = await sender.Send(input, cancellationToken);
 
-        return result.Match<ActionResult<JwtVm>>(
-            r => r,
+        return result.Match<ActionResult<UserDto>>(
+            u => UserDto.FromDomainModel(u),
             e => e.ToObjectResult());
     }
 
-    [Authorize(Roles = AuthSettings.UserRole)]
+    [Authorize(Roles = $"{AuthSettings.AdminRole},{AuthSettings.UserRole}")]
     [HttpPut("update/{userId:guid}")]
-    public async Task<ActionResult<JwtVm>> UpdateUser([FromRoute] Guid userId,
+    public async Task<ActionResult<UserDto>> UpdateUser(
+        [FromRoute] Guid userId,
         [FromBody] UpdateUserVm user,
         CancellationToken cancellationToken)
     {
-        var input = new UpdateUserCommand()
+        var input = new UpdateUserCommand
         {
             UserId = userId,
             UserName = user.UserName,
@@ -105,8 +108,8 @@ public class UsersController(ISender sender, IUserQueries userQueries) : Control
 
         var result = await sender.Send(input, cancellationToken);
 
-        return result.Match<ActionResult<JwtVm>>(
-            r => r,
+        return result.Match<ActionResult<UserDto>>(
+            u => UserDto.FromDomainModel(u),
             e => e.ToObjectResult());
     }
 }

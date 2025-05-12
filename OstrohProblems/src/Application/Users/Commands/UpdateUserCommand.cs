@@ -9,16 +9,18 @@ using MediatR;
 
 namespace Application.Users.Commands;
 
-public record UpdateUserCommand : IRequest<Result<JwtVm, UserException>>
+public record UpdateUserCommand : IRequest<Result<User, UserException>>
 {
     public required Guid UserId { get; init; }
     public required string Email { get; init; }
     public required string UserName { get; init; }
 }
 
-public class UpdateUserCommandHandle(IUserRepository userRepository, IJwtTokenService jwtTokenService) : IRequestHandler<UpdateUserCommand, Result<JwtVm, UserException>>
+public class UpdateUserCommandHandle(IUserRepository userRepository)
+    : IRequestHandler<UpdateUserCommand, Result<User, UserException>>
 {
-    public async Task<Result<JwtVm, UserException>> Handle(UpdateUserCommand request, CancellationToken cancellationToken)
+    public async Task<Result<User, UserException>> Handle(UpdateUserCommand request,
+        CancellationToken cancellationToken)
     {
         var userId = new UserId(request.UserId);
         var existingUser = await userRepository.GetById(userId, cancellationToken);
@@ -26,17 +28,19 @@ public class UpdateUserCommandHandle(IUserRepository userRepository, IJwtTokenSe
         return await existingUser.Match(
             async u =>
             {
-                var existingEmail = await userRepository.SearchByEmailForUpdate(userId, request.Email, cancellationToken);
+                var existingEmail =
+                    await userRepository.SearchByEmailForUpdate(userId, request.Email, cancellationToken);
 
                 return await existingEmail.Match(
-                     e => Task.FromResult<Result<JwtVm, UserException>>
-                         (new UserByThisEmailAlreadyExistsException(userId)),
-                     async () => await UpdateEntity(u, request.Email, request.UserName, cancellationToken));
+                    e => Task.FromResult<Result<User, UserException>>(
+                        new UserByThisEmailAlreadyExistsException(userId)),
+                    async () => await UpdateEntity(u, request.Email, request.UserName, cancellationToken));
             },
-            () => Task.FromResult<Result<JwtVm, UserException>>
-                (new UserNotFoundException(userId)));
+            () => Task.FromResult<Result<User, UserException>>(
+                new UserNotFoundException(userId)));
     }
-    private async Task<Result<JwtVm, UserException>> UpdateEntity(
+
+    private async Task<Result<User, UserException>> UpdateEntity(
         User user,
         string email,
         string userName,
@@ -45,9 +49,8 @@ public class UpdateUserCommandHandle(IUserRepository userRepository, IJwtTokenSe
         try
         {
             user.UpdateUser(email, userName);
-
             var updatedUser = await userRepository.Update(user, cancellationToken);
-            return await jwtTokenService.GenerateTokensAsync(user, cancellationToken);
+            return updatedUser;
         }
         catch (Exception exception)
         {

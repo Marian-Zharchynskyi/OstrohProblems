@@ -33,11 +33,9 @@ public class UserRepository(ApplicationDbContext context) : IUserRepository, IUs
     public async Task<IReadOnlyList<User>> GetAll(CancellationToken cancellationToken)
     {
         return await context.Users
-            .AsNoTracking()
             .Include(x => x.Roles)
             .Include(u => u.UserImage)
-            .Include(x => x.Problems)
-            .Include(x => x.Ratings)
+            .AsNoTracking()
             .AsSplitQuery()
             .ToListAsync(cancellationToken);
     }
@@ -91,8 +89,6 @@ public class UserRepository(ApplicationDbContext context) : IUserRepository, IUs
         return await context.Users
             .Include(u => u.Roles)
             .Include(u => u.UserImage)
-            .Include(x => x.Problems)
-            .Include(x => x.Ratings)
             .FirstOrDefaultAsync(predicate, cancellationToken);
     }
 }
