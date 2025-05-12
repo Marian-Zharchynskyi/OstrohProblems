@@ -1,11 +1,11 @@
 ﻿using Domain.Identity.Users;
 
-namespace Api.Dtos.Users;
+namespace API.DTOs.Users;
 
 public record UserDto(
     Guid? Id,
     string Email,
-    string? Name,
+    string? FullName,
     UserImageDto? Image,
     List<RoleDto>? Roles)
 {

@@ -1,5 +1,5 @@
-﻿using Api.Dtos.Users;
-using Api.Modules.Errors;
+﻿using API.DTOs.Users;
+using API.Modules.Errors;
 using Application.Common.Interfaces.Queries;
 using Application.Users.Commands;
 using Domain.Identity;
@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Api.Controllers;
+namespace API.Controllers;
 
 [Route("users")]
 [ApiController]

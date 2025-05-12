@@ -1,4 +1,5 @@
 ﻿using API.DTOs;
+using API.DTOs.Comments;
 using API.Modules.Errors;
 using Application.Comments.Commands;
 using Application.Common.Interfaces.Queries;
@@ -33,8 +34,8 @@ public class CommentsController(
     }
 
     [HttpPost("create")]
-    public async Task<ActionResult<CommentDto>> Create(
-        [FromBody] CommentDto request,
+    public async Task<ActionResult<CreateCommentDto>> Create(
+        [FromBody] CreateCommentDto request,
         CancellationToken cancellationToken)
     {
         var input = new CreateCommentCommand
@@ -45,26 +46,27 @@ public class CommentsController(
 
         var result = await sender.Send(input, cancellationToken);
 
-        return result.Match<ActionResult<CommentDto>>(
-            c => CommentDto.FromDomainModel(c),
+        return result.Match<ActionResult<CreateCommentDto>>(
+            c => CreateCommentDto.FromDomainModel(c),
             e => e.ToObjectResult());
     }
 
-    [HttpPut("update")]
-    public async Task<ActionResult<CommentDto>> Update(
-        [FromBody] CommentDto request,
+    [HttpPut("update/{id}")]
+    public async Task<ActionResult<CreateCommentDto>> Update(
+        [FromRoute] Guid id,
+        [FromBody] CreateCommentDto request,
         CancellationToken cancellationToken)
     {
         var input = new UpdateCommentCommand
         {
-            CommentId = request.Id!.Value,
+            CommentId = id,
             Content = request.Content
         };
 
         var result = await sender.Send(input, cancellationToken);
 
-        return result.Match<ActionResult<CommentDto>>(
-            c => CommentDto.FromDomainModel(c),
+        return result.Match<ActionResult<CreateCommentDto>>(
+            c => CreateCommentDto.FromDomainModel(c),
             e => e.ToObjectResult());
     }
 

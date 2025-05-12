@@ -5,6 +5,7 @@ using Domain.Comments;
 using Domain.Identity.Users;
 using Domain.Problems;
 using MediatR;
+using Microsoft.AspNetCore.Http;
 
 namespace Application.Comments.Commands;
 
@@ -17,10 +18,14 @@ public class CreateCommentCommand : IRequest<Result<Comment, CommentException>>
 public class CreateCommentCommandHandler : IRequestHandler<CreateCommentCommand, Result<Comment, CommentException>>
 {
     private readonly ICommentRepository _commentRepository;
+    private readonly IHttpContextAccessor _httpContextAccessor;
 
-    public CreateCommentCommandHandler(ICommentRepository commentRepository)
+    public CreateCommentCommandHandler(
+        ICommentRepository commentRepository,
+        IHttpContextAccessor httpContextAccessor)
     {
         _commentRepository = commentRepository;
+        _httpContextAccessor = httpContextAccessor;
     }
 
     public async Task<Result<Comment, CommentException>> Handle(
@@ -32,8 +37,18 @@ public class CreateCommentCommandHandler : IRequestHandler<CreateCommentCommand,
 
         try
         {
-            //TODO: add user id
-            var comment = Comment.New(commentId, request.Content, problemId, UserId.Empty);
+            var userIdClaim = _httpContextAccessor.HttpContext?.User?
+                .Claims.FirstOrDefault(c => c.Type == "id");
+
+            if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userIdGuid))
+            {
+                return new UserIdNotFoundException(commentId);
+            }
+
+            var userId = new UserId(userIdGuid);
+
+            var comment = Comment.New(commentId, request.Content, problemId, userId);
+
             return await _commentRepository.Add(comment, cancellationToken);
         }
         catch (Exception exception)

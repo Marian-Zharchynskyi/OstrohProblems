@@ -1,3 +1,5 @@
+using API.DTOs.Comments;
+using API.DTOs.Users;
 using Domain.Problems;
 
 namespace API.DTOs.Problems;
@@ -9,7 +11,8 @@ public record ProblemDto(
     double Longitude,
     string Description,
     StatusDto? ProblemStatus,
-    List<CommentDto>? Comment,
+    UserDto? User,
+    List<CommentDto>? Comments,
     List<ProblemImageDto>? Images,
     List<CategoryDto>? Categories,
     DateTime CreatedAt,
@@ -23,6 +26,7 @@ public record ProblemDto(
             problem.Longitude,
             problem.Description,
             problem.ProblemStatus == null ? null : StatusDto.FromDomainModel(problem.ProblemStatus),
+            problem.User == null ? null : UserDto.FromDomainModel(problem.User),
             problem.Comments.Count == 0 ? null : problem.Comments.Select(CommentDto.FromDomainModel).ToList(),
             problem.Images.Select(ProblemImageDto.FromDomainModel).ToList(),
             problem.Categories.Count == 0 ? null : problem.Categories.Select(CategoryDto.FromDomainModel).ToList(),

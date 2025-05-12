@@ -29,4 +29,5 @@ public class ImageNotFoundException(ProblemImageId id)
 public class ProblemConcurrencyException(ProblemId id)
     : ProblemException(id, $"Problem with ID {id.Value} was changed or deleted by another user.");
     
-    
+public class UserIdNotFoundException(ProblemId id)
+    : ProblemException(id, "User ID not found in token");

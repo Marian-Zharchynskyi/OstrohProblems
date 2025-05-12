@@ -5,6 +5,7 @@ using Domain.Identity.Users;
 using Domain.Problems;
 using Domain.Statuses;
 using MediatR;
+using Microsoft.AspNetCore.Http;
 
 namespace Application.Problems.Commands;
 
@@ -18,16 +19,27 @@ public record CreateProblemCommand : IRequest<Result<Problem, ProblemException>>
     public required List<Guid> ProblemCategoryIds { get; init; }
 }
 
-public class CreateProblemCommandHandler(
-    IProblemRepository problemRepository,
-    ICategoryRepository categoryRepository)
-    : IRequestHandler<CreateProblemCommand, Result<Problem, ProblemException>>
+public class CreateProblemCommandHandler : IRequestHandler<CreateProblemCommand, Result<Problem, ProblemException>>
 {
+    private readonly IProblemRepository _problemRepository;
+    private readonly ICategoryRepository _categoryRepository;
+    private readonly IHttpContextAccessor _httpContextAccessor;
+
+    public CreateProblemCommandHandler(
+        IProblemRepository problemRepository,
+        ICategoryRepository categoryRepository,
+        IHttpContextAccessor httpContextAccessor)
+    {
+        _problemRepository = problemRepository;
+        _categoryRepository = categoryRepository;
+        _httpContextAccessor = httpContextAccessor;
+    }
+
     public async Task<Result<Problem, ProblemException>> Handle(
         CreateProblemCommand request,
         CancellationToken cancellationToken)
     {
-        var existingProblem = await problemRepository.SearchByTitle(request.Title, cancellationToken);
+        var existingProblem = await _problemRepository.SearchByTitle(request.Title, cancellationToken);
 
         return await existingProblem.Match(
             p => Task.FromResult<Result<Problem, ProblemException>>(new ProblemAlreadyExistsException(p.Id)),
@@ -50,35 +62,44 @@ public class CreateProblemCommandHandler(
         List<Guid> categoryIds,
         CancellationToken cancellationToken)
     {
+        var problemId = ProblemId.New();
+
         try
         {
-            //TODO: add user id
+            var userIdClaim = _httpContextAccessor.HttpContext?.User?
+                .Claims.FirstOrDefault(c => c.Type == "id");
+
+            if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userIdGuid))
+            {
+                return new UserIdNotFoundException(problemId);
+            }
+
+            var userId = new UserId(userIdGuid);
+
             var problem = Problem.New(
-                ProblemId.New(),
+                problemId,
                 title,
                 latitude,
                 longitude,
                 description,
                 statusId,
-                UserId.Empty
-                );
+                userId
+            );
 
             if (categoryIds.Any())
             {
-                var categories = await categoryRepository.GetByIdsAsync(categoryIds, cancellationToken);
-
+                var categories = await _categoryRepository.GetByIdsAsync(categoryIds, cancellationToken);
                 foreach (var category in categories)
                 {
                     problem.AddCategory(category);
                 }
             }
 
-            return await problemRepository.Add(problem, cancellationToken);
+            return await _problemRepository.Add(problem, cancellationToken);
         }
         catch (Exception ex)
         {
-            return new ProblemUnknownException(ProblemId.Empty, ex);
+            return new ProblemUnknownException(problemId, ex);
         }
     }
 }
-

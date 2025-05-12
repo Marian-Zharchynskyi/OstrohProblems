@@ -1,11 +1,11 @@
-﻿using Api.Dtos.Authentications;
-using Api.Modules.Errors;
+﻿using API.DTOs.Authentications;
+using API.Modules.Errors;
 using Application.Identity.Commands;
 using Domain.ViewModels;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Api.Controllers;
+namespace API.Controllers;
 
 [Route("account")]
 [ApiController]

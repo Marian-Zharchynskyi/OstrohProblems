@@ -17,5 +17,8 @@ public class CommentAlreadyExistsException(CommentId id)
 public class CommentUnknownException(CommentId id, Exception innerException)
     : CommentException(id, $"Unknown exception for the Comment with ID {id}", innerException);
 
+public class UserIdNotFoundException(CommentId id)
+    : CommentException(id, "User ID not found in token");
+
 public class CommentHasRelatedEntitiesException(CommentId id)
     : CommentException(id, $"Comment with ID {id} cannot be deleted because it has related entities.");

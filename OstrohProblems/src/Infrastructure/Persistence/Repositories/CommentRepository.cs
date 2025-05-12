@@ -19,6 +19,7 @@ public class CommentRepository : ICommentQueries, ICommentRepository
     public async Task<IReadOnlyList<Comment>> GetAll(CancellationToken cancellationToken)
     {
         return await _context.Comments
+            .Include(x => x.User)
             .AsNoTracking()
             .ToListAsync(cancellationToken);
     }
@@ -26,6 +27,7 @@ public class CommentRepository : ICommentQueries, ICommentRepository
     public async Task<Option<Comment>> GetById(CommentId id, CancellationToken cancellationToken)
     {
         var entity = await _context.Comments
+            .Include(x => x.User)
             .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
 
         return entity == null ? Option.None<Comment>() : Option.Some(entity);

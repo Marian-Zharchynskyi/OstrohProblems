@@ -1,6 +1,6 @@
 using Domain.Identity.Users;
 
-namespace Api.Dtos.Users;
+namespace API.DTOs.Users;
 
 public record UserImageDto(Guid? Id, string FilePath)
 {

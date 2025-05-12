@@ -15,6 +15,8 @@ public class ProblemRepository(ApplicationDbContext context) : IProblemQueries, 
             .Include(x => x.Comments)
             .Include(x => x.ProblemStatus)
             .Include(x => x.Images)
+            .Include(x => x.User)
+            .AsSplitQuery()
             .AsNoTracking()
             .ToListAsync(cancellationToken);
     }
@@ -26,6 +28,8 @@ public class ProblemRepository(ApplicationDbContext context) : IProblemQueries, 
             .Include(x => x.Comments)
             .Include(x => x.ProblemStatus)
             .Include(x => x.Images)
+            .Include(x => x.User)
+            .AsSplitQuery()
             .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
 
         return entity == null ? Option.None<Problem>() : Option.Some(entity);

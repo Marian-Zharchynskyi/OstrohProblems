@@ -1,4 +1,4 @@
-using Api.Dtos.Users;
+using API.DTOs.Users;
 using Application.Common.Interfaces.Queries;
 using Domain.Identity;
 using MediatR;
@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Api.Controllers;
+namespace API.Controllers;
 
 [Route("roles")]
 [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]

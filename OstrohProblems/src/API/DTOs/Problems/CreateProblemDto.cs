@@ -1,3 +1,4 @@
+using API.DTOs.Users;
 using Domain.Problems;
 
 namespace API.DTOs.Problems;
@@ -8,7 +9,8 @@ public record CreateProblemDto(
     double Longitude,
     string Description,
     Guid ProblemStatusId,
-    List<Guid> ProblemCategoryIds 
+    UserDto? User,
+    List<Guid> ProblemCategoryIds
 )
 {
     public static CreateProblemDto FromDomainModel(Problem problem)
@@ -18,6 +20,7 @@ public record CreateProblemDto(
             problem.Longitude,
             problem.Description,
             problem.StatusId.Value,
+            problem.User == null ? null : UserDto.FromDomainModel(problem.User),
             problem.Categories.Select(c => c.Id.Value).ToList()
         );
 }
