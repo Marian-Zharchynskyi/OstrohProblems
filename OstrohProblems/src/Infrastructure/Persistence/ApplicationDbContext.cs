@@ -1,4 +1,5 @@
 using System.Reflection;
+using Application.Services.HashPasswordService;
 using Domain.Categories;
 using Domain.Comments;
 using Domain.Identity.Roles;
@@ -11,7 +12,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Persistence
 {
-    public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : DbContext(options)
+    public class ApplicationDbContext(
+        DbContextOptions<ApplicationDbContext> options,
+        IHashPasswordService hashPasswordService) : DbContext(options)
     {
         public DbSet<Category> Categories { get; set; }
         public DbSet<Status> Statuses { get; set; }
@@ -26,6 +29,8 @@ namespace Infrastructure.Persistence
         {
             builder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
             base.OnModelCreating(builder);
+
+            DataSeed.Seed(builder, hashPasswordService);
         }
     }
 }
