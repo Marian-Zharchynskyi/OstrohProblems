@@ -21,7 +21,11 @@ public class RatingConfiguration : IEntityTypeConfiguration<Rating>
             .IsRequired();
 
         builder.Property(r => r.Points)
-            .IsRequired();
+            .IsRequired()
+            .HasColumnType("decimal(3,2)"); 
+
+        builder.ToTable(t => 
+            t.HasCheckConstraint("CK_Rating_Points_Range", "\"Points\" >= 1.00 AND \"Points\" <= 5.00"));
 
         builder.Property(r => r.CreatedAt)
             .HasConversion(new DateTimeUtcConverter())

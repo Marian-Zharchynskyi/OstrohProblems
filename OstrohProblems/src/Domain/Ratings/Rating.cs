@@ -9,7 +9,7 @@ public class Rating
     public ProblemId ProblemId { get; private set; }
     public Problem? Problem { get; set; }
     public UserId UserId { get; private set; }
-    public User User { get; set; }
+    public User? User { get; set; }
     public double Points { get; private set; }
     public DateTime CreatedAt { get; private set; }
 
@@ -22,10 +22,14 @@ public class Rating
         Points = points;
         CreatedAt = createdAt;
     }
-    
+
     public static Rating New(RatingId id, ProblemId problemId, UserId userId, double points)
     {
         return new Rating(id, problemId, userId, points, DateTime.UtcNow);
     }
-    
+
+    public void UpdatePoints(double points)
+    {
+        Points = points;
+    }
 }
