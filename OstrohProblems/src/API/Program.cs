@@ -16,6 +16,8 @@ builder.Services.AddInfrastructure(builder);
 builder.Services.AddApplication();
 builder.Services.SetupServices();
 builder.Services.AddHttpContextAccessor();
+builder.Services.AddSwaggerAuth();
+builder.Services.AddJwtTokenAuth(builder.Configuration);
     
 var app = builder.Build();
 

@@ -19,7 +19,7 @@ public class Rating
         Id = id;
         ProblemId = problemId;
         UserId = userId;
-        SetRating(points);
+        Points = points;
         CreatedAt = createdAt;
     }
     
@@ -27,12 +27,5 @@ public class Rating
     {
         return new Rating(id, problemId, userId, points, DateTime.UtcNow);
     }
-
-    private void SetRating(double value)
-    {
-        if (value < 1 || value > 5)
-            throw new ArgumentOutOfRangeException(nameof(value), "Points must be between 1 and 5");
-
-        Points = value;
-    }
+    
 }

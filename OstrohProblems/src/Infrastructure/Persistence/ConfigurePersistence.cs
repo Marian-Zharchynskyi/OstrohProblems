@@ -36,8 +36,6 @@ public static class ConfigurePersistence
 
         services.AddScoped<ApplicationDbContextInitialiser>();
         services.AddRepositories();
-        services.AddJwtTokenAuth(builder);
-        services.AddSwaggerAuth();
     }
 
     private static void AddRepositories(this IServiceCollection services)
@@ -71,63 +69,10 @@ public static class ConfigurePersistence
 
         services.AddScoped<RefreshTokenRepository>();
         services.AddScoped<IRefreshTokenRepository>(provider => provider.GetRequiredService<RefreshTokenRepository>());
+        
+        //TODO : Rating repository
+        services.AddScoped<UserRepository>();
+        services.AddScoped<IUserRepository>(provider => provider.GetRequiredService<UserRepository>());
+        services.AddScoped<IUserQueries>(provider => provider.GetRequiredService<UserRepository>());
     }
-
-     private static void AddJwtTokenAuth(this IServiceCollection services, WebApplicationBuilder builder)
-     {
-         services.AddAuthentication(options =>
-             {
-                 options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                 options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-             })
-             .AddJwtBearer(options =>
-             {
-                 options.TokenValidationParameters = new TokenValidationParameters
-                 {
-                     RequireExpirationTime = true,
-                     ValidateLifetime = true,
-                     ClockSkew = TimeSpan.Zero,
-                     ValidateIssuer = true,
-                     ValidateAudience = true,
-                     ValidateIssuerSigningKey = true,
-                     IssuerSigningKey =
-                         new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder!.Configuration["AuthSettings:key"]!)),
-                     ValidIssuer = builder.Configuration["AuthSettings:issuer"],
-                     ValidAudience = builder.Configuration["AuthSettings:audience"]
-                 };
-             });
-     }
-
-     private static void AddSwaggerAuth(this IServiceCollection services)
-     {
-         services.AddSwaggerGen(options =>
-         {
-             options.SwaggerDoc("v1", new OpenApiInfo { Title = "NPR321", Version = "v1" });
-
-             options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
-             {
-                 Name = "Authorization",
-                 Type = SecuritySchemeType.Http,
-                 Scheme = "Bearer",
-                 BearerFormat = "JWT",
-                 In = ParameterLocation.Header,
-                 Description = "Введіть JWT токен"
-             });
-
-             options.AddSecurityRequirement(new OpenApiSecurityRequirement
-             {
-                 {
-                     new OpenApiSecurityScheme
-                     {
-                         Reference = new OpenApiReference
-                         {
-                             Type = ReferenceType.SecurityScheme,
-                             Id = "Bearer"
-                         }
-                     },
-                     Array.Empty<string>()
-                 }
-             });
-         });
-     }
 }
