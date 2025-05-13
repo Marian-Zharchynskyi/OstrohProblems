@@ -1,18 +1,14 @@
-using System.Text;
 using Application.Common.Interfaces.Queries;
 using Application.Common.Interfaces.Repositories;
 using Application.Services.HashPasswordService;
 using Application.Services.ImageService;
 using Application.Services.TokenService;
 using Infrastructure.Persistence.Repositories;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.IdentityModel.Tokens;
-using Microsoft.OpenApi.Models;
 using Npgsql;
 
 namespace Infrastructure.Persistence;
@@ -70,9 +66,8 @@ public static class ConfigurePersistence
         services.AddScoped<RefreshTokenRepository>();
         services.AddScoped<IRefreshTokenRepository>(provider => provider.GetRequiredService<RefreshTokenRepository>());
         
-        //TODO : Rating repository
-        services.AddScoped<UserRepository>();
-        services.AddScoped<IUserRepository>(provider => provider.GetRequiredService<UserRepository>());
-        services.AddScoped<IUserQueries>(provider => provider.GetRequiredService<UserRepository>());
+        services.AddScoped<RatingRepository>();
+        services.AddScoped<IRatingRepository>(provider => provider.GetRequiredService<RatingRepository>());
+        services.AddScoped<IRatingQueries>(provider => provider.GetRequiredService<RatingRepository>());
     }
 }

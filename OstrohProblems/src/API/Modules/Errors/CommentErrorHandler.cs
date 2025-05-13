@@ -11,9 +11,15 @@ public static class CommentErrorHandler
         {
             StatusCode = exception switch
             {
-                CommentNotFoundException => StatusCodes.Status404NotFound,
-                CommentAlreadyExistsException => StatusCodes.Status409Conflict,
-                CommentUnknownException => StatusCodes.Status500InternalServerError,
+                CommentNotFoundException or UserIdNotFoundException
+                    => StatusCodes.Status404NotFound,
+                
+                CommentAlreadyExistsException 
+                    => StatusCodes.Status409Conflict,
+                
+                CommentUnknownException 
+                    => StatusCodes.Status500InternalServerError,
+                
                 _ => throw new NotImplementedException("Comment error handler does not implemented")
             }
         };

@@ -1,6 +1,6 @@
 ﻿using Domain.Identity.Users;
 
-namespace API.DTOs.Authentications;
+namespace API.DTOs.Identity;
 
 public record SignInDto(string Email, string Password)
 {

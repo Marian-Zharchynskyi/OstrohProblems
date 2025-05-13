@@ -1,4 +1,4 @@
-﻿using API.DTOs.Authentications;
+﻿using API.DTOs.Identity;
 using API.Modules.Errors;
 using Application.Identity.Commands;
 using Domain.ViewModels;

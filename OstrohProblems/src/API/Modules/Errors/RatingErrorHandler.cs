@@ -11,9 +11,15 @@ public static class RatingErrorHandler
         {
             StatusCode = exception switch
             {
-                RatingNotFoundException => StatusCodes.Status404NotFound,
-                RatingAlreadyExistsException => StatusCodes.Status409Conflict,
-                RatingUnknownException => StatusCodes.Status500InternalServerError,
+                RatingNotFoundException or UserIdNotFoundException 
+                    => StatusCodes.Status404NotFound,
+                
+                RatingAlreadyExistsException 
+                    => StatusCodes.Status409Conflict,
+                
+                RatingUnknownException 
+                    => StatusCodes.Status500InternalServerError,
+                
                 _ => throw new NotImplementedException("Rating error handler does not implemented")
             }
         };

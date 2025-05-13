@@ -13,6 +13,7 @@ public static class ProblemErrorHandler
             {
                 ProblemNotFoundException
                     or ImageNotFoundException 
+                    or UserIdNotFoundException
                     => StatusCodes.Status404NotFound,
                 
                 ProblemAlreadyExistsException 
