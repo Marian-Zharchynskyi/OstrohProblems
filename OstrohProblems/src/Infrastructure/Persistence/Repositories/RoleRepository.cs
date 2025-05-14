@@ -22,10 +22,12 @@ public class RoleRepository(ApplicationDbContext context) : IRoleQueries
         return entity == null ? Option.None<Role>() : Option.Some(entity);
     }
 
-    public async Task<Option<Role>> GetById(Guid id, CancellationToken cancellationToken)
+    public async Task<Option<Role>> GetById(RoleId id, CancellationToken cancellationToken)
     {
-        var entity = await GetRoleAsync(r => r.Id.Value == id, cancellationToken, false);
-        return entity == null ? Option.None<Role>() : Option.Some(entity);
+        var role = await context.Roles
+            .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
+        
+        return role == null ? Option.None<Role>() : Option.Some(role);
     }
 
     public async Task<Role?> GetRoleAsync(Expression<Func<Role, bool>> predicate, CancellationToken cancellationToken,

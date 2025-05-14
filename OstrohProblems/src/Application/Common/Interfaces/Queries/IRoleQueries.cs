@@ -7,5 +7,5 @@ public interface IRoleQueries
 {
     Task<IReadOnlyList<Role>> GetAll(CancellationToken cancellationToken);
     Task<Option<Role>> GetByName(string name, CancellationToken cancellationToken);
-    Task<Option<Role>> GetById(Guid id, CancellationToken cancellationToken);
+    Task<Option<Role>> GetById(RoleId id, CancellationToken cancellationToken);
 }

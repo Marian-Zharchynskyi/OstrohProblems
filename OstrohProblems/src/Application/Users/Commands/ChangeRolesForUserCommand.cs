@@ -28,8 +28,10 @@ public class ChangeRolesForUserCommandHandler(
 
         var rolesList = new List<Role>();
 
-        foreach (var roleId in request.RoleIds)
+        foreach (var roleGuid in request.RoleIds)
         {
+            var roleId = new RoleId(roleGuid);
+
             var existingRole = await roleQueries.GetById(roleId, cancellationToken);
 
             var roleResult = await existingRole.Match<Task<Result<Role, UserException>>>(
@@ -38,12 +40,12 @@ public class ChangeRolesForUserCommandHandler(
                     rolesList.Add(r);
                     return r;
                 },
-                () => Task.FromResult<Result<Role, UserException>>(new RoleNotFoundException(roleId))
+                () => Task.FromResult<Result<Role, UserException>>(new RoleNotFoundException(roleId.Value))
             );
 
             if (roleResult.IsError)
             {
-                return new RoleNotFoundException(roleId);
+                return new RoleNotFoundException(roleId.Value);
             }
         }
 
@@ -65,6 +67,7 @@ public class ChangeRolesForUserCommandHandler(
         }
         catch (Exception exception)
         {
+            throw;
             return new UserUnknownException(user.Id, exception);
         }
     }
