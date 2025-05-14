@@ -2,7 +2,7 @@
 using API.Modules.Errors;
 using Application.Common.Interfaces.Queries;
 using Application.Users.Commands;
-using Domain.Identity;
+using Domain.Identity.Roles;
 using Domain.Identity.Users;
 using Domain.ViewModels;
 using MediatR;
@@ -17,7 +17,7 @@ namespace API.Controllers;
 [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
 public class UsersController(ISender sender, IUserQueries userQueries) : ControllerBase
 {
-    [Authorize(Roles = AuthSettings.AdminRole)]
+    [Authorize(Roles = RoleNames.Admin)]
     [HttpGet("get-all")]
     public async Task<ActionResult<IReadOnlyList<UserDto>>> GetAll(CancellationToken cancellationToken)
     {
@@ -26,7 +26,7 @@ public class UsersController(ISender sender, IUserQueries userQueries) : Control
         return entities.Select(UserDto.FromDomainModel).ToList();
     }
 
-    [Authorize(Roles = $"{AuthSettings.AdminRole},{AuthSettings.UserRole}")]
+    [Authorize(Roles = $"{RoleNames.Admin}")]
     [HttpGet("get-by-id/{userId:guid}")]
     public async Task<ActionResult<UserDto>> Get([FromRoute] Guid userId, CancellationToken cancellationToken)
     {
@@ -37,7 +37,7 @@ public class UsersController(ISender sender, IUserQueries userQueries) : Control
             () => NotFound());
     }
 
-    [Authorize(Roles = AuthSettings.AdminRole)]
+    [Authorize(Roles = RoleNames.Admin)]
     [HttpDelete("delete/{userId:guid}")]
     public async Task<ActionResult<UserDto>>
         Delete([FromRoute] Guid userId, CancellationToken cancellationToken)
@@ -54,25 +54,27 @@ public class UsersController(ISender sender, IUserQueries userQueries) : Control
             e => e.ToObjectResult());
     }
 
-    [Authorize(Roles = AuthSettings.AdminRole)]
+    [Authorize(Roles = RoleNames.Admin)]
     [HttpPut("update-roles/{userId}")]
-    public async Task<ActionResult<UserDto>>
-        UpdateRoles([FromRoute] Guid userId, [FromBody] List<RoleDto> roles, CancellationToken cancellationToken)
+    public async Task<ActionResult<UserDto>> UpdateRoles(
+        [FromRoute] Guid userId,
+        [FromBody] List<Guid> roleIds,
+        CancellationToken cancellationToken)
     {
-        var input = new ChangeRolesForUserCommand()
+        var input = new ChangeRolesForUserCommand
         {
             UserId = userId,
-            Roles = roles.Select(x => x.Name.ToString()).ToList()
+            RoleIds = roleIds
         };
 
         var result = await sender.Send(input, cancellationToken);
 
         return result.Match<ActionResult<UserDto>>(
-            c => UserDto.FromDomainModel(c),
-            e => e.ToObjectResult());
+            user => UserDto.FromDomainModel(user),
+            error => error.ToObjectResult());
     }
 
-    [Authorize(Roles = $"{AuthSettings.AdminRole},{AuthSettings.UserRole}")]
+    [Authorize(Roles = $"{RoleNames.Admin},{RoleNames.User}")]
     [HttpPut("image/{userId}")]
     public async Task<ActionResult<UserDto>> Upload(
         [FromRoute] Guid userId,
@@ -92,7 +94,7 @@ public class UsersController(ISender sender, IUserQueries userQueries) : Control
             e => e.ToObjectResult());
     }
 
-    [Authorize(Roles = $"{AuthSettings.AdminRole},{AuthSettings.UserRole}")]
+    [Authorize(Roles = $"{RoleNames.Admin},{RoleNames.User}")]
     [HttpPut("update/{userId:guid}")]
     public async Task<ActionResult<UserDto>> UpdateUser(
         [FromRoute] Guid userId,

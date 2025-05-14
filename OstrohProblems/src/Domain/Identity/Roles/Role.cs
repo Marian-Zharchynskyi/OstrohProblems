@@ -4,15 +4,16 @@ namespace Domain.Identity.Roles;
 
 public class Role
 {
-    public string Id { get; set; }
+    public RoleId Id { get; }
     public string Name { get; set; }
     public ICollection<User> Users { get; set; } = new List<User>();
     
-    private Role(string name)
+    private Role(RoleId id, string name)
     {
-        Id = name;
+        Id = id;
         Name = name;
     }
-    public static Role New(string name)
-        => new(name);
+    
+    public static Role New(RoleId id, string name)
+        => new(id, name);
 }

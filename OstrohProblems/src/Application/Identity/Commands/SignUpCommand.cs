@@ -1,12 +1,14 @@
 ﻿using Application.Common;
+using Application.Common.Interfaces.Queries;
 using Application.Common.Interfaces.Repositories;
 using Application.Identity.Exceptions;
 using Application.Services.HashPasswordService;
 using Application.Services.TokenService;
-using Domain.Identity;
+using Domain.Identity.Roles;
 using Domain.Identity.Users;
 using Domain.ViewModels;
 using MediatR;
+using Optional.Unsafe;
 
 namespace Application.Identity.Commands;
 
@@ -20,7 +22,8 @@ public class SignUpCommand : IRequest<Result<JwtVm, IdentityException>>
 public class CreateUserCommandHandler(
     IUserRepository userRepository,
     IJwtTokenService jwtTokenService,
-    IHashPasswordService hashPasswordService)
+    IHashPasswordService hashPasswordService,
+    IRoleQueries roleQueries) 
     : IRequestHandler<SignUpCommand, Result<JwtVm, IdentityException>>
 {
     public async Task<Result<JwtVm, IdentityException>> Handle(
@@ -43,15 +46,24 @@ public class CreateUserCommandHandler(
     {
         try
         {
+            var roleResult = await roleQueries.GetByName(RoleNames.User, cancellationToken);
+
+            if (!roleResult.HasValue)
+            {
+                return new IdentityUnknownException(UserId.Empty, 
+                    new Exception("Default role not found"));
+            }
+
             var userId = UserId.New();
+            var user = User.New(userId, email, name, hashPasswordService.HashPassword(password));
 
-            var entity = User.New(userId, email, name, hashPasswordService.HashPassword(password));
+            await userRepository.Create(user, cancellationToken);
 
-            await userRepository.Create(entity, cancellationToken);
+            var role = roleResult.ValueOrFailure();
+            var userWithRole = await userRepository.AddRole(userId, role.Id, cancellationToken);
 
-            var token = await jwtTokenService
-                .GenerateTokensAsync(await userRepository
-                    .AddRole(entity.Id, AuthSettings.UserRole, cancellationToken), cancellationToken);
+
+            var token = await jwtTokenService.GenerateTokensAsync(userWithRole, cancellationToken);
 
             return token;
         }

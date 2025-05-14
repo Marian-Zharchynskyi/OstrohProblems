@@ -10,10 +10,7 @@ namespace API.Controllers;
 
 [Route("problem-statuses")]
 [ApiController]
-public class StatusesController(
-    ISender sender,
-    IStatusQueries statusQueries) 
-    : ControllerBase
+public class StatusesController(ISender sender, IStatusQueries statusQueries) : ControllerBase
 {
     [HttpGet("get-all")]
     public async Task<ActionResult<IReadOnlyList<StatusDto>>> GetAll(CancellationToken cancellationToken)

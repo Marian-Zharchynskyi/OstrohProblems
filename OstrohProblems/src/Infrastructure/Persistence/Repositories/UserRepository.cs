@@ -1,6 +1,7 @@
 ﻿using System.Linq.Expressions;
 using Application.Common.Interfaces.Queries;
 using Application.Common.Interfaces.Repositories;
+using Domain.Identity.Roles;
 using Domain.Identity.Users;
 using Microsoft.EntityFrameworkCore;
 using Optional;
@@ -62,11 +63,11 @@ public class UserRepository(ApplicationDbContext context) : IUserRepository, IUs
         return entity == null ? Option.None<User>() : Option.Some(entity);
     }
 
-    public async Task<User> AddRole(UserId userId, string idRole, CancellationToken cancellationToken)
+    public async Task<User> AddRole(UserId userId, RoleId roleId, CancellationToken cancellationToken)
     {
         var entity = await GetUserAsync(x => x.Id == userId, cancellationToken);
 
-        var role = await context.Roles.FirstOrDefaultAsync(x => x.Id == idRole, cancellationToken);
+        var role = await context.Roles.FirstOrDefaultAsync(x => x.Id == roleId, cancellationToken);
         entity.Roles.Add(role);
         await context.SaveChangesAsync(cancellationToken);
         return entity;

@@ -18,11 +18,18 @@ public class RoleRepository(ApplicationDbContext context) : IRoleQueries
     public async Task<Option<Role>> GetByName(string name, CancellationToken cancellationToken)
     {
         var entity = await GetRoleAsync(r => r.Name == name, cancellationToken, false);
-        
+
         return entity == null ? Option.None<Role>() : Option.Some(entity);
     }
-    
-    public async Task<Role?> GetRoleAsync(Expression<Func<Role, bool>> predicate, CancellationToken cancellationToken, bool asNoTracking = true)
+
+    public async Task<Option<Role>> GetById(Guid id, CancellationToken cancellationToken)
+    {
+        var entity = await GetRoleAsync(r => r.Id.Value == id, cancellationToken, false);
+        return entity == null ? Option.None<Role>() : Option.Some(entity);
+    }
+
+    public async Task<Role?> GetRoleAsync(Expression<Func<Role, bool>> predicate, CancellationToken cancellationToken,
+        bool asNoTracking = true)
     {
         if (asNoTracking)
         {

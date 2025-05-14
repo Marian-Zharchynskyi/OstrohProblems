@@ -11,7 +11,7 @@ namespace Application.Users.Commands;
 public record ChangeRolesForUserCommand : IRequest<Result<User, UserException>>
 {
     public required Guid UserId { get; init; }
-    public List<string> Roles { get; init; }
+    public required List<Guid> RoleIds { get; init; }
 }
 
 public class ChangeRolesForUserCommandHandler(
@@ -27,9 +27,10 @@ public class ChangeRolesForUserCommandHandler(
         var existingUser = await userRepository.GetById(userId, cancellationToken);
 
         var rolesList = new List<Role>();
-        foreach (var role in request.Roles)
+
+        foreach (var roleId in request.RoleIds)
         {
-            var existingRole = await roleQueries.GetByName(role, cancellationToken);
+            var existingRole = await roleQueries.GetById(roleId, cancellationToken);
 
             var roleResult = await existingRole.Match<Task<Result<Role, UserException>>>(
                 async r =>
@@ -37,20 +38,19 @@ public class ChangeRolesForUserCommandHandler(
                     rolesList.Add(r);
                     return r;
                 },
-                () => Task.FromResult<Result<Role, UserException>>(new RoleNotFoundException(role))
+                () => Task.FromResult<Result<Role, UserException>>(new RoleNotFoundException(roleId))
             );
 
             if (roleResult.IsError)
             {
-                return new RoleNotFoundException(role);
+                return new RoleNotFoundException(roleId);
             }
         }
 
-
         return await existingUser.Match<Task<Result<User, UserException>>>(
             async user => await ChangeRolesForUser(user, rolesList, cancellationToken),
-            () => Task.FromResult<Result<User, UserException>>
-                (new UserNotFoundException(userId)));
+            () => Task.FromResult<Result<User, UserException>>(new UserNotFoundException(userId))
+        );
     }
 
     private async Task<Result<User, UserException>> ChangeRolesForUser(
@@ -58,11 +58,9 @@ public class ChangeRolesForUserCommandHandler(
         List<Role> roles,
         CancellationToken cancellationToken)
     {
-       
         try
         {
             user.SetRoles(roles);
-            
             return await userRepository.Update(user, cancellationToken);
         }
         catch (Exception exception)

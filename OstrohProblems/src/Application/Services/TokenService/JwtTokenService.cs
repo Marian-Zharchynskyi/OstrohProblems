@@ -4,6 +4,7 @@ using System.Security.Cryptography;
 using System.Text;
 using Application.Common.Interfaces.Repositories;
 using Domain.Identity;
+using Domain.Identity.Roles;
 using Domain.Identity.Users;
 using Domain.RefreshTokens;
 using Domain.ViewModels;
@@ -30,7 +31,7 @@ namespace Application.Services.TokenService
                 new Claim("image", user.UserImage?.FilePath ?? "N/A"),
             };
 
-            if (user.Roles.Count() > 0)
+            if (user.Roles.Count > 0)
             {
                 var roleClaims = user.Roles.Select(ur => new Claim(
                     "role",
@@ -41,7 +42,7 @@ namespace Application.Services.TokenService
             }
             else
             {
-                claims.Add(new Claim("role", AuthSettings.UserRole));
+                claims.Add(new Claim("role", RoleNames.User));
             }
             
             var token = new JwtSecurityToken(

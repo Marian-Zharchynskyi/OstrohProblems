@@ -17,7 +17,7 @@ public class UserNotFoundException(UserId id) : UserException(id, $"User under i
 
 public class ImageSaveException(UserId id) : UserException(id, $"User under id: {id} have problems with image save!");
 
-public class RoleNotFoundException(string role)
+public class RoleNotFoundException(Guid role)
     : UserException(UserId.Empty, $"Role under name: {role} was not found!");
 
 public class UserUnknownException(UserId id, Exception innerException)

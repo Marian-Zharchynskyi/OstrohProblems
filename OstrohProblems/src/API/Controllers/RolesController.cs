@@ -1,6 +1,7 @@
 using API.DTOs.Users;
 using Application.Common.Interfaces.Queries;
 using Domain.Identity;
+using Domain.Identity.Roles;
 using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
@@ -10,9 +11,9 @@ namespace API.Controllers;
 
 [Route("roles")]
 [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-[Authorize(Roles = AuthSettings.AdminRole)]
+[Authorize(Roles = RoleNames.Admin)]
 [ApiController]
-public class RolesController(ISender sender, IRoleQueries roleQueries) : ControllerBase
+public class RolesController(IRoleQueries roleQueries) : ControllerBase
 {
     [HttpGet("get-all")]
     public async Task<ActionResult<IReadOnlyList<RoleDto>>> GetAll(CancellationToken cancellationToken)
