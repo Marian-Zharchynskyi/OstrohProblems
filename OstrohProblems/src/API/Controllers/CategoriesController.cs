@@ -1,8 +1,10 @@
 ﻿using API.DTOs;
+using API.DTOs.Categories;
 using API.Modules.Errors;
 using Application.Categories.Commands;
 using Application.Common.Interfaces.Queries;
 using Domain.Categories;
+using Domain.PagedResult;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
@@ -15,6 +17,26 @@ public class CategoriesController(
     ICategoryQueries categoryQueries)
     : ControllerBase
 {
+    
+    [HttpGet("paged")]
+    public async Task<ActionResult<PagedResult<CategoryDto>>> GetPaged(
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 10,
+        CancellationToken cancellationToken = default)
+    {
+        var (items, totalCount) = await categoryQueries.GetPaged(page, pageSize, cancellationToken);
+
+        var dtoItems = items.Select(CategoryDto.FromDomainModel).ToList();
+
+        return new PagedResult<CategoryDto>(
+            Items: dtoItems,
+            TotalCount: totalCount,
+            Page: page,
+            PageSize: pageSize
+        );
+    }
+
+
     [HttpGet("get-all")]
     public async Task<ActionResult<IReadOnlyList<CategoryDto>>> GetAll(CancellationToken cancellationToken)
     {

@@ -53,13 +53,28 @@ public class CategoryRepository(ApplicationDbContext context)
         await context.SaveChangesAsync(cancellationToken);
         return category;
     }
-    
+
     public async Task<List<Category>> GetByIdsAsync(List<Guid> ids, CancellationToken cancellationToken)
     {
         var problemCategoryIds = ids.Select(id => new CategoryId(id)).ToList();
 
         return await context.Categories
-            .Where(pc => problemCategoryIds.Contains(pc.Id)) 
+            .Where(pc => problemCategoryIds.Contains(pc.Id))
             .ToListAsync(cancellationToken);
+    }
+
+    public async Task<(IReadOnlyList<Category> Items, int TotalCount)> GetPaged(int page, int pageSize,
+        CancellationToken cancellationToken)
+    {
+        var query = context.Categories.AsNoTracking();
+
+        var totalCount = await query.CountAsync(cancellationToken);
+
+        var items = await query
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync(cancellationToken);
+
+        return (items, totalCount);
     }
 }

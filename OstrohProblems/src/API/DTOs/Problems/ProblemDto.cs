@@ -1,3 +1,4 @@
+using API.DTOs.Categories;
 using API.DTOs.Comments;
 using API.DTOs.Users;
 using Domain.Problems;

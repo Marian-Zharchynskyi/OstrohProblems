@@ -1,6 +1,6 @@
 ﻿using Domain.Categories;
 
-namespace API.DTOs;
+namespace API.DTOs.Categories;
 
 public record CategoryDto(Guid? Id, string Name)
 {
