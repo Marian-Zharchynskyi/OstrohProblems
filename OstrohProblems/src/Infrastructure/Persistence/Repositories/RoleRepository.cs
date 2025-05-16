@@ -17,7 +17,12 @@ public class RoleRepository(ApplicationDbContext context) : IRoleQueries
 
     public async Task<Option<Role>> GetByName(string name, CancellationToken cancellationToken)
     {
-        var entity = await GetRoleAsync(r => r.Name == name, cancellationToken, false);
+        var normalized = name.ToLower();
+
+        var entity = await GetRoleAsync(
+            r => r.Name.ToLower() == normalized,
+            cancellationToken,
+            false);
 
         return entity == null ? Option.None<Role>() : Option.Some(entity);
     }
@@ -26,7 +31,7 @@ public class RoleRepository(ApplicationDbContext context) : IRoleQueries
     {
         var role = await context.Roles
             .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
-        
+
         return role == null ? Option.None<Role>() : Option.Some(role);
     }
 

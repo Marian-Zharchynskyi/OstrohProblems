@@ -4,6 +4,7 @@ using Application.Common.Interfaces.Queries;
 using Application.Users.Commands;
 using Domain.Identity.Roles;
 using Domain.Identity.Users;
+using Domain.PagedResults;
 using Domain.ViewModels;
 using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -14,9 +15,28 @@ namespace API.Controllers;
 
 [Route("users")]
 [ApiController]
-[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+// [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
 public class UsersController(ISender sender, IUserQueries userQueries) : ControllerBase
 {
+    // [Authorize(Roles = RoleNames.Admin)]
+    [HttpGet("paged")]
+    public async Task<ActionResult<PagedResult<UserDto>>> GetPaged(
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 10,
+        CancellationToken cancellationToken = default)
+    {
+        var (items, totalCount) = await userQueries.GetPaged(page, pageSize, cancellationToken);
+
+        var dtoItems = items.Select(UserDto.FromDomainModel).ToList();
+
+        return new PagedResult<UserDto>(
+            Items: dtoItems,
+            TotalCount: totalCount,
+            Page: page,
+            PageSize: pageSize
+        );
+    }
+
     [Authorize(Roles = RoleNames.Admin)]
     [HttpGet("get-all")]
     public async Task<ActionResult<IReadOnlyList<UserDto>>> GetAll(CancellationToken cancellationToken)

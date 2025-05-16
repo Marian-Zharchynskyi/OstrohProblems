@@ -1,4 +1,4 @@
-﻿using API.DTOs;
+﻿using API.DTOs.Statuses;
 using API.Modules.Errors;
 using Application.Common.Interfaces.Queries;
 using Application.Statuses.Commands;
@@ -31,7 +31,7 @@ public class StatusesController(ISender sender, IStatusQueries statusQueries) : 
     }
 
     [HttpPost("create")]
-    public async Task<ActionResult<StatusDto>> Create(
+    public async Task<ActionResult<CreateStatusDto>> Create(
         [FromBody] StatusDto request,
         CancellationToken cancellationToken)
     {
@@ -42,36 +42,37 @@ public class StatusesController(ISender sender, IStatusQueries statusQueries) : 
 
         var result = await sender.Send(input, cancellationToken);
 
-        return result.Match<ActionResult<StatusDto>>(
-            ps => StatusDto.FromDomainModel(ps),
+        return result.Match<ActionResult<CreateStatusDto>>(
+            ps => CreateStatusDto.FromDomainModel(ps),
             e => e.ToObjectResult());
     }
 
     [HttpPut("update")]
-    public async Task<ActionResult<StatusDto>> Update(
-        [FromBody] StatusDto request,
+    public async Task<ActionResult<CreateStatusDto>> Update(
+        [FromRoute] Guid id,
+        [FromBody] CreateStatusDto request,
         CancellationToken cancellationToken)
     {
         var input = new UpdateStatusCommand
         {
-            ProblemStatusId = request.Id!.Value,
+            ProblemStatusId = id,
             Name = request.Name
         };
 
         var result = await sender.Send(input, cancellationToken);
 
-        return result.Match<ActionResult<StatusDto>>(
-            ps => StatusDto.FromDomainModel(ps),
+        return result.Match<ActionResult<CreateStatusDto>>(
+            ps => CreateStatusDto.FromDomainModel(ps),
             e => e.ToObjectResult());
     }
 
     [HttpDelete("delete/{problemStatusId:guid}")]
     public async Task<ActionResult<StatusDto>> Delete(
-        [FromRoute] Guid problemStatusId, CancellationToken cancellationToken)
+        [FromRoute] Guid id, CancellationToken cancellationToken)
     {
         var input = new DeleteStatusCommand
         {
-            ProblemStatusId = problemStatusId
+            ProblemStatusId = id
         };
 
         var result = await sender.Send(input, cancellationToken);

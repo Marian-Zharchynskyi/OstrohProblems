@@ -2,19 +2,37 @@
 using API.Modules.Errors;
 using Application.Common.Interfaces.Queries;
 using Application.Ratings.Commands;
+using Domain.Identity.Roles;
+using Domain.PagedResults;
 using Domain.Ratings;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers;
 
 [Route("ratings")]
 [ApiController]
-public class RatingsController(
-    ISender sender,
-    IRatingQueries ratingQueries)
-    : ControllerBase
+public class RatingsController(ISender sender, IRatingQueries ratingQueries) : ControllerBase
 {
+    [HttpGet("paged")]
+    public async Task<ActionResult<PagedResult<RatingDto>>> GetPaged(
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 10,
+        CancellationToken cancellationToken = default)
+    {
+        var (items, totalCount) = await ratingQueries.GetPaged(page, pageSize, cancellationToken);
+
+        var dtoItems = items.Select(RatingDto.FromDomainModel).ToList();
+
+        return new PagedResult<RatingDto>(
+            Items: dtoItems,
+            TotalCount: totalCount,
+            Page: page,
+            PageSize: pageSize
+        );
+    }
+
     [HttpGet("get-all")]
     public async Task<ActionResult<IReadOnlyList<RatingDto>>> GetAll(CancellationToken cancellationToken)
     {

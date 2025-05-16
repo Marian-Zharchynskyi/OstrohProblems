@@ -9,10 +9,29 @@ namespace Infrastructure.Persistence.Repositories;
 
 public class CommentRepository(ApplicationDbContext context) : ICommentQueries, ICommentRepository
 {
+    public async Task<(IReadOnlyList<Comment> Items, int TotalCount)> GetPaged(int page, int pageSize,
+        CancellationToken cancellationToken)
+    {
+        var query = context.Comments
+            .Include(x => x.User)
+            .Include(x => x.Problem)
+            .AsNoTracking();
+
+        var totalCount = await query.CountAsync(cancellationToken);
+
+        var items = await query
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync(cancellationToken);
+
+        return (items, totalCount);
+    }
+    
     public async Task<IReadOnlyList<Comment>> GetAll(CancellationToken cancellationToken)
     {
         return await context.Comments
             .Include(x => x.User)
+            .Include(x => x.Problem)
             .AsNoTracking()
             .ToListAsync(cancellationToken);
     }

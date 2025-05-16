@@ -92,4 +92,22 @@ public class UserRepository(ApplicationDbContext context) : IUserRepository, IUs
             .Include(u => u.UserImage)
             .FirstOrDefaultAsync(predicate, cancellationToken);
     }
+    
+    public async Task<(IReadOnlyList<User> Items, int TotalCount)> GetPaged(int page, int pageSize,
+        CancellationToken cancellationToken)
+    {
+        var query = context.Users
+            .Include(u => u.Roles)
+            .Include(u => u.UserImage)
+            .AsNoTracking();
+
+        var totalCount = await query.CountAsync(cancellationToken);
+
+        var items = await query
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync(cancellationToken);
+
+        return (items, totalCount);
+    }
 }

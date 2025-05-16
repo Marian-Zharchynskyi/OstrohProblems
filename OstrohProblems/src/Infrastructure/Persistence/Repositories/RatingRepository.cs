@@ -8,6 +8,24 @@ namespace Infrastructure.Persistence.Repositories;
 
 public class RatingRepository(ApplicationDbContext context) : IRatingQueries, IRatingRepository
 {
+    public async Task<(IReadOnlyList<Rating> Items, int TotalCount)> GetPaged(int page, int pageSize,
+        CancellationToken cancellationToken)
+    {
+        var query = context.Ratings
+            .Include(x => x.User)
+            .Include(x => x.Problem)
+            .AsNoTracking();
+
+        var totalCount = await query.CountAsync(cancellationToken);
+
+        var items = await query
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync(cancellationToken);
+
+        return (items, totalCount);
+    }
+    
     public async Task<IReadOnlyList<Rating>> GetAll(CancellationToken cancellationToken)
     {
         return await context.Ratings

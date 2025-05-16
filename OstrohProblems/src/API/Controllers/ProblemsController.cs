@@ -2,6 +2,7 @@
 using API.Modules.Errors;
 using Application.Common.Interfaces.Queries;
 using Application.Problems.Commands;
+using Domain.PagedResults;
 using Domain.Problems;
 using Domain.Statuses;
 using MediatR;
@@ -11,11 +12,26 @@ namespace API.Controllers;
 
 [Route("problems")]
 [ApiController]
-public class ProblemsController(
-    ISender sender,
-    IProblemQueries problemQueries) 
-    : ControllerBase
+public class ProblemsController(ISender sender, IProblemQueries problemQueries) : ControllerBase
 {
+    [HttpGet("paged")]
+    public async Task<ActionResult<PagedResult<ProblemDto>>> GetPaged(
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 10,
+        CancellationToken cancellationToken = default)
+    {
+        var (items, totalCount) = await problemQueries.GetPaged(page, pageSize, cancellationToken);
+
+        var dtoItems = items.Select(ProblemDto.FromDomainModel).ToList();
+
+        return new PagedResult<ProblemDto>(
+            Items: dtoItems,
+            TotalCount: totalCount,
+            Page: page,
+            PageSize: pageSize
+        );
+    }
+    
     [HttpGet("get-all")]
     public async Task<ActionResult<IReadOnlyList<ProblemDto>>> GetAll(CancellationToken cancellationToken)
     {

@@ -10,8 +10,8 @@ using Microsoft.AspNetCore.Mvc;
 namespace API.Controllers;
 
 [Route("roles")]
-[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-[Authorize(Roles = RoleNames.Admin)]
+// [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+// [Authorize(Roles = RoleNames.Admin)]
 [ApiController]
 public class RolesController(IRoleQueries roleQueries) : ControllerBase
 {
@@ -21,5 +21,27 @@ public class RolesController(IRoleQueries roleQueries) : ControllerBase
         var entities = await roleQueries.GetAll(cancellationToken);
 
         return entities.Select(RoleDto.FromDomainModel).ToList();
+    }
+
+    [HttpGet("get-by-id/{roleId:guid}")]
+    public async Task<ActionResult<RoleDto>> GetById([FromRoute] Guid roleId, CancellationToken cancellationToken)
+    {
+        var entity = await roleQueries.GetById(new RoleId(roleId), cancellationToken);
+
+        return entity.Match<ActionResult<RoleDto>>(
+            r => RoleDto.FromDomainModel(r),
+            () => NotFound()
+        );
+    }
+
+    [HttpGet("get-by-name/{roleName}")]
+    public async Task<ActionResult<RoleDto>> GetByName([FromRoute] string roleName, CancellationToken cancellationToken)
+    {
+        var entity = await roleQueries.GetByName(roleName, cancellationToken);
+
+        return entity.Match<ActionResult<RoleDto>>(
+            r => RoleDto.FromDomainModel(r),
+            () => NotFound()
+        );
     }
 }

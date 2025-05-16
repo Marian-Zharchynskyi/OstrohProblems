@@ -1,4 +1,5 @@
 using API.DTOs;
+using API.DTOs.Statuses;
 using FluentValidation;
 
 namespace API.Modules.Validators;

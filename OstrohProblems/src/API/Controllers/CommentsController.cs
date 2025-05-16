@@ -1,21 +1,39 @@
-﻿using API.DTOs;
-using API.DTOs.Comments;
+﻿using API.DTOs.Comments;
 using API.Modules.Errors;
 using Application.Comments.Commands;
 using Application.Common.Interfaces.Queries;
 using Domain.Comments;
+using Domain.Identity.Roles;
+using Domain.PagedResults;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers;
 
 [Route("comments")]
 [ApiController]
-public class CommentsController(
-    ISender sender,
-    ICommentQueries commentQueries)
-    : ControllerBase
+public class CommentsController(ISender sender, ICommentQueries commentQueries) : ControllerBase
 {
+    [Authorize(Roles = RoleNames.Admin)]
+    [HttpGet("paged")]
+    public async Task<ActionResult<PagedResult<CommentDto>>> GetPaged(
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 10,
+        CancellationToken cancellationToken = default)
+    {
+        var (items, totalCount) = await commentQueries.GetPaged(page, pageSize, cancellationToken);
+
+        var dtoItems = items.Select(CommentDto.FromDomainModel).ToList();
+
+        return new PagedResult<CommentDto>(
+            Items: dtoItems,
+            TotalCount: totalCount,
+            Page: page,
+            PageSize: pageSize
+        );
+    }
+    
     [HttpGet("get-all")]
     public async Task<ActionResult<IReadOnlyList<CommentDto>>> GetAll(CancellationToken cancellationToken)
     {

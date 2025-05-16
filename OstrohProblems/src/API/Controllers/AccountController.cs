@@ -31,7 +31,7 @@ public class AccountController(ISender sender) : ControllerBase
     }
 
     [HttpPost("signin")]
-    public async Task<ActionResult<JwtVm>> SignUpAsync(
+    public async Task<ActionResult<JwtVm>> SignInAsync(
         [FromBody] SignInDto request,
         CancellationToken cancellationToken)
     {

@@ -1,4 +1,4 @@
-namespace Domain.PagedResult;
+namespace Domain.PagedResults;
 
 public record PagedResult<T>(
     IReadOnlyList<T> Items,
