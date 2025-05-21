@@ -2,23 +2,30 @@
 using API.Modules.Errors;
 using Application.Common.Interfaces.Queries;
 using Application.Statuses.Commands;
+using Domain.Identity.Roles;
 using Domain.Statuses;
 using MediatR;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers;
 
 [Route("problem-statuses")]
 [ApiController]
+[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+[Authorize(Roles = RoleNames.Admin)]
 public class StatusesController(ISender sender, IStatusQueries statusQueries) : ControllerBase
 {
+    [Authorize(Roles = RoleNames.User)]
     [HttpGet("get-all")]
     public async Task<ActionResult<IReadOnlyList<StatusDto>>> GetAll(CancellationToken cancellationToken)
     {
         var entities = await statusQueries.GetAll(cancellationToken);
         return entities.Select(StatusDto.FromDomainModel).ToList();
     }
-
+    
+    [Authorize(Roles = RoleNames.User)]
     [HttpGet("get-by-id/{problemStatusId:guid}")]
     public async Task<ActionResult<StatusDto>> Get([FromRoute] Guid problemStatusId,
         CancellationToken cancellationToken)
@@ -29,7 +36,7 @@ public class StatusesController(ISender sender, IStatusQueries statusQueries) : 
             ps => StatusDto.FromDomainModel(ps),
             () => NotFound());
     }
-
+    
     [HttpPost("create")]
     public async Task<ActionResult<CreateStatusDto>> Create(
         [FromBody] StatusDto request,
@@ -46,7 +53,7 @@ public class StatusesController(ISender sender, IStatusQueries statusQueries) : 
             ps => CreateStatusDto.FromDomainModel(ps),
             e => e.ToObjectResult());
     }
-
+    
     [HttpPut("update")]
     public async Task<ActionResult<CreateStatusDto>> Update(
         [FromRoute] Guid id,
@@ -65,7 +72,7 @@ public class StatusesController(ISender sender, IStatusQueries statusQueries) : 
             ps => CreateStatusDto.FromDomainModel(ps),
             e => e.ToObjectResult());
     }
-
+    
     [HttpDelete("delete/{problemStatusId:guid}")]
     public async Task<ActionResult<StatusDto>> Delete(
         [FromRoute] Guid id, CancellationToken cancellationToken)

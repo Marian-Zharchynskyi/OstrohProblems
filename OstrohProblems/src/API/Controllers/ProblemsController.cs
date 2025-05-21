@@ -2,16 +2,21 @@
 using API.Modules.Errors;
 using Application.Common.Interfaces.Queries;
 using Application.Problems.Commands;
+using Domain.Identity.Roles;
 using Domain.PagedResults;
 using Domain.Problems;
 using Domain.Statuses;
 using MediatR;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers;
 
 [Route("problems")]
 [ApiController]
+[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+[Authorize(Roles = $"{RoleNames.Admin}, {RoleNames.User}")]
 public class ProblemsController(ISender sender, IProblemQueries problemQueries) : ControllerBase
 {
     [HttpGet("paged")]

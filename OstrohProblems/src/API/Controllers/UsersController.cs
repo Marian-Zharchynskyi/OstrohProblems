@@ -15,10 +15,10 @@ namespace API.Controllers;
 
 [Route("users")]
 [ApiController]
-// [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+[Authorize(Roles = RoleNames.Admin)]
 public class UsersController(ISender sender, IUserQueries userQueries) : ControllerBase
 {
-    // [Authorize(Roles = RoleNames.Admin)]
     [HttpGet("paged")]
     public async Task<ActionResult<PagedResult<UserDto>>> GetPaged(
         [FromQuery] int page = 1,
@@ -36,8 +36,7 @@ public class UsersController(ISender sender, IUserQueries userQueries) : Control
             PageSize: pageSize
         );
     }
-
-    [Authorize(Roles = RoleNames.Admin)]
+    
     [HttpGet("get-all")]
     public async Task<ActionResult<IReadOnlyList<UserDto>>> GetAll(CancellationToken cancellationToken)
     {
@@ -45,8 +44,7 @@ public class UsersController(ISender sender, IUserQueries userQueries) : Control
 
         return entities.Select(UserDto.FromDomainModel).ToList();
     }
-
-    [Authorize(Roles = $"{RoleNames.Admin}")]
+    
     [HttpGet("get-by-id/{userId:guid}")]
     public async Task<ActionResult<UserDto>> Get([FromRoute] Guid userId, CancellationToken cancellationToken)
     {
@@ -56,8 +54,7 @@ public class UsersController(ISender sender, IUserQueries userQueries) : Control
             p => UserDto.FromDomainModel(p),
             () => NotFound());
     }
-
-    [Authorize(Roles = RoleNames.Admin)]
+    
     [HttpDelete("delete/{userId:guid}")]
     public async Task<ActionResult<UserDto>>
         Delete([FromRoute] Guid userId, CancellationToken cancellationToken)
@@ -73,8 +70,7 @@ public class UsersController(ISender sender, IUserQueries userQueries) : Control
             c => UserDto.FromDomainModel(c),
             e => e.ToObjectResult());
     }
-
-    [Authorize(Roles = RoleNames.Admin)]
+    
     [HttpPut("update-roles/{userId}")]
     public async Task<ActionResult<UserDto>> UpdateRoles(
         [FromRoute] Guid userId,

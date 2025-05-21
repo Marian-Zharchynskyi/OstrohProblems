@@ -10,8 +10,8 @@ using Microsoft.AspNetCore.Mvc;
 namespace API.Controllers;
 
 [Route("roles")]
-// [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-// [Authorize(Roles = RoleNames.Admin)]
+[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+[Authorize(Roles = RoleNames.Admin)]
 [ApiController]
 public class RolesController(IRoleQueries roleQueries) : ControllerBase
 {

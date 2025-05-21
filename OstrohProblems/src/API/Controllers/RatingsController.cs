@@ -6,6 +6,7 @@ using Domain.Identity.Roles;
 using Domain.PagedResults;
 using Domain.Ratings;
 using MediatR;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -13,6 +14,8 @@ namespace API.Controllers;
 
 [Route("ratings")]
 [ApiController]
+[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+[Authorize(Roles = $"{RoleNames.Admin}, {RoleNames.User}")]
 public class RatingsController(ISender sender, IRatingQueries ratingQueries) : ControllerBase
 {
     [HttpGet("paged")]

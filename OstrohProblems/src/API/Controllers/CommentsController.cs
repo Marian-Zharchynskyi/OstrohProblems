@@ -6,6 +6,7 @@ using Domain.Comments;
 using Domain.Identity.Roles;
 using Domain.PagedResults;
 using MediatR;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -13,9 +14,10 @@ namespace API.Controllers;
 
 [Route("comments")]
 [ApiController]
+[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+[Authorize(Roles = $"{RoleNames.Admin}, {RoleNames.User}")]
 public class CommentsController(ISender sender, ICommentQueries commentQueries) : ControllerBase
 {
-    [Authorize(Roles = RoleNames.Admin)]
     [HttpGet("paged")]
     public async Task<ActionResult<PagedResult<CommentDto>>> GetPaged(
         [FromQuery] int page = 1,
