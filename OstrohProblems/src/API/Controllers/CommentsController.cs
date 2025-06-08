@@ -14,10 +14,9 @@ namespace API.Controllers;
 
 [Route("comments")]
 [ApiController]
-[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-[Authorize(Roles = $"{RoleNames.Admin}, {RoleNames.User}")]
 public class CommentsController(ISender sender, ICommentQueries commentQueries) : ControllerBase
 {
+    [Authorize(Roles = $"{RoleNames.Admin}, {RoleNames.User}")]
     [HttpGet("paged")]
     public async Task<ActionResult<PagedResult<CommentDto>>> GetPaged(
         [FromQuery] int page = 1,
@@ -36,6 +35,7 @@ public class CommentsController(ISender sender, ICommentQueries commentQueries) 
         );
     }
     
+    [Authorize(Roles = $"{RoleNames.Admin}, {RoleNames.User}")]
     [HttpGet("get-all")]
     public async Task<ActionResult<IReadOnlyList<CommentDto>>> GetAll(CancellationToken cancellationToken)
     {
@@ -43,6 +43,7 @@ public class CommentsController(ISender sender, ICommentQueries commentQueries) 
         return entities.Select(CommentDto.FromDomainModel).ToList();
     }
 
+    [Authorize(Roles = $"{RoleNames.Admin}, {RoleNames.User}")]
     [HttpGet("get-by-id/{commentId:guid}")]
     public async Task<ActionResult<CommentDto>> Get([FromRoute] Guid commentId, CancellationToken cancellationToken)
     {
@@ -53,6 +54,7 @@ public class CommentsController(ISender sender, ICommentQueries commentQueries) 
             () => NotFound());
     }
 
+    [Authorize(Roles = $"{RoleNames.Admin}, {RoleNames.User}")]
     [HttpPost("create")]
     public async Task<ActionResult<CreateCommentDto>> Create(
         [FromBody] CreateCommentDto request,
@@ -71,6 +73,7 @@ public class CommentsController(ISender sender, ICommentQueries commentQueries) 
             e => e.ToObjectResult());
     }
 
+    [Authorize(Roles = $"{RoleNames.Admin}, {RoleNames.User}")]
     [HttpPut("update/{id}")]
     public async Task<ActionResult<CreateCommentDto>> Update(
         [FromRoute] Guid id,
@@ -89,7 +92,8 @@ public class CommentsController(ISender sender, ICommentQueries commentQueries) 
             c => CreateCommentDto.FromDomainModel(c),
             e => e.ToObjectResult());
     }
-
+    
+    [Authorize(Roles = $"{RoleNames.Admin}, {RoleNames.User}")]
     [HttpDelete("delete/{commentId:guid}")]
     public async Task<ActionResult<CommentDto>> Delete(
         [FromRoute] Guid commentId, CancellationToken cancellationToken)

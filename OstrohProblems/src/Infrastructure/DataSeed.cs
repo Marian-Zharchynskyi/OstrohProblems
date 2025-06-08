@@ -103,7 +103,6 @@ public static class DataSeed
 
         modelBuilder.Entity<Problem>().HasData(problems);
 
-        // Додаємо зв’язки Problem-Category (наприклад, кожна проблема має 2 категорії)
         modelBuilder.Entity<Problem>()
             .HasMany(p => p.Categories)
             .WithMany(c => c.Problems)

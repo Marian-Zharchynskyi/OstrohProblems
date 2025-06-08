@@ -1,8 +1,4 @@
 using Infrastructure;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
-using System.Text;
 using API.Modules;
 using Application;
 using Microsoft.Extensions.FileProviders;
@@ -10,12 +6,13 @@ using Microsoft.Extensions.FileProviders;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
 builder.Services.AddControllers();
 builder.Services.AddInfrastructure(builder);
 builder.Services.AddApplication();
 builder.Services.SetupServices();
 builder.Services.AddHttpContextAccessor();
+
+builder.Services.AddSwaggerDocumentation();
 builder.Services.AddSwaggerAuth();
 builder.Services.AddJwtTokenAuth(builder.Configuration);
 
@@ -27,9 +24,25 @@ builder.Configuration
     
 var app = builder.Build();
 
-app.UseSwagger();
-app.UseSwaggerUI();
+if (app.Environment.IsDevelopment())
+{
+    app.UseDeveloperExceptionPage();
+}
+else
+{
+    app.UseExceptionHandler("/Error");
+    app.UseHsts();
+}
 
+app.UseSwagger();
+app.UseSwaggerUI(c =>
+{
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "Ostroh Problems API V1");
+    c.RoutePrefix = "swagger";
+    c.DocumentTitle = "Ostroh Problems API Documentation";
+});
+
+app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 

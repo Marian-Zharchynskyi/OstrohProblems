@@ -1,5 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
+using System;
 
 namespace Infrastructure;
 
@@ -9,8 +10,6 @@ public static class ConfigureSwaggerAuth
     {
         services.AddSwaggerGen(options =>
         {
-            options.SwaggerDoc("v1", new OpenApiInfo { Title = "NPR321", Version = "v1" });
-
             options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
             {
                 Name = "Authorization",
@@ -18,7 +17,7 @@ public static class ConfigureSwaggerAuth
                 Scheme = "Bearer",
                 BearerFormat = "JWT",
                 In = ParameterLocation.Header,
-                Description = "Введіть JWT токен"
+                Description = "Enter your access token in the field below."
             });
 
             options.AddSecurityRequirement(new OpenApiSecurityRequirement

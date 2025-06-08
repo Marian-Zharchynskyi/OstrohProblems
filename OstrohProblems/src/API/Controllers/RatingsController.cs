@@ -14,10 +14,9 @@ namespace API.Controllers;
 
 [Route("ratings")]
 [ApiController]
-[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-[Authorize(Roles = $"{RoleNames.Admin}, {RoleNames.User}")]
 public class RatingsController(ISender sender, IRatingQueries ratingQueries) : ControllerBase
 {
+    [Authorize(Roles = $"{RoleNames.Admin}, {RoleNames.User}")]
     [HttpGet("paged")]
     public async Task<ActionResult<PagedResult<RatingDto>>> GetPaged(
         [FromQuery] int page = 1,
@@ -36,6 +35,7 @@ public class RatingsController(ISender sender, IRatingQueries ratingQueries) : C
         );
     }
 
+    [Authorize(Roles = $"{RoleNames.Admin}, {RoleNames.User}")]
     [HttpGet("get-all")]
     public async Task<ActionResult<IReadOnlyList<RatingDto>>> GetAll(CancellationToken cancellationToken)
     {
@@ -43,6 +43,7 @@ public class RatingsController(ISender sender, IRatingQueries ratingQueries) : C
         return entities.Select(RatingDto.FromDomainModel).ToList();
     }
 
+    [Authorize(Roles = $"{RoleNames.Admin}, {RoleNames.User}")]
     [HttpGet("get-by-id/{ratingId:guid}")]
     public async Task<ActionResult<RatingDto>> Get([FromRoute] Guid ratingId, CancellationToken cancellationToken)
     {
@@ -53,6 +54,7 @@ public class RatingsController(ISender sender, IRatingQueries ratingQueries) : C
             () => NotFound());
     }
 
+    [Authorize(Roles = $"{RoleNames.Admin}, {RoleNames.User}")]
     [HttpPost("create")]
     public async Task<ActionResult<CreateRatingDto>> Create(
         [FromBody] CreateRatingDto request,
@@ -71,6 +73,7 @@ public class RatingsController(ISender sender, IRatingQueries ratingQueries) : C
             e => e.ToObjectResult());
     }
 
+    [Authorize(Roles = $"{RoleNames.Admin}, {RoleNames.User}")]
     [HttpPut("update/{id}")]
     public async Task<ActionResult<CreateRatingDto>> Update(
         [FromRoute] Guid id,
@@ -90,6 +93,7 @@ public class RatingsController(ISender sender, IRatingQueries ratingQueries) : C
             e => e.ToObjectResult());
     }
 
+    [Authorize(Roles = $"{RoleNames.Admin}, {RoleNames.User}")]
     [HttpDelete("delete/{ratingId:guid}")]
     public async Task<ActionResult<RatingDto>> Delete(
         [FromRoute] Guid ratingId, CancellationToken cancellationToken)
