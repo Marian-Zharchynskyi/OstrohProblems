@@ -35,7 +35,6 @@ public class ProblemsController(ISender sender, IProblemQueries problemQueries) 
         );
     }
     
-    [Authorize(Roles = $"{RoleNames.Admin}, {RoleNames.User}")]
     [HttpGet("get-all")]
     public async Task<ActionResult<IReadOnlyList<ProblemDto>>> GetAll(CancellationToken cancellationToken)
     {

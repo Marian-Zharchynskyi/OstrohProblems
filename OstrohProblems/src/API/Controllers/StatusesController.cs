@@ -1,4 +1,4 @@
-﻿using API.DTOs.Statuses;
+using API.DTOs.Statuses;
 using API.Modules.Errors;
 using Application.Common.Interfaces.Queries;
 using Application.Statuses.Commands;
@@ -54,7 +54,7 @@ public class StatusesController(ISender sender, IStatusQueries statusQueries) : 
     }
     
     [Authorize(Roles = RoleNames.Admin)]
-    [HttpPut("update")]
+    [HttpPut("update/{id:guid}")]
     public async Task<ActionResult<CreateStatusDto>> Update(
         [FromRoute] Guid id,
         [FromBody] CreateStatusDto request,
@@ -74,7 +74,7 @@ public class StatusesController(ISender sender, IStatusQueries statusQueries) : 
     }
     
     [Authorize(Roles = RoleNames.Admin)]
-    [HttpDelete("delete/{problemStatusId:guid}")]
+    [HttpDelete("delete/{id:guid}")]
     public async Task<ActionResult<StatusDto>> Delete(
         [FromRoute] Guid id, CancellationToken cancellationToken)
     {
