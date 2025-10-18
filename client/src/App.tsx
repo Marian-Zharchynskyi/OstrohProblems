@@ -1,34 +1,30 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { QueryProvider } from '@/lib/react-query'
+import { Layout } from '@/components/shared/layout'
+import { HomePage } from '@/pages/home-page'
+import { CategoriesPage } from '@/pages/categories-page'
+import { StatusesPage } from '@/pages/statuses-page'
+import { ProblemsPage } from '@/pages/problems-page'
+import { CommentsPage } from '@/pages/comments-page'
+import { RatingsPage } from '@/pages/ratings-page'
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
+    <QueryProvider>
+      <BrowserRouter>
+        <Layout>
+          <Routes>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/categories" element={<CategoriesPage />} />
+            <Route path="/statuses" element={<StatusesPage />} />
+            <Route path="/problems" element={<ProblemsPage />} />
+            <Route path="/comments" element={<CommentsPage />} />
+            <Route path="/ratings" element={<RatingsPage />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </Layout>
+      </BrowserRouter>
+    </QueryProvider>
   )
 }
 
