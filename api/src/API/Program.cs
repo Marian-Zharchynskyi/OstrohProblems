@@ -33,17 +33,22 @@ app.UseSwaggerUI();
 app.UseAuthentication();
 app.UseAuthorization();
 
+app.UseHttpsRedirection();
+
 app.UseCors(options => options
-    .WithOrigins("http://localhost:5173")
+    .WithOrigins("http://localhost:3000", "http://localhost:5173")
     .AllowAnyMethod()
     .AllowAnyHeader()
     .AllowCredentials()
 );
 
-await app.InitialiseDb();  
+app.UseAuthentication();
+app.UseAuthorization();
+
 app.MapControllers();
 
-app.UseHttpsRedirection();
+await app.InitialiseDb();  
+app.MapControllers();
 
 var imagesPath = Path.Combine(builder.Environment.ContentRootPath, "data/images");
 
