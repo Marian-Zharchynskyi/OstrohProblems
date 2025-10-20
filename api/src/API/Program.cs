@@ -1,8 +1,4 @@
 using Infrastructure;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
-using System.Text;
 using API.Modules;
 using Application;
 using Microsoft.Extensions.FileProviders;
@@ -30,9 +26,6 @@ var app = builder.Build();
 app.UseSwagger();
 app.UseSwaggerUI();
 
-app.UseAuthentication();
-app.UseAuthorization();
-
 app.UseHttpsRedirection();
 
 app.UseCors(options => options
@@ -45,9 +38,8 @@ app.UseCors(options => options
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.MapControllers();
+await app.InitialiseDb();
 
-await app.InitialiseDb();  
 app.MapControllers();
 
 var imagesPath = Path.Combine(builder.Environment.ContentRootPath, "data/images");

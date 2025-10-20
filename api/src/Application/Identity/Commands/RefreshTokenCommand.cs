@@ -60,7 +60,11 @@ public class RefreshTokenCommandHandler(
         var existingUser = await userRepository.GetById(storedToken.UserId, cancellationToken);
 
         return await existingUser.Match<Task<Result<JwtVm, IdentityException>>>(
-            async u => await jwtTokenService.GenerateTokensAsync(u, cancellationToken),
+            async u =>
+            {
+                await refreshTokenRepository.MarkAsUsed(storedToken.Id, cancellationToken);
+                return await jwtTokenService.GenerateTokensAsync(u, cancellationToken);
+            },
             () => Task.FromResult<Result<JwtVm, IdentityException>>(
                 new UserNorFoundException(storedToken.UserId)));
     }
