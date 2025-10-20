@@ -12,6 +12,7 @@ import { StatusesPage } from '@/pages/statuses-page'
 import { ProblemsPage } from '@/pages/problems-page'
 import { CommentsPage } from '@/pages/comments-page'
 import { RatingsPage } from '@/pages/ratings-page'
+import { MapPage } from '@/pages/map-page'
 
 function App() {
   return (
@@ -94,6 +95,16 @@ function App() {
                 <ProtectedRoute>
                   <Layout>
                     <RatingsPage />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/map"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <MapPage />
                   </Layout>
                 </ProtectedRoute>
               }

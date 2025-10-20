@@ -8,6 +8,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddControllers();
+builder.Services.AddCors();
 builder.Services.AddInfrastructure(builder);
 builder.Services.AddApplication();
 builder.Services.SetupServices();
@@ -26,7 +27,12 @@ var app = builder.Build();
 app.UseSwagger();
 app.UseSwaggerUI();
 
-app.UseHttpsRedirection();
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
+
+app.UseRouting();
 
 app.UseCors(options => options
     .WithOrigins("http://localhost:3000", "http://localhost:5173")

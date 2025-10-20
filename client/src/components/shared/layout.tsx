@@ -9,11 +9,12 @@ interface LayoutProps {
 }
 
 const navItems = [
-  { path: '/categories', label: 'Categories' },
-  { path: '/statuses', label: 'Statuses' },
-  { path: '/problems', label: 'Problems' },
-  { path: '/comments', label: 'Comments' },
-  { path: '/ratings', label: 'Ratings' },
+  { path: '/map', label: 'Карта' },
+  { path: '/problems', label: 'Проблеми' },
+  { path: '/categories', label: 'Категорії' },
+  { path: '/statuses', label: 'Статуси' },
+  { path: '/comments', label: 'Коментарі' },
+  { path: '/ratings', label: 'Рейтинги' },
 ]
 
 export function Layout({ children }: LayoutProps) {

@@ -1,6 +1,10 @@
 import axios, { type AxiosInstance } from 'axios'
+import { tokenStorage } from '@/lib/token-storage'
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'
+const API_BASE_URL =
+  import.meta.env.VITE_API_URL ||
+  import.meta.env.VITE_API_BASE_URL ||
+  'http://localhost:5146'
 
 class ApiClient {
   private client: AxiosInstance
@@ -16,7 +20,7 @@ class ApiClient {
     // Request interceptor for adding auth token
     this.client.interceptors.request.use(
       (config) => {
-        const token = localStorage.getItem('authToken')
+        const token = tokenStorage.getAccessToken()
         if (token) {
           config.headers.Authorization = `Bearer ${token}`
         }
