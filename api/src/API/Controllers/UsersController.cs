@@ -1,5 +1,6 @@
-﻿using API.DTOs.Users;
+using API.DTOs.Users;
 using API.Modules.Errors;
+using Application.Common.Interfaces;
 using Application.Common.Interfaces.Queries;
 using Application.Users.Commands;
 using Domain.Identity.Roles;
@@ -17,8 +18,26 @@ namespace API.Controllers;
 [ApiController]
 [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
 [Authorize(Roles = RoleNames.Admin)]
-public class UsersController(ISender sender, IUserQueries userQueries) : ControllerBase
+public class UsersController(ISender sender, IUserQueries userQueries, IIdentityService identityService) : ControllerBase
 {
+    [Authorize(Roles = $"{RoleNames.Admin},{RoleNames.User}")]
+    [HttpGet("current")]
+    public async Task<ActionResult<UserDto>> GetCurrentUser(CancellationToken cancellationToken)
+    {
+        var userIdOption = identityService.GetUserId();
+        
+        return await userIdOption.Match(
+            async userId =>
+            {
+                var user = await userQueries.GetById(userId, cancellationToken);
+                return user.Match<ActionResult<UserDto>>(
+                    u => UserDto.FromDomainModel(u),
+                    () => NotFound());
+            },
+            () => Task.FromResult<ActionResult<UserDto>>(Unauthorized())
+        );
+    }
+
     [HttpGet("paged")]
     public async Task<ActionResult<PagedResult<UserDto>>> GetPaged(
         [FromQuery] int page = 1,

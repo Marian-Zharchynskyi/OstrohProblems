@@ -14,11 +14,9 @@ namespace API.Controllers;
 
 [Route("problem-categories")]
 [ApiController]
-[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-[Authorize(Roles = RoleNames.Admin)]
 public class CategoriesController(ISender sender, ICategoryQueries categoryQueries) : ControllerBase
 {
-    [Authorize(Roles = RoleNames.User)]
+    [Authorize(Roles = RoleNames.Admin)]
     [HttpGet("paged")]
     public async Task<ActionResult<PagedResult<CategoryDto>>> GetPaged(
         [FromQuery] int page = 1,
@@ -37,7 +35,7 @@ public class CategoriesController(ISender sender, ICategoryQueries categoryQueri
         );
     }
 
-    [Authorize(Roles = RoleNames.User)]
+    [Authorize(Roles = RoleNames.Admin)]
     [HttpGet("get-all")]
     public async Task<ActionResult<IReadOnlyList<CategoryDto>>> GetAll(CancellationToken cancellationToken)
     {
@@ -45,7 +43,7 @@ public class CategoriesController(ISender sender, ICategoryQueries categoryQueri
         return entities.Select(CategoryDto.FromDomainModel).ToList();
     }
 
-    [Authorize(Roles = RoleNames.User)]
+    [Authorize(Roles = RoleNames.Admin)]
     [HttpGet("get-by-id/{problemCategoryId:guid}")]
     public async Task<ActionResult<CategoryDto>> Get([FromRoute] Guid problemCategoryId,
         CancellationToken cancellationToken)
@@ -57,6 +55,7 @@ public class CategoriesController(ISender sender, ICategoryQueries categoryQueri
             () => NotFound());
     }
 
+    [Authorize(Roles = RoleNames.Admin)]
     [HttpPost("create")]
     public async Task<ActionResult<CategoryDto>> Create(
         [FromBody] CategoryDto request,
@@ -74,6 +73,7 @@ public class CategoriesController(ISender sender, ICategoryQueries categoryQueri
             e => e.ToObjectResult());
     }
 
+    [Authorize(Roles = RoleNames.Admin)]
     [HttpPut("update")]
     public async Task<ActionResult<CategoryDto>> Update(
         [FromBody] CategoryDto request,
@@ -92,6 +92,7 @@ public class CategoriesController(ISender sender, ICategoryQueries categoryQueri
             e => e.ToObjectResult());
     }
 
+    [Authorize(Roles = RoleNames.Admin)]
     [HttpDelete("delete/{problemCategoryId:guid}")]
     public async Task<ActionResult<CategoryDto>> Delete(
         [FromRoute] Guid problemCategoryId, CancellationToken cancellationToken)

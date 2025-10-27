@@ -13,6 +13,8 @@ import { ProblemsPage } from '@/pages/problems-page'
 import { CommentsPage } from '@/pages/comments-page'
 import { RatingsPage } from '@/pages/ratings-page'
 import { MapPage } from '@/pages/map-page'
+import { ProfilePage } from '@/pages/profile-page'
+import { AdminUsersPage } from '@/pages/admin-users-page'
 
 function App() {
   return (
@@ -105,6 +107,26 @@ function App() {
                 <ProtectedRoute>
                   <Layout>
                     <MapPage />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/profile"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <ProfilePage />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/users"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <AdminUsersPage />
                   </Layout>
                 </ProtectedRoute>
               }

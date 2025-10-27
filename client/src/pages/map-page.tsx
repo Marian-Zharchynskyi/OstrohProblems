@@ -26,14 +26,14 @@ export function MapPage() {
       </div>
     )
   }
-
+  
   return (
-    <div className="flex h-full flex-col">
+    <div className="flex flex-1 min-h-0 flex-col">
       <PageHeader
         title="Карта проблем"
         description={`Всього проблем: ${problems?.length || 0}`}
       />
-      <div className="flex-1 mt-6">
+      <div className="mt-6 h-[calc(100vh-200px)]">
         <ProblemsMap problems={problems || []} />
       </div>
     </div>

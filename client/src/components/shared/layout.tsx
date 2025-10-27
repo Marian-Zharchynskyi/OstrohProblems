@@ -1,6 +1,6 @@
 import { type ReactNode } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { LogOut, User } from 'lucide-react'
+import { LogOut, User, Users, UserCircle } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/contexts/auth-context'
 
@@ -17,12 +17,12 @@ const navItems = [
   { path: '/ratings', label: 'Рейтинги' },
 ]
 
-export function Layout({ children }: LayoutProps) {
+export const Layout = ({ children }: LayoutProps) => {
   const location = useLocation()
   const { isAuthenticated, user, signOut } = useAuth()
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background flex flex-col">
       <header className="border-b">
         <div className="container mx-auto px-4 py-4">
           <nav className="flex items-center justify-between">
@@ -49,6 +49,32 @@ export function Layout({ children }: LayoutProps) {
               </ul>
               {isAuthenticated ? (
                 <div className="flex items-center gap-4">
+                  <Link
+                    to="/profile"
+                    className={cn(
+                      'flex items-center gap-2 text-sm font-medium transition-colors hover:text-primary',
+                      location.pathname === '/profile'
+                        ? 'text-primary'
+                        : 'text-muted-foreground'
+                    )}
+                  >
+                    <UserCircle className="h-4 w-4" />
+                    Профіль
+                  </Link>
+                  {user?.roles?.includes('Administrator') && (
+                    <Link
+                      to="/admin/users"
+                      className={cn(
+                        'flex items-center gap-2 text-sm font-medium transition-colors hover:text-primary',
+                        location.pathname === '/admin/users'
+                          ? 'text-primary'
+                          : 'text-muted-foreground'
+                      )}
+                    >
+                      <Users className="h-4 w-4" />
+                      Користувачі
+                    </Link>
+                  )}
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <User className="h-4 w-4" />
                     <span>{user?.email}</span>
@@ -81,7 +107,7 @@ export function Layout({ children }: LayoutProps) {
           </nav>
         </div>
       </header>
-      <main className="container mx-auto px-4 py-8">{children}</main>
+      <main className="container mx-auto px-4 py-8 flex-1 flex flex-col">{children}</main>
     </div>
   )
 }

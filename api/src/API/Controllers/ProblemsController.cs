@@ -15,10 +15,9 @@ namespace API.Controllers;
 
 [Route("problems")]
 [ApiController]
-[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-[Authorize(Roles = $"{RoleNames.Admin}, {RoleNames.User}")]
 public class ProblemsController(ISender sender, IProblemQueries problemQueries) : ControllerBase
 {
+    [Authorize(Roles = $"{RoleNames.Admin}, {RoleNames.User}")]
     [HttpGet("paged")]
     public async Task<ActionResult<PagedResult<ProblemDto>>> GetPaged(
         [FromQuery] int page = 1,
@@ -37,6 +36,7 @@ public class ProblemsController(ISender sender, IProblemQueries problemQueries) 
         );
     }
     
+    [Authorize(Roles = $"{RoleNames.Admin}, {RoleNames.User}")]
     [HttpGet("get-all")]
     public async Task<ActionResult<IReadOnlyList<ProblemDto>>> GetAll(CancellationToken cancellationToken)
     {
@@ -44,6 +44,7 @@ public class ProblemsController(ISender sender, IProblemQueries problemQueries) 
         return entities.Select(ProblemDto.FromDomainModel).ToList();
     }
 
+    [Authorize(Roles = $"{RoleNames.Admin}, {RoleNames.User}")]
     [HttpGet("get-by-id/{problemId:guid}")]
     public async Task<ActionResult<ProblemDto>> Get([FromRoute] Guid problemId,
         CancellationToken cancellationToken)
@@ -55,6 +56,7 @@ public class ProblemsController(ISender sender, IProblemQueries problemQueries) 
             () => NotFound());
     }
 
+    [Authorize(Roles = $"{RoleNames.Admin}, {RoleNames.User}")]
     [HttpPost("create")]
     public async Task<ActionResult<CreateProblemDto>> Create(
         [FromBody] CreateProblemDto request,
@@ -77,6 +79,7 @@ public class ProblemsController(ISender sender, IProblemQueries problemQueries) 
             e => e.ToObjectResult());
     }
 
+    [Authorize(Roles = $"{RoleNames.Admin}, {RoleNames.User}")]
     [HttpPut("update/{problemId:guid}")]
     public async Task<ActionResult<CreateProblemDto>> Update(
         [FromRoute] Guid problemId,
@@ -101,6 +104,7 @@ public class ProblemsController(ISender sender, IProblemQueries problemQueries) 
             e => e.ToObjectResult());
     }
 
+    [Authorize(Roles = $"{RoleNames.Admin}, {RoleNames.User}")]
     [HttpDelete("delete/{problemId:guid}")]
     public async Task<ActionResult<ProblemDto>> Delete(
         [FromRoute] Guid problemId, 
@@ -118,6 +122,7 @@ public class ProblemsController(ISender sender, IProblemQueries problemQueries) 
             e => e.ToObjectResult());
     }
     
+    [Authorize(Roles = $"{RoleNames.Admin}, {RoleNames.User}")]
     [HttpPut("upload-images/{problemId:guid}")]
     public async Task<ActionResult<ProblemDto>> Upload([FromRoute] Guid problemId, IFormFileCollection imagesFiles,
         CancellationToken cancellationToken)
@@ -135,6 +140,7 @@ public class ProblemsController(ISender sender, IProblemQueries problemQueries) 
             e => e.ToObjectResult());
     }
 
+    [Authorize(Roles = $"{RoleNames.Admin}, {RoleNames.User}")]
     [HttpPut("delete-image/{problemId:guid}")]
     public async Task<ActionResult<ProblemDto>> Upload([FromRoute] Guid problemId, Guid problemImageId,
         CancellationToken cancellationToken)
