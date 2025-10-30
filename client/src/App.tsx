@@ -1,9 +1,13 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { QueryProvider } from '@/lib/react-query'
 import { AuthProvider } from '@/contexts/auth-provider'
 import { Layout } from '@/components/shared/layout'
 import { ProtectedRoute } from '@/components/auth/protected-route'
 import { PublicRoute } from '@/components/auth/public-route'
+import { PublicHomePage } from '@/pages/public-home-page'
+import { AboutPage } from '@/pages/about-page'
+import { ContactPage } from '@/pages/contact-page'
+import { ErrorPage } from '@/pages/error-page'
 import { HomePage } from '@/pages/home-page'
 import { LoginPage } from '@/pages/login-page'
 import { RegisterPage } from '@/pages/register-page'
@@ -22,7 +26,31 @@ function App() {
       <AuthProvider>
         <BrowserRouter>
           <Routes>
-            {/* Public routes */}
+            {/* Public routes with layout */}
+            <Route
+              path="/"
+              element={
+                <Layout>
+                  <PublicHomePage />
+                </Layout>
+              }
+            />
+            <Route
+              path="/about"
+              element={
+                <Layout>
+                  <AboutPage />
+                </Layout>
+              }
+            />
+            <Route
+              path="/contact"
+              element={
+                <Layout>
+                  <ContactPage />
+                </Layout>
+              }
+            />
             <Route
               path="/login"
               element={
@@ -42,7 +70,7 @@ function App() {
 
             {/* Protected routes with layout */}
             <Route
-              path="/"
+              path="/dashboard"
               element={
                 <ProtectedRoute>
                   <Layout>
@@ -132,8 +160,15 @@ function App() {
               }
             />
 
-            {/* Catch all */}
-            <Route path="*" element={<Navigate to="/" replace />} />
+            {/* Error page */}
+            <Route
+              path="*"
+              element={
+                <Layout>
+                  <ErrorPage />
+                </Layout>
+              }
+            />
           </Routes>
         </BrowserRouter>
       </AuthProvider>

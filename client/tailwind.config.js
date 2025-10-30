@@ -7,6 +7,10 @@ export default {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        sans: ['Mulish', 'system-ui', 'Avenir', 'Helvetica', 'Arial', 'sans-serif'],
+        heading: ['Sora', 'system-ui', 'Avenir', 'Helvetica', 'Arial', 'sans-serif'],
+      },
       borderRadius: {
         lg: 'var(--radius)',
         md: 'calc(var(--radius) - 2px)',
