@@ -14,6 +14,9 @@ public class ProblemNotFoundException(ProblemId id)
 public class ProblemAlreadyExistsException(ProblemId id) 
     : ProblemException(id, $"Problem already exists with ID {id}");
 
+public class ProblemWithTitleAlreadyExistsException(ProblemId id, string title) 
+    : ProblemException(id, $"Problem already exists with title: {title} under ID: {id}");
+
 public class ProblemUnknownException(ProblemId id, Exception innerException)
     : ProblemException(id, $"Unknown exception for the Problem with ID {id}", innerException);
 

@@ -1,6 +1,8 @@
 using Application.Common;
+using Application.Common.DTOs;
 using Application.Common.Interfaces.Repositories;
 using Application.Problems.Exceptions;
+using Application.Services.SignalRService;
 using Domain.Problems;
 using Domain.Statuses;
 using MediatR;
@@ -20,7 +22,8 @@ public record UpdateProblemCommand : IRequest<Result<Problem, ProblemException>>
 
 public class UpdateProblemCommandHandler(
     IProblemRepository problemRepository,
-    ICategoryRepository categoryRepository) 
+    ICategoryRepository categoryRepository,
+    ISignalRService signalRService) 
     : IRequestHandler<UpdateProblemCommand, Result<Problem, ProblemException>>
 {
     public async Task<Result<Problem, ProblemException>> Handle(
@@ -57,6 +60,16 @@ public class UpdateProblemCommandHandler(
     {
         try
         {
+            var existingWithTitle = await problemRepository.SearchByTitle(title, cancellationToken);
+            var titleConflict = existingWithTitle.Match(
+                some => some.Id.Value != problem.Id.Value,
+                () => false);
+            if (titleConflict)
+            {
+                return new ProblemWithTitleAlreadyExistsException(problem.Id, title);
+            }
+
+            var oldStatusId = problem.StatusId;
             problem.UpdateProblem(title, latitude, longitude, description, statusId);
 
             if (categoryIds is not null && categoryIds.Any())
@@ -74,7 +87,21 @@ public class UpdateProblemCommandHandler(
                 }
             }
 
-            return await problemRepository.Update(problem, cancellationToken);
+            var result = await problemRepository.Update(problem, cancellationToken);
+            if (oldStatusId.Value != statusId.Value && problem.User != null)
+            {
+                var statusName = problem.ProblemStatus?.Name ?? "Невідомий статус";
+                var userId = problem.UserId;
+                await signalRService.SendNotificationToUser(
+                    userId,
+                    NotificationDto.Create("status_change",
+                        $"Статус вашої проблеми змінено на: {statusName}",
+                        problem.Id.Value.ToString(),
+                        problem.Title),
+                    cancellationToken);
+            }
+
+            return result;
         }
         catch (Exception exception)
         {
