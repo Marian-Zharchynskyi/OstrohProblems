@@ -1,6 +1,9 @@
-﻿using Application.Comments.Exceptions;
+using Application.Comments.Exceptions;
 using Application.Common;
+using Application.Common.DTOs;
+using Application.Common.Interfaces.Queries;
 using Application.Common.Interfaces.Repositories;
+using Application.Services.SignalRService;
 using Domain.Comments;
 using Domain.Identity.Users;
 using Domain.Problems;
@@ -19,13 +22,19 @@ public class CreateCommentCommandHandler : IRequestHandler<CreateCommentCommand,
 {
     private readonly ICommentRepository _commentRepository;
     private readonly IHttpContextAccessor _httpContextAccessor;
+    private readonly ISignalRService _signalRService;
+    private readonly IProblemQueries _problemQueries;
 
     public CreateCommentCommandHandler(
         ICommentRepository commentRepository,
-        IHttpContextAccessor httpContextAccessor)
+        IHttpContextAccessor httpContextAccessor,
+        ISignalRService signalRService,
+        IProblemQueries problemQueries)
     {
         _commentRepository = commentRepository;
         _httpContextAccessor = httpContextAccessor;
+        _signalRService = signalRService;
+        _problemQueries = problemQueries;
     }
 
     public async Task<Result<Comment, CommentException>> Handle(
@@ -37,8 +46,7 @@ public class CreateCommentCommandHandler : IRequestHandler<CreateCommentCommand,
 
         try
         {
-            var userIdClaim = _httpContextAccessor.HttpContext?.User?
-                .Claims.FirstOrDefault(c => c.Type == "id");
+            var userIdClaim = _httpContextAccessor.HttpContext?.User.Claims.FirstOrDefault(c => c.Type == "id");
 
             if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userIdGuid))
             {
@@ -49,7 +57,35 @@ public class CreateCommentCommandHandler : IRequestHandler<CreateCommentCommand,
 
             var comment = Comment.New(commentId, request.Content, problemId, userId);
 
-            return await _commentRepository.Add(comment, cancellationToken);
+            var result = await _commentRepository.Add(comment, cancellationToken);
+            
+            var commentDto = CommentNotificationDto.FromDomainModel(result);
+            await _signalRService.SendCommentToGroup(problemId, commentDto, cancellationToken);
+
+            var problemOption = await _problemQueries.GetById(problemId, cancellationToken);
+            if (problemOption.HasValue)
+            {
+                var p = problemOption.ValueOr(default(Problem)!);
+                if (p is not null && p.UserId.Value != userIdGuid)
+                {
+                    var commenterName = comment.User != null
+                        ? $"{comment.User.FullName}"
+                        : "Хтось";
+                    
+                    var notification = NotificationDto.Create(
+                        "comment",
+                        $"{commenterName} додав коментар до вашої проблеми",
+                        p.Id.Value.ToString(),
+                        p.Title);
+                    
+                    await _signalRService.SendNotificationToUser(
+                        userId,
+                        notification,
+                        cancellationToken);
+                }
+            }
+
+            return result;
         }
         catch (Exception exception)
         {

@@ -47,6 +47,8 @@ app.UseAuthorization();
 await app.InitialiseDb();
 
 app.MapControllers();
+app.MapHub<Infrastructure.SignalR.Hubs.CommentsHub>("/hubs/comments");
+app.MapHub<Infrastructure.SignalR.Hubs.NotificationsHub>("/hubs/notifications");
 
 var imagesPath = Path.Combine(builder.Environment.ContentRootPath, "data/images");
 

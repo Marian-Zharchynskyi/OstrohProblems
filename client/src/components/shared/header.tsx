@@ -2,6 +2,7 @@ import { Link, useLocation } from 'react-router-dom'
 import { LogOut, User, Users, UserCircle } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/contexts/auth-context'
+import { NotificationsBell } from '@/components/notifications/notifications-bell'
 
 const publicNavItems = [
   { path: '/', label: 'Головна' },
@@ -52,6 +53,7 @@ export const Header = () => {
             </ul>
             {isAuthenticated ? (
               <div className="flex items-center gap-4">
+                <NotificationsBell />
                 <Link
                   to="/profile"
                   className={cn(

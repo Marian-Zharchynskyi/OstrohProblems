@@ -1,5 +1,6 @@
 import type { Problem } from '@/types'
 import { MapPin, Calendar, User, Tag } from 'lucide-react'
+import { useRealtimeComments } from '@/hooks/use-realtime-comments'
 
 interface ProblemDetailPopupProps {
   problem: Problem
@@ -7,6 +8,7 @@ interface ProblemDetailPopupProps {
 }
 
 export function ProblemDetailPopup({ problem, onClose }: ProblemDetailPopupProps) {
+  const realtimeComments = useRealtimeComments(problem.id, problem.comments || [])
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
       <div className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-lg bg-white shadow-xl">
@@ -131,13 +133,13 @@ export function ProblemDetailPopup({ problem, onClose }: ProblemDetailPopupProps
           </div>
 
           {/* Comments */}
-          {problem.comments && problem.comments.length > 0 && (
+          {realtimeComments && realtimeComments.length > 0 && (
             <div>
               <h3 className="mb-3 text-sm font-medium text-gray-700">
-                Коментарі ({problem.comments.length})
+                Коментарі ({realtimeComments.length})
               </h3>
               <div className="space-y-3">
-                {problem.comments.map((comment) => (
+                {realtimeComments.map((comment) => (
                   <div key={comment.id} className="rounded-lg bg-gray-50 p-3">
                     <div className="mb-1 flex items-center justify-between">
                       <span className="text-sm font-medium text-gray-900">

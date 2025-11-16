@@ -66,8 +66,7 @@ public class CreateProblemCommandHandler : IRequestHandler<CreateProblemCommand,
 
         try
         {
-            var userIdClaim = _httpContextAccessor.HttpContext?.User?
-                .Claims.FirstOrDefault(c => c.Type == "id");
+            var userIdClaim = _httpContextAccessor.HttpContext?.User.Claims.FirstOrDefault(c => c.Type == "id");
 
             if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userIdGuid))
             {

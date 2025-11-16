@@ -94,3 +94,14 @@ export interface UserImage {
   id: string | null
   url: string
 }
+
+// Notification types
+export interface Notification {
+  id: string
+  type: 'comment' | 'status_change' | 'reply'
+  message: string
+  problemId: string
+  problemTitle: string
+  createdAt: string
+  isRead: boolean
+}
