@@ -7,7 +7,6 @@ using Domain.PagedResults;
 using Domain.Problems;
 using Domain.Statuses;
 using MediatR;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -155,6 +154,86 @@ public class ProblemsController(ISender sender, IProblemQueries problemQueries) 
 
         return result.Match<ActionResult<ProblemDto>>(
             r => ProblemDto.FromDomainModel(r),
+            e => e.ToObjectResult());
+    }
+
+    [Authorize(Roles = $"{RoleNames.Admin}, {RoleNames.Coordinator}")]
+    [HttpPut("assign-coordinator/{problemId:guid}")]
+    public async Task<ActionResult<ProblemDto>> AssignCoordinator(
+        [FromRoute] Guid problemId,
+        [FromBody] Guid coordinatorId,
+        CancellationToken cancellationToken)
+    {
+        var input = new AssignCoordinatorCommand
+        {
+            ProblemId = problemId,
+            CoordinatorId = coordinatorId
+        };
+
+        var result = await sender.Send(input, cancellationToken);
+
+        return result.Match<ActionResult<ProblemDto>>(
+            problem => ProblemDto.FromDomainModel(problem),
+            e => e.ToObjectResult());
+    }
+
+    [Authorize(Roles = $"{RoleNames.Admin}, {RoleNames.Coordinator}")]
+    [HttpPut("reject/{problemId:guid}")]
+    public async Task<ActionResult<ProblemDto>> Reject(
+        [FromRoute] Guid problemId,
+        [FromBody] string rejectionReason,
+        CancellationToken cancellationToken)
+    {
+        var input = new RejectProblemCommand
+        {
+            ProblemId = problemId,
+            RejectionReason = rejectionReason
+        };
+
+        var result = await sender.Send(input, cancellationToken);
+
+        return result.Match<ActionResult<ProblemDto>>(
+            problem => ProblemDto.FromDomainModel(problem),
+            e => e.ToObjectResult());
+    }
+
+    [Authorize(Roles = $"{RoleNames.Admin}, {RoleNames.Coordinator}")]
+    [HttpPut("set-coordinator-comment/{problemId:guid}")]
+    public async Task<ActionResult<ProblemDto>> SetCoordinatorComment(
+        [FromRoute] Guid problemId,
+        [FromBody] string comment,
+        CancellationToken cancellationToken)
+    {
+        var input = new SetCoordinatorCommentCommand
+        {
+            ProblemId = problemId,
+            Comment = comment
+        };
+
+        var result = await sender.Send(input, cancellationToken);
+
+        return result.Match<ActionResult<ProblemDto>>(
+            problem => ProblemDto.FromDomainModel(problem),
+            e => e.ToObjectResult());
+    }
+
+    [Authorize(Roles = $"{RoleNames.Admin}, {RoleNames.User}")]
+    [HttpPut("confirm/{problemId:guid}")]
+    public async Task<ActionResult<ProblemDto>> ConfirmByUser(
+        [FromRoute] Guid problemId,
+        [FromBody] int confirmationStatus,
+        CancellationToken cancellationToken)
+    {
+        var input = new ConfirmProblemByUserCommand
+        {
+            ProblemId = problemId,
+            ConfirmationStatus = (UserConfirmationStatus)confirmationStatus
+        };
+
+        var result = await sender.Send(input, cancellationToken);
+
+        return result.Match<ActionResult<ProblemDto>>(
+            problem => ProblemDto.FromDomainModel(problem),
             e => e.ToObjectResult());
     }
 }

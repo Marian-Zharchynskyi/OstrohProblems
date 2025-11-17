@@ -24,25 +24,31 @@ public class UpdateProblemStatusCommandHandler(
         var existingProblemStatus = await statusRepository.GetById(problemStatusId, cancellationToken);
 
         return await existingProblemStatus.Match<Task<Result<Status, StatusException>>>(
-            async problemStatus => await UpdateProblemStatus(problemStatus, request.Name, cancellationToken),
+            async problemStatus =>
+            {
+                var existingByName = await statusRepository.SearchByName(request.Name, cancellationToken);
+
+                var nameConflict = existingByName.Match(
+                    s => s.Id.Value != problemStatusId.Value,
+                    () => false);
+
+                if (nameConflict)
+                {
+                    return new StatusAlreadyExistsException(problemStatusId);
+                }
+
+                try
+                {
+                    problemStatus.UpdateName(request.Name);
+                    return await statusRepository.Update(problemStatus, cancellationToken);
+                }
+                catch (Exception exception)
+                {
+                    return new StatusUnknownException(problemStatus.Id, exception);
+                }
+            },
             () => Task.FromResult<Result<Status, StatusException>>(
                 new StatusNotFoundException(problemStatusId))
         );
-    }
-
-    private async Task<Result<Status, StatusException>> UpdateProblemStatus(
-        Status status,
-        string name,
-        CancellationToken cancellationToken)
-    {
-        try
-        {
-            status.UpdateName(name);
-            return await statusRepository.Update(status, cancellationToken);
-        }
-        catch (Exception exception)
-        {
-            return new StatusUnknownException(status.Id, exception);
-        }
     }
 }

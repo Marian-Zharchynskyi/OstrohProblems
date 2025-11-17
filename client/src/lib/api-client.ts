@@ -68,6 +68,14 @@ class ApiClient {
       },
     })
   }
+
+  putFormData<T>(url: string, formData: FormData) {
+    return this.client.put<T>(url, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    })
+  }
 }
 
 export const apiClient = new ApiClient()

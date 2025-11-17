@@ -23,8 +23,22 @@ public class UpdateProblemCategoryCommandHandler(
         var problemCategoryId = new CategoryId(request.ProblemCategoryId);
         var existingProblemCategory = await categoryRepository.GetById(problemCategoryId, cancellationToken);
 
-        return await existingProblemCategory.Match<Task<Result<Category, CategoryException>>>(
-            async problemCategory => await UpdateProblemCategory(problemCategory, request.Name, cancellationToken),
+        return await existingProblemCategory.Match(
+            async problemCategory =>
+            {
+                var existingByName = await categoryRepository.SearchByName(request.Name, cancellationToken);
+
+                var nameConflict = existingByName.Match(
+                    c => c.Id.Value != problemCategoryId.Value,
+                    () => false);
+
+                if (nameConflict)
+                {
+                    return new CategoryAlreadyExistsException(problemCategoryId);
+                }
+
+                return await UpdateProblemCategory(problemCategory, request.Name, cancellationToken);
+            },
             () => Task.FromResult<Result<Category, CategoryException>>(
                 new CategoryNotFoundException(problemCategoryId))
         );

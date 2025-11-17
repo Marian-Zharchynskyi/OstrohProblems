@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
-import { useSignalR } from '@/contexts/use-signalr'
 import type { Comment } from '@/types'
+import { useSignalR } from '@/contexts/use-signalr'
 
 export function useRealtimeComments(problemId: string | null, initialComments: Comment[] = []) {
   const { joinProblemGroup, leaveProblemGroup, onCommentReceived } = useSignalR()
@@ -17,7 +17,7 @@ export function useRealtimeComments(problemId: string | null, initialComments: C
     joinProblemGroup(problemId)
 
     // Subscribe to new comments
-    onCommentReceived((newComment) => {
+    onCommentReceived((newComment: Comment) => {
       if (newComment.problemId === problemId) {
         setComments((prev) => {
           // Check if comment already exists to avoid duplicates
