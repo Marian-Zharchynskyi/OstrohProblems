@@ -42,7 +42,7 @@ export const problemsApi = {
     Array.from(files).forEach((file) => {
       formData.append('imagesFiles', file)
     })
-    const response = await apiClient.postFormData<Problem>(
+    const response = await apiClient.putFormData<Problem>(
       `${BASE_URL}/upload-images/${id}`,
       formData
     )
@@ -53,6 +53,38 @@ export const problemsApi = {
     const response = await apiClient.put<Problem>(
       `${BASE_URL}/delete-image/${problemId}`,
       { problemImageId: imageId }
+    )
+    return response.data
+  },
+
+  assignCoordinator: async (problemId: string, coordinatorId: string) => {
+    const response = await apiClient.put<Problem>(
+      `${BASE_URL}/assign-coordinator/${problemId}`,
+      coordinatorId
+    )
+    return response.data
+  },
+
+  reject: async (problemId: string, rejectionReason: string) => {
+    const response = await apiClient.put<Problem>(
+      `${BASE_URL}/reject/${problemId}`,
+      rejectionReason
+    )
+    return response.data
+  },
+
+  setCoordinatorComment: async (problemId: string, comment: string) => {
+    const response = await apiClient.put<Problem>(
+      `${BASE_URL}/set-coordinator-comment/${problemId}`,
+      comment
+    )
+    return response.data
+  },
+
+  confirmByUser: async (problemId: string, confirmationStatus: number) => {
+    const response = await apiClient.put<Problem>(
+      `${BASE_URL}/confirm/${problemId}`,
+      confirmationStatus
     )
     return response.data
   },

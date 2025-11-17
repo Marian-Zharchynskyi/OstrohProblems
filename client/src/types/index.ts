@@ -57,6 +57,8 @@ export interface ProblemImage {
   url: string
 }
 
+export type UserConfirmationStatus = 0 | 1 | 2 // Pending = 0, Confirmed = 1, Rejected = 2
+
 export interface Problem {
   id: string | null
   title: string
@@ -65,6 +67,10 @@ export interface Problem {
   description: string
   problemStatus: Status | null
   user: User | null
+  coordinator: User | null
+  rejectionReason: string | null
+  coordinatorComment: string | null
+  userConfirmationStatus: UserConfirmationStatus
   comments: Comment[] | null
   images: ProblemImage[] | null
   categories: Category[] | null

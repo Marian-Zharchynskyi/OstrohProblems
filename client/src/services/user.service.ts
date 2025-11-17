@@ -1,4 +1,5 @@
 import axios from 'axios'
+import type { PagedResult } from '@/types'
 import type { UserDto, UpdateUserDto } from '@/types/user'
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5146'
@@ -10,6 +11,23 @@ export const userService = {
         Authorization: `Bearer ${token}`,
       },
     })
+    return response.data
+  },
+
+  async getPagedUsers(
+    page: number = 1,
+    pageSize: number = 10,
+    token: string
+  ): Promise<PagedResult<UserDto>> {
+    const response = await axios.get<PagedResult<UserDto>>(
+      `${API_URL}/users/paged`,
+      {
+        params: { page, pageSize },
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    )
     return response.data
   },
 

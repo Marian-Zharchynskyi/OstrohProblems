@@ -19,6 +19,11 @@ public class Problem
     public Status? ProblemStatus { get; set; }
     public UserId UserId { get; private set; }
     public User? User { get; set; }
+    public UserId? CoordinatorId { get; private set; }
+    public User? Coordinator { get; set; }
+    public string? RejectionReason { get; private set; }
+    public string? CoordinatorComment { get; private set; }
+    public UserConfirmationStatus UserConfirmationStatus { get; private set; }
     public ICollection<Comment> Comments { get; private set; } = new List<Comment>();
     public ICollection<Category> Categories { get; private set; } = new List<Category>();
     public ICollection<Rating> Ratings { get; private set; } = new List<Rating>();
@@ -36,6 +41,7 @@ public class Problem
         CreatedAt = createdAt;
         UpdatedAt = updatedAt;
         UserId = userId;
+        UserConfirmationStatus = UserConfirmationStatus.Pending;
     }
 
     public static Problem New(ProblemId id, string title, double latitude, double longitude, string description,
@@ -73,5 +79,29 @@ public class Problem
         {
             Images.Remove(image);
         }
+    }
+
+    public void AssignCoordinator(UserId coordinatorId)
+    {
+        CoordinatorId = coordinatorId;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    public void Reject(string reason)
+    {
+        RejectionReason = reason;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    public void SetCoordinatorComment(string comment)
+    {
+        CoordinatorComment = comment;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    public void SetUserConfirmation(UserConfirmationStatus status)
+    {
+        UserConfirmationStatus = status;
+        UpdatedAt = DateTime.UtcNow;
     }
 }
