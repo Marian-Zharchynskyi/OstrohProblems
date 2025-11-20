@@ -1,7 +1,6 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { QueryProvider } from '@/lib/react-query'
 import { AuthProvider } from '@/contexts/auth-provider'
-import { SignalRProvider } from '@/contexts/signalr-context'
 import { Layout } from '@/components/shared/layout'
 import { ProtectedRoute } from '@/components/auth/protected-route'
 import { PublicRoute } from '@/components/auth/public-route'
@@ -20,13 +19,13 @@ import { RatingsPage } from '@/pages/ratings-page'
 import { MapPage } from '@/pages/map-page'
 import { ProfilePage } from '@/pages/profile-page'
 import { AdminUsersPage } from '@/pages/admin-users-page'
+import { CreateIssuePage } from '@/pages/create-issue-page'
 
 function App() {
   return (
     <QueryProvider>
       <AuthProvider>
-        <SignalRProvider>
-          <BrowserRouter>
+        <BrowserRouter>
           <Routes>
             {/* Public routes with layout */}
             <Route
@@ -112,6 +111,16 @@ function App() {
               }
             />
             <Route
+              path="/problems/create"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <CreateIssuePage />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
               path="/comments"
               element={
                 <ProtectedRoute>
@@ -173,7 +182,6 @@ function App() {
             />
           </Routes>
         </BrowserRouter>
-        </SignalRProvider>
       </AuthProvider>
     </QueryProvider>
   )
