@@ -1,4 +1,5 @@
 ﻿using Domain.Problems;
+using Domain.Identity.Users;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -12,6 +13,15 @@ public class ProblemConfiguration : IEntityTypeConfiguration<Problem>
         builder.Property(p => p.Id)
             .HasConversion(id => id.Value, value => new ProblemId(value))
             .IsRequired();
+
+        builder.Property(p => p.UserId)
+            .HasConversion(id => id.Value, value => new UserId(value))
+            .IsRequired();
+
+        builder.Property(p => p.CoordinatorId)
+            .HasConversion(
+                id => id != null ? id.Value : Guid.Empty,
+                value => value == Guid.Empty ? null : new UserId(value));
 
         builder.Property(p => p.Title)
             .IsRequired()
