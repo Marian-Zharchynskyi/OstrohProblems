@@ -1,3 +1,4 @@
+using System;
 using Application.Services.HashPasswordService;
 using Domain.Categories;
 using Domain.Comments;
@@ -14,50 +15,55 @@ public static class DataSeed
 {
     public static void Seed(ModelBuilder modelBuilder, IHashPasswordService hashPasswordService)
     {
-        var roles = _seedRoles(modelBuilder);
-        var users = _seedUsers(modelBuilder, hashPasswordService, roles);
-        var categories = _seedCategories(modelBuilder);
-        var statuses = _seedStatuses(modelBuilder);
-        var problems = _seedProblems(modelBuilder, users, categories, statuses);
-        _seedComments(modelBuilder, problems, users);
-        _seedRatings(modelBuilder, problems, users);
+        var roleIds = _seedRoles(modelBuilder);
+        var adminUserId = _seedUsers(modelBuilder, hashPasswordService, roleIds);
+        var categoryIds = _seedCategories(modelBuilder);
+        var statusIds = _seedStatuses(modelBuilder);
+        var problemIds = _seedProblems(modelBuilder, adminUserId, categoryIds, statusIds);
+        _seedComments(modelBuilder, adminUserId, problemIds);
+        _seedRatings(modelBuilder, adminUserId, problemIds);
     }
 
-    private static List<Role> _seedRoles(ModelBuilder modelBuilder)
+    private static IReadOnlyList<Guid> _seedRoles(ModelBuilder modelBuilder)
     {
-        var roles = new List<Role>
-        {
-            Role.New(RoleId.New(), RoleNames.Admin),
-            Role.New(RoleId.New(), RoleNames.User)
-        };
+        var adminRoleId = Guid.Parse("00000000-0000-0000-0000-000000000001");
+        var userRoleId = Guid.Parse("00000000-0000-0000-0000-000000000002");
 
-        modelBuilder.Entity<Role>().HasData(roles);
-        return roles;
-    }
-
-    private static List<User> _seedUsers(ModelBuilder modelBuilder, IHashPasswordService hashPasswordService,
-        List<Role> roles)
-    {
-        var admin = User.New(
-            UserId.New(),
-            "admin@ostroh.edu.ua",
-            "Адміністратор Острога",
-            hashPasswordService.HashPassword("Admin123!")
+        modelBuilder.Entity<Role>().HasData(
+            new { Id = new RoleId(adminRoleId), Name = RoleNames.Admin },
+            new { Id = new RoleId(userRoleId), Name = RoleNames.User }
         );
 
-        modelBuilder.Entity<User>().HasData(admin);
+        return new[] { adminRoleId, userRoleId };
+    }
+
+    private static Guid _seedUsers(ModelBuilder modelBuilder, IHashPasswordService hashPasswordService,
+        IReadOnlyList<Guid> roles)
+    {
+        var adminUserId = Guid.Parse("00000000-0000-0000-0000-000000000010");
+        var adminRoleId = roles[0];
+
+        modelBuilder.Entity<User>().HasData(
+            new
+            {
+                Id = new UserId(adminUserId),
+                Email = "admin@ostroh.edu.ua",
+                FullName = "Адміністратор Острога",
+                PasswordHash = hashPasswordService.HashPassword("Admin123!")
+            }
+        );
 
         modelBuilder.Entity<User>()
             .HasMany(u => u.Roles)
             .WithMany(r => r.Users)
             .UsingEntity(j => j.HasData(
-                new { UsersId = admin.Id, RolesId = roles.First(r => r.Name == RoleNames.Admin).Id }
+                new { UsersId = new UserId(adminUserId), RolesId = new RoleId(adminRoleId) }
             ));
 
-        return new List<User> { admin };
+        return adminUserId;
     }
 
-    private static List<Category> _seedCategories(ModelBuilder modelBuilder)
+    private static IReadOnlyList<Guid> _seedCategories(ModelBuilder modelBuilder)
     {
         var categoryNames = new[]
         {
@@ -73,15 +79,33 @@ public static class DataSeed
             "Інше"
         };
 
+        var categoryIds = new[]
+        {
+            Guid.Parse("00000000-0000-0000-0000-000000000101"),
+            Guid.Parse("00000000-0000-0000-0000-000000000102"),
+            Guid.Parse("00000000-0000-0000-0000-000000000103"),
+            Guid.Parse("00000000-0000-0000-0000-000000000104"),
+            Guid.Parse("00000000-0000-0000-0000-000000000105"),
+            Guid.Parse("00000000-0000-0000-0000-000000000106"),
+            Guid.Parse("00000000-0000-0000-0000-000000000107"),
+            Guid.Parse("00000000-0000-0000-0000-000000000108"),
+            Guid.Parse("00000000-0000-0000-0000-000000000109"),
+            Guid.Parse("00000000-0000-0000-0000-00000000010a")
+        };
+
         var categories = categoryNames
-            .Select(name => Category.New(CategoryId.New(), name))
-            .ToList();
+            .Select((name, index) => new
+            {
+                Id = new CategoryId(categoryIds[index]),
+                Name = name
+            })
+            .ToArray();
 
         modelBuilder.Entity<Category>().HasData(categories);
-        return categories;
+        return categoryIds;
     }
 
-    private static List<Status> _seedStatuses(ModelBuilder modelBuilder)
+    private static IReadOnlyList<Guid> _seedStatuses(ModelBuilder modelBuilder)
     {
         var statusNames = new[]
         {
@@ -92,16 +116,29 @@ public static class DataSeed
             "Потребує уточнення"
         };
 
+        var statusIds = new[]
+        {
+            Guid.Parse("00000000-0000-0000-0000-000000000201"),
+            Guid.Parse("00000000-0000-0000-0000-000000000202"),
+            Guid.Parse("00000000-0000-0000-0000-000000000203"),
+            Guid.Parse("00000000-0000-0000-0000-000000000204"),
+            Guid.Parse("00000000-0000-0000-0000-000000000205")
+        };
+
         var statuses = statusNames
-            .Select(name => Status.New(StatusId.New(), name))
-            .ToList();
+            .Select((name, index) => new
+            {
+                Id = new StatusId(statusIds[index]),
+                Name = name
+            })
+            .ToArray();
 
         modelBuilder.Entity<Status>().HasData(statuses);
-        return statuses;
+        return statusIds;
     }
 
-    private static List<Problem> _seedProblems(ModelBuilder modelBuilder, List<User> users, List<Category> categories,
-        List<Status> statuses)
+    private static IReadOnlyList<Guid> _seedProblems(ModelBuilder modelBuilder, Guid adminUserId,
+        IReadOnlyList<Guid> categories, IReadOnlyList<Guid> statuses)
     {
         var problemsData = new[]
         {
@@ -127,47 +164,76 @@ public static class DataSeed
             new { Title = "Граффіті на фасаді історичної будівлі", Lat = 50.3293, Lon = 26.5175, Desc = "Вандали розмалювали фасад історичної будівлі в центрі міста.", CategoryIndices = new[] { 2, 6 }, StatusIndex = 2 }
         };
 
-        var problems = new List<Problem>();
-        var admin = users[0];
-
-        foreach (var data in problemsData)
+        var problemIds = new[]
         {
-            var problem = Problem.New(
-                ProblemId.New(),
-                data.Title,
-                latitude: data.Lat,
-                longitude: data.Lon,
-                description: data.Desc,
-                statusId: statuses[data.StatusIndex].Id,
-                userId: admin.Id
-            );
-            problems.Add(problem);
-        }
+            Guid.Parse("00000000-0000-0000-0000-000000000301"),
+            Guid.Parse("00000000-0000-0000-0000-000000000302"),
+            Guid.Parse("00000000-0000-0000-0000-000000000303"),
+            Guid.Parse("00000000-0000-0000-0000-000000000304"),
+            Guid.Parse("00000000-0000-0000-0000-000000000305"),
+            Guid.Parse("00000000-0000-0000-0000-000000000306"),
+            Guid.Parse("00000000-0000-0000-0000-000000000307"),
+            Guid.Parse("00000000-0000-0000-0000-000000000308"),
+            Guid.Parse("00000000-0000-0000-0000-000000000309"),
+            Guid.Parse("00000000-0000-0000-0000-00000000030a"),
+            Guid.Parse("00000000-0000-0000-0000-00000000030b"),
+            Guid.Parse("00000000-0000-0000-0000-00000000030c"),
+            Guid.Parse("00000000-0000-0000-0000-00000000030d"),
+            Guid.Parse("00000000-0000-0000-0000-00000000030e"),
+            Guid.Parse("00000000-0000-0000-0000-00000000030f"),
+            Guid.Parse("00000000-0000-0000-0000-000000000310"),
+            Guid.Parse("00000000-0000-0000-0000-000000000311"),
+            Guid.Parse("00000000-0000-0000-0000-000000000312"),
+            Guid.Parse("00000000-0000-0000-0000-000000000313"),
+            Guid.Parse("00000000-0000-0000-0000-000000000314")
+        };
+
+        var baseDate = new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+
+        var problems = problemsData
+            .Select((data, index) => new
+            {
+                Id = new ProblemId(problemIds[index]),
+                Title = data.Title,
+                Latitude = data.Lat,
+                Longitude = data.Lon,
+                Description = data.Desc,
+                StatusId = new StatusId(statuses[data.StatusIndex]),
+                CreatedAt = baseDate,
+                UpdatedAt = baseDate,
+                UserId = new UserId(adminUserId),
+                UserConfirmationStatus = UserConfirmationStatus.Pending
+            })
+            .ToArray();
 
         modelBuilder.Entity<Problem>().HasData(problems);
 
-        // Додаємо зв'язки Problem-Category
         modelBuilder.Entity<Problem>()
             .HasMany(p => p.Categories)
             .WithMany(c => c.Problems)
             .UsingEntity(j =>
             {
                 var entries = new List<object>();
-                for (int i = 0; i < problems.Count; i++)
+                for (var i = 0; i < problemsData.Length; i++)
                 {
-                    var problemId = problems[i].Id;
+                    var problemId = problemIds[i];
                     foreach (var catIndex in problemsData[i].CategoryIndices)
                     {
-                        entries.Add(new { ProblemsId = problemId, CategoriesId = categories[catIndex].Id });
+                        entries.Add(new
+                        {
+                            ProblemsId = new ProblemId(problemId),
+                            CategoriesId = new CategoryId(categories[catIndex])
+                        });
                     }
                 }
+
                 j.HasData(entries.ToArray());
             });
 
-        return problems;
+        return problemIds;
     }
 
-    private static void _seedComments(ModelBuilder modelBuilder, List<Problem> problems, List<User> users)
+    private static void _seedComments(ModelBuilder modelBuilder, Guid adminUserId, IReadOnlyList<Guid> problems)
     {
         var commentsData = new[]
         {
@@ -183,24 +249,38 @@ public static class DataSeed
             new { ProblemIndex = 13, Content = "Це екологічна катастрофа для нашого міста!" }
         };
 
-        var comments = new List<Comment>();
-        var admin = users[0];
-
-        foreach (var data in commentsData)
+        var commentIds = new[]
         {
-            var comment = Comment.New(
-                CommentId.New(),
-                data.Content,
-                problems[data.ProblemIndex].Id,
-                admin.Id
-            );
-            comments.Add(comment);
-        }
+            Guid.Parse("00000000-0000-0000-0000-000000000401"),
+            Guid.Parse("00000000-0000-0000-0000-000000000402"),
+            Guid.Parse("00000000-0000-0000-0000-000000000403"),
+            Guid.Parse("00000000-0000-0000-0000-000000000404"),
+            Guid.Parse("00000000-0000-0000-0000-000000000405"),
+            Guid.Parse("00000000-0000-0000-0000-000000000406"),
+            Guid.Parse("00000000-0000-0000-0000-000000000407"),
+            Guid.Parse("00000000-0000-0000-0000-000000000408"),
+            Guid.Parse("00000000-0000-0000-0000-000000000409"),
+            Guid.Parse("00000000-0000-0000-0000-00000000040a")
+        };
+
+        var baseDate = new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+
+        var comments = commentsData
+            .Select((data, index) => new
+            {
+                Id = new CommentId(commentIds[index]),
+                Content = data.Content,
+                CreatedAt = baseDate,
+                UpdatedAt = baseDate,
+                ProblemId = new ProblemId(problems[data.ProblemIndex]),
+                UserId = new UserId(adminUserId)
+            })
+            .ToArray();
 
         modelBuilder.Entity<Comment>().HasData(comments);
     }
 
-    private static void _seedRatings(ModelBuilder modelBuilder, List<Problem> problems, List<User> users)
+    private static void _seedRatings(ModelBuilder modelBuilder, Guid adminUserId, IReadOnlyList<Guid> problems)
     {
         var ratingsData = new[]
         {
@@ -216,19 +296,32 @@ public static class DataSeed
             new { ProblemIndex = 16, Points = 4.3 }
         };
 
-        var ratings = new List<Rating>();
-        var admin = users[0];
-
-        foreach (var data in ratingsData)
+        var ratingIds = new[]
         {
-            var rating = Rating.New(
-                RatingId.New(),
-                problems[data.ProblemIndex].Id,
-                admin.Id,
-                data.Points
-            );
-            ratings.Add(rating);
-        }
+            Guid.Parse("00000000-0000-0000-0000-000000000501"),
+            Guid.Parse("00000000-0000-0000-0000-000000000502"),
+            Guid.Parse("00000000-0000-0000-0000-000000000503"),
+            Guid.Parse("00000000-0000-0000-0000-000000000504"),
+            Guid.Parse("00000000-0000-0000-0000-000000000505"),
+            Guid.Parse("00000000-0000-0000-0000-000000000506"),
+            Guid.Parse("00000000-0000-0000-0000-000000000507"),
+            Guid.Parse("00000000-0000-0000-0000-000000000508"),
+            Guid.Parse("00000000-0000-0000-0000-000000000509"),
+            Guid.Parse("00000000-0000-0000-0000-00000000050a")
+        };
+
+        var baseDate = new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+
+        var ratings = ratingsData
+            .Select((data, index) => new
+            {
+                Id = new RatingId(ratingIds[index]),
+                ProblemId = new ProblemId(problems[data.ProblemIndex]),
+                UserId = new UserId(adminUserId),
+                Points = data.Points,
+                CreatedAt = baseDate
+            })
+            .ToArray();
 
         modelBuilder.Entity<Rating>().HasData(ratings);
     }

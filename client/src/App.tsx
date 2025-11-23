@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { QueryProvider } from '@/lib/react-query'
 import { AuthProvider } from '@/contexts/auth-provider'
+import { SignalRProvider } from '@/contexts/signalr-context.tsx'
 import { Layout } from '@/components/shared/layout'
 import { ProtectedRoute } from '@/components/auth/protected-route'
 import { PublicRoute } from '@/components/auth/public-route'
@@ -25,8 +26,9 @@ function App() {
   return (
     <QueryProvider>
       <AuthProvider>
-        <BrowserRouter>
-          <Routes>
+        <SignalRProvider>
+          <BrowserRouter>
+            <Routes>
             {/* Public routes with layout */}
             <Route
               path="/"
@@ -182,6 +184,7 @@ function App() {
             />
           </Routes>
         </BrowserRouter>
+        </SignalRProvider>
       </AuthProvider>
     </QueryProvider>
   )
