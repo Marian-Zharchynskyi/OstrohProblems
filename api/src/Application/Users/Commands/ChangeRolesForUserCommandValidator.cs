@@ -11,9 +11,9 @@ public class ChangeRolesForUserCommandValidator : AbstractValidator<ChangeRolesF
             .NotEmpty()
             .WithMessage("User ID cannot be null or empty.");
 
-        RuleFor(command => command.RoleIds)
+        RuleFor(command => command.RoleId)
             .NotNull()
             .NotEmpty()
-            .WithMessage(command => $"User under ID: {command.UserId} must have at least one role!");
+            .WithMessage(command => $"User under ID: {command.UserId} must have a role!");
     }
 }

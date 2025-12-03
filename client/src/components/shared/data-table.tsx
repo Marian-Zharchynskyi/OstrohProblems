@@ -21,6 +21,7 @@ interface DataTableProps<T> {
   columns: Column<T>[]
   onEdit?: (item: T) => void
   onDelete?: (item: T) => void
+  onRowClick?: (item: T) => void
   isLoading?: boolean
   emptyMessage?: string
 }
@@ -30,6 +31,7 @@ export function DataTable<T extends { id: string | null }>({
   columns,
   onEdit,
   onDelete,
+  onRowClick,
   isLoading,
   emptyMessage = 'No data available',
 }: DataTableProps<T>) {
@@ -69,7 +71,11 @@ export function DataTable<T extends { id: string | null }>({
         </TableHeader>
         <TableBody>
           {data.map((item) => (
-            <TableRow key={item.id || Math.random()}>
+            <TableRow 
+              key={item.id || Math.random()}
+              onClick={() => onRowClick?.(item)}
+              className={onRowClick ? 'cursor-pointer hover:bg-muted/50' : ''}
+            >
               {columns.map((column, colIndex) => {
                 const value = getCellValue(item, column)
                 return (

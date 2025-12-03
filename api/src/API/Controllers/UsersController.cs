@@ -63,6 +63,26 @@ public class UsersController(ISender sender, IUserQueries userQueries, IIdentity
 
         return entities.Select(UserDto.FromDomainModel).ToList();
     }
+
+    [HttpPost("create")]
+    public async Task<ActionResult<UserDto>> Create(
+        [FromBody] CreateUserDto createUserDto,
+        CancellationToken cancellationToken)
+    {
+        var input = new CreateUserCommand
+        {
+            Email = createUserDto.Email,
+            Password = createUserDto.Password,
+            FullName = createUserDto.FullName,
+            RoleId = createUserDto.RoleId
+        };
+
+        var result = await sender.Send(input, cancellationToken);
+
+        return result.Match<ActionResult<UserDto>>(
+            user => UserDto.FromDomainModel(user),
+            error => error.ToObjectResult());
+    }
     
     [HttpGet("get-by-id/{userId:guid}")]
     public async Task<ActionResult<UserDto>> Get([FromRoute] Guid userId, CancellationToken cancellationToken)
@@ -93,13 +113,13 @@ public class UsersController(ISender sender, IUserQueries userQueries, IIdentity
     [HttpPut("update-roles/{userId}")]
     public async Task<ActionResult<UserDto>> UpdateRoles(
         [FromRoute] Guid userId,
-        [FromBody] List<Guid> roleIds,
+        [FromBody] Guid roleId,
         CancellationToken cancellationToken)
     {
         var input = new ChangeRolesForUserCommand
         {
             UserId = userId,
-            RoleIds = roleIds
+            RoleId = roleId
         };
 
         var result = await sender.Send(input, cancellationToken);

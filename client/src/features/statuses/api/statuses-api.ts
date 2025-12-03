@@ -20,7 +20,7 @@ export const statusesApi = {
   },
 
   update: async (id: string, data: CreateStatus) => {
-    const response = await apiClient.put<Status>(`${BASE_URL}/update`, { id, ...data })
+    const response = await apiClient.put<Status>(`${BASE_URL}/update/${id}`, data)
     return response.data
   },
 

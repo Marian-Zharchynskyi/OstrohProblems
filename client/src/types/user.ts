@@ -20,3 +20,10 @@ export interface UpdateUserDto {
   userName?: string
   email: string
 }
+
+export interface CreateUserDto {
+  email: string
+  password: string
+  fullName?: string
+  roleId: string
+}
