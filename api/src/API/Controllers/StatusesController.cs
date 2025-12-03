@@ -54,15 +54,15 @@ public class StatusesController(ISender sender, IStatusQueries statusQueries) : 
     }
     
     [Authorize(Roles = RoleNames.Admin)]
-    [HttpPut("update")]
+    [HttpPut("update/{problemStatusId:guid}")]
     public async Task<ActionResult<CreateStatusDto>> Update(
-        [FromRoute] Guid id,
+        [FromRoute] Guid problemStatusId,
         [FromBody] CreateStatusDto request,
         CancellationToken cancellationToken)
     {
         var input = new UpdateStatusCommand
         {
-            ProblemStatusId = id,
+            ProblemStatusId = problemStatusId,
             Name = request.Name
         };
 
@@ -76,11 +76,11 @@ public class StatusesController(ISender sender, IStatusQueries statusQueries) : 
     [Authorize(Roles = RoleNames.Admin)]
     [HttpDelete("delete/{problemStatusId:guid}")]
     public async Task<ActionResult<StatusDto>> Delete(
-        [FromRoute] Guid id, CancellationToken cancellationToken)
+        [FromRoute] Guid problemStatusId, CancellationToken cancellationToken)
     {
         var input = new DeleteStatusCommand
         {
-            ProblemStatusId = id
+            ProblemStatusId = problemStatusId
         };
 
         var result = await sender.Send(input, cancellationToken);

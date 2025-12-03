@@ -12,17 +12,17 @@ public record CommentNotificationDto(
 {
     public static CommentNotificationDto FromDomainModel(Comment comment)
     {
-        if (comment.User == null)
-        {
-            throw new InvalidOperationException("Comment must have a user for notification");
-        }
+        // comment.User навігаційна властивість може бути ще не завантажена,
+        // тому використовуємо безпечний доступ і резервні значення
+        var userId = comment.User?.Id.Value ?? comment.UserId.Value;
+        var fullName = comment.User?.FullName ?? "Хтось";
 
         return new CommentNotificationDto(
             comment.Id.Value,
             comment.Content,
             comment.ProblemId.Value,
-            comment.User.Id.Value,
-            comment.User.FullName!,
+            userId,
+            fullName,
             comment.CreatedAt
         );
     }

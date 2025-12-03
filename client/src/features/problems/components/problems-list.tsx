@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import type { Problem } from '@/types'
 import { DataTable, type Column } from '@/components/shared/data-table'
 import { PageHeader } from '@/components/shared/page-header'
@@ -13,6 +14,7 @@ import {
 import { toast } from '@/lib/toast'
 
 export function ProblemsList() {
+  const navigate = useNavigate()
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [isDeleteOpen, setIsDeleteOpen] = useState(false)
   const [selectedProblem, setSelectedProblem] = useState<Problem | null>(null)
@@ -120,6 +122,7 @@ export function ProblemsList() {
         columns={columns}
         onEdit={handleEdit}
         onDelete={handleDelete}
+        onRowClick={(problem) => problem.id && navigate(`/problems/${problem.id}`)}
         isLoading={isLoading}
         emptyMessage="No problems found"
       />

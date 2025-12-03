@@ -21,6 +21,7 @@ import { MapPage } from '@/pages/map-page'
 import { ProfilePage } from '@/pages/profile-page'
 import { AdminUsersPage } from '@/pages/admin-users-page'
 import { CreateIssuePage } from '@/pages/create-issue-page'
+import { ProblemDetailPage } from '@/pages/problem-detail-page'
 
 function App() {
   return (
@@ -118,6 +119,16 @@ function App() {
                 <ProtectedRoute>
                   <Layout>
                     <CreateIssuePage />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/problems/:id"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <ProblemDetailPage />
                   </Layout>
                 </ProtectedRoute>
               }

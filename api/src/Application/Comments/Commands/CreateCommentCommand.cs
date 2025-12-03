@@ -79,7 +79,7 @@ public class CreateCommentCommandHandler : IRequestHandler<CreateCommentCommand,
                         p.Title);
                     
                     await _signalRService.SendNotificationToUser(
-                        userId,
+                        p.UserId,
                         notification,
                         cancellationToken);
                 }
