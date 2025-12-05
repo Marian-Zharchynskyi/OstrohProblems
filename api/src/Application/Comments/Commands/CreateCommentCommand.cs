@@ -66,7 +66,7 @@ public class CreateCommentCommandHandler : IRequestHandler<CreateCommentCommand,
             if (problemOption.HasValue)
             {
                 var p = problemOption.ValueOr(default(Problem)!);
-                if (p is not null && p.UserId.Value != userIdGuid)
+                if (p is not null && p.CoordinatorId!.Value != userIdGuid)
                 {
                     var commenterName = comment.User != null
                         ? $"{comment.User.FullName}"
@@ -79,7 +79,7 @@ public class CreateCommentCommandHandler : IRequestHandler<CreateCommentCommand,
                         p.Title);
                     
                     await _signalRService.SendNotificationToUser(
-                        p.UserId,
+                        p.CoordinatorId,
                         notification,
                         cancellationToken);
                 }

@@ -88,10 +88,10 @@ public class UpdateProblemCommandHandler(
             }
 
             var result = await problemRepository.Update(problem, cancellationToken);
-            if (oldStatusId.Value != statusId.Value && problem.User != null)
+            if (oldStatusId.Value != statusId.Value && problem.CreatedBy != null)
             {
                 var statusName = problem.ProblemStatus?.Name ?? "Невідомий статус";
-                var userId = problem.UserId;
+                var userId = problem.CoordinatorId;
                 await signalRService.SendNotificationToUser(
                     userId,
                     NotificationDto.Create("status_change",

@@ -103,13 +103,13 @@ export function ProblemDetailPopup({ problem, onClose }: ProblemDetailPopupProps
           )}
 
           {/* User */}
-          {problem.user && (
+          {problem.createdBy && (
             <div className="flex items-start gap-2">
               <User className="h-5 w-5 text-gray-400 mt-0.5" />
               <div>
                 <h3 className="text-sm font-medium text-gray-700">Автор</h3>
                 <p className="text-sm text-gray-600">
-                  {problem.user.firstName} {problem.user.lastName}
+                  {problem.createdBy.firstName} {problem.createdBy.lastName}
                 </p>
               </div>
             </div>

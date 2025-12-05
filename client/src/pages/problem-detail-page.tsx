@@ -254,7 +254,7 @@ export function ProblemDetailPage() {
           )}
 
           {/* Author */}
-          {problem.user && (
+          {problem.createdBy && (
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -263,7 +263,7 @@ export function ProblemDetailPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-sm">{problem.user.email}</p>
+                <p className="text-sm">{problem.createdBy.email}</p>
               </CardContent>
             </Card>
           )}

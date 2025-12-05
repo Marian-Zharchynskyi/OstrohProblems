@@ -27,10 +27,10 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
             .WithMany(x => x.Users)
             .UsingEntity(j => j.ToTable("fk_user_roles"));
         
-        builder.HasMany(p => p.Problems)
-            .WithOne(p => p.User)
-            .HasForeignKey(p => p.UserId)
-            .OnDelete(DeleteBehavior.Cascade);
+        builder.HasMany(u => u.Problems)
+            .WithOne(p => p.CreatedBy)
+            .HasForeignKey(p => p.CreatedById)
+            .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasMany(p => p.Comments)
             .WithOne(p => p.User)

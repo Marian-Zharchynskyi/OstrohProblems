@@ -423,6 +423,11 @@ namespace Infrastructure.Persistence.Migrations
                         {
                             Id = new Guid("00000000-0000-0000-0000-000000000002"),
                             Name = "User"
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0000-000000000003"),
+                            Name = "Coordinator"
                         });
                 });
 
@@ -460,7 +465,21 @@ namespace Infrastructure.Persistence.Migrations
                             Id = new Guid("00000000-0000-0000-0000-000000000010"),
                             Email = "admin@ostroh.edu.ua",
                             FullName = "Адміністратор Острога",
-                            PasswordHash = "NDCKzXgX45UpNrhtRVN87Q==:lTbqjHEkq3X+W7Eix4idgBm+AJQPZRiONiytP7erDtU="
+                            PasswordHash = "31jGqnyNWeEpqqSOGrrFYA==:pt36JXYoIE3w8xtI8rEJU/h50muKgFwRs0p/h4am3A0="
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0000-000000000011"),
+                            Email = "user@ostroh.edu.ua",
+                            FullName = "Звичайний Користувач",
+                            PasswordHash = "OeuuWFIVglEfvDvcH349ow==:OXOk32vZFxUcodlJVPaLj/qOApIGP9SSVu9RBy+O4Sc="
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0000-000000000012"),
+                            Email = "coordinator@ostroh.edu.ua",
+                            FullName = "Координатор Острога",
+                            PasswordHash = "DXIF+E53jMJS34YZkf0Jkw==:ccAPZCJbWy/stpuqDGYoAeNnHM5rABefB+bMZL+EaZY="
                         });
                 });
 
@@ -507,6 +526,10 @@ namespace Infrastructure.Persistence.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");
 
+                    b.Property<Guid>("CreatedById")
+                        .HasColumnType("uuid")
+                        .HasColumnName("created_by_id");
+
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasColumnType("varchar(300)")
@@ -541,21 +564,17 @@ namespace Infrastructure.Persistence.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("user_confirmation_status");
 
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("user_id");
-
                     b.HasKey("Id")
                         .HasName("pk_problems");
 
                     b.HasIndex("CoordinatorId")
                         .HasDatabaseName("ix_problems_coordinator_id");
 
+                    b.HasIndex("CreatedById")
+                        .HasDatabaseName("ix_problems_created_by_id");
+
                     b.HasIndex("StatusId")
                         .HasDatabaseName("ix_problems_status_id");
-
-                    b.HasIndex("UserId")
-                        .HasDatabaseName("ix_problems_user_id");
 
                     b.ToTable("problems", (string)null);
 
@@ -564,261 +583,261 @@ namespace Infrastructure.Persistence.Migrations
                         {
                             Id = new Guid("00000000-0000-0000-0000-000000000301"),
                             CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedById = new Guid("00000000-0000-0000-0000-000000000010"),
                             Description = "Велика яма на дорозі біля будинку №15. Потрібує термінового ремонту.",
                             Latitude = 50.3294,
                             Longitude = 26.514399999999998,
                             StatusId = new Guid("00000000-0000-0000-0000-000000000201"),
                             Title = "Розбита дорога на вул. Академічна",
                             UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            UserConfirmationStatus = 0,
-                            UserId = new Guid("00000000-0000-0000-0000-000000000010")
+                            UserConfirmationStatus = 0
                         },
                         new
                         {
                             Id = new Guid("00000000-0000-0000-0000-000000000302"),
                             CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedById = new Guid("00000000-0000-0000-0000-000000000010"),
                             Description = "Вже тиждень не світять ліхтарі на ділянці від будинку №10 до №20.",
                             Latitude = 50.328499999999998,
                             Longitude = 26.512499999999999,
                             StatusId = new Guid("00000000-0000-0000-0000-000000000202"),
                             Title = "Не працює вуличне освітлення на вул. Семінарська",
                             UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            UserConfirmationStatus = 0,
-                            UserId = new Guid("00000000-0000-0000-0000-000000000010")
+                            UserConfirmationStatus = 0
                         },
                         new
                         {
                             Id = new Guid("00000000-0000-0000-0000-000000000303"),
                             CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedById = new Guid("00000000-0000-0000-0000-000000000010"),
                             Description = "Сміттєві контейнери не вивозяться вже 3 дні, сміття розкидане навколо.",
                             Latitude = 50.330100000000002,
                             Longitude = 26.5167,
                             StatusId = new Guid("00000000-0000-0000-0000-000000000201"),
                             Title = "Переповнені сміттєві баки біля ринку",
                             UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            UserConfirmationStatus = 0,
-                            UserId = new Guid("00000000-0000-0000-0000-000000000010")
+                            UserConfirmationStatus = 0
                         },
                         new
                         {
                             Id = new Guid("00000000-0000-0000-0000-000000000304"),
                             CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedById = new Guid("00000000-0000-0000-0000-000000000010"),
                             Description = "Дерев'яна лавка зламана, потребує заміни або ремонту.",
                             Latitude = 50.327800000000003,
                             Longitude = 26.518899999999999,
                             StatusId = new Guid("00000000-0000-0000-0000-000000000203"),
                             Title = "Зламана лавка в парку Тараса Шевченка",
                             UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            UserConfirmationStatus = 0,
-                            UserId = new Guid("00000000-0000-0000-0000-000000000010")
+                            UserConfirmationStatus = 0
                         },
                         new
                         {
                             Id = new Guid("00000000-0000-0000-0000-000000000305"),
                             CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedById = new Guid("00000000-0000-0000-0000-000000000010"),
                             Description = "Старе дерево нахилилося і може впасти на дорогу. Небезпечно для пішоходів та транспорту.",
                             Latitude = 50.331200000000003,
                             Longitude = 26.509799999999998,
                             StatusId = new Guid("00000000-0000-0000-0000-000000000202"),
                             Title = "Аварійне дерево на вул. Луцька",
                             UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            UserConfirmationStatus = 0,
-                            UserId = new Guid("00000000-0000-0000-0000-000000000010")
+                            UserConfirmationStatus = 0
                         },
                         new
                         {
                             Id = new Guid("00000000-0000-0000-0000-000000000306"),
                             CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedById = new Guid("00000000-0000-0000-0000-000000000010"),
                             Description = "Пішохідний перехід біля школи №2 без розмітки, небезпечно для дітей.",
                             Latitude = 50.328899999999997,
                             Longitude = 26.515599999999999,
                             StatusId = new Guid("00000000-0000-0000-0000-000000000201"),
                             Title = "Відсутня розмітка на пішохідному переході",
                             UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            UserConfirmationStatus = 0,
-                            UserId = new Guid("00000000-0000-0000-0000-000000000010")
+                            UserConfirmationStatus = 0
                         },
                         new
                         {
                             Id = new Guid("00000000-0000-0000-0000-000000000307"),
                             CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedById = new Guid("00000000-0000-0000-0000-000000000010"),
                             Description = "Великі тріщини на тротуарі, небезпечно для пішоходів, особливо в темний час доби.",
                             Latitude = 50.330500000000001,
                             Longitude = 26.513400000000001,
                             StatusId = new Guid("00000000-0000-0000-0000-000000000201"),
                             Title = "Тріщина на тротуарі вул. Папаніна",
                             UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            UserConfirmationStatus = 0,
-                            UserId = new Guid("00000000-0000-0000-0000-000000000010")
+                            UserConfirmationStatus = 0
                         },
                         new
                         {
                             Id = new Guid("00000000-0000-0000-0000-000000000308"),
                             CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedById = new Guid("00000000-0000-0000-0000-000000000010"),
                             Description = "Ведеться будівництво без відповідних дозволів, порушується архітектурний вигляд міста.",
                             Latitude = 50.329799999999999,
                             Longitude = 26.517800000000001,
                             StatusId = new Guid("00000000-0000-0000-0000-000000000204"),
                             Title = "Незаконне будівництво на вул. Князів Острозьких",
                             UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            UserConfirmationStatus = 0,
-                            UserId = new Guid("00000000-0000-0000-0000-000000000010")
+                            UserConfirmationStatus = 0
                         },
                         new
                         {
                             Id = new Guid("00000000-0000-0000-0000-000000000309"),
                             CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedById = new Guid("00000000-0000-0000-0000-000000000010"),
                             Description = "Гойдалки та гірка на дитячому майданчику в аварійному стані.",
                             Latitude = 50.328200000000002,
                             Longitude = 26.514199999999999,
                             StatusId = new Guid("00000000-0000-0000-0000-000000000202"),
                             Title = "Потребує ремонту дитячий майданчик",
                             UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            UserConfirmationStatus = 0,
-                            UserId = new Guid("00000000-0000-0000-0000-000000000010")
+                            UserConfirmationStatus = 0
                         },
                         new
                         {
                             Id = new Guid("00000000-0000-0000-0000-00000000030a"),
                             CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedById = new Guid("00000000-0000-0000-0000-000000000010"),
                             Description = "На перехресті вул. Академічна та вул. Семінарська відсутній знак пріоритету.",
                             Latitude = 50.3307,
                             Longitude = 26.516100000000002,
                             StatusId = new Guid("00000000-0000-0000-0000-000000000201"),
                             Title = "Відсутній дорожній знак на перехресті",
                             UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            UserConfirmationStatus = 0,
-                            UserId = new Guid("00000000-0000-0000-0000-000000000010")
+                            UserConfirmationStatus = 0
                         },
                         new
                         {
                             Id = new Guid("00000000-0000-0000-0000-00000000030b"),
                             CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedById = new Guid("00000000-0000-0000-0000-000000000010"),
                             Description = "Витік води з водопровідної труби, вода заливає дорогу.",
                             Latitude = 50.329099999999997,
                             Longitude = 26.517099999999999,
                             StatusId = new Guid("00000000-0000-0000-0000-000000000202"),
                             Title = "Прорив водопроводу на вул. Замкова",
                             UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            UserConfirmationStatus = 0,
-                            UserId = new Guid("00000000-0000-0000-0000-000000000010")
+                            UserConfirmationStatus = 0
                         },
                         new
                         {
                             Id = new Guid("00000000-0000-0000-0000-00000000030c"),
                             CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedById = new Guid("00000000-0000-0000-0000-000000000010"),
                             Description = "Клумби біля центральної площі не доглядаються, заросли бур'яном.",
                             Latitude = 50.329599999999999,
                             Longitude = 26.514900000000001,
                             StatusId = new Guid("00000000-0000-0000-0000-000000000201"),
                             Title = "Зарослі бур'яном клумби в центрі",
                             UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            UserConfirmationStatus = 0,
-                            UserId = new Guid("00000000-0000-0000-0000-000000000010")
+                            UserConfirmationStatus = 0
                         },
                         new
                         {
                             Id = new Guid("00000000-0000-0000-0000-00000000030d"),
                             CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedById = new Guid("00000000-0000-0000-0000-000000000010"),
                             Description = "Світлофор на перехресті не працює вже другий день.",
                             Latitude = 50.331499999999998,
                             Longitude = 26.510200000000001,
                             StatusId = new Guid("00000000-0000-0000-0000-000000000202"),
                             Title = "Не працює світлофор на вул. Луцька",
                             UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            UserConfirmationStatus = 0,
-                            UserId = new Guid("00000000-0000-0000-0000-000000000010")
+                            UserConfirmationStatus = 0
                         },
                         new
                         {
                             Id = new Guid("00000000-0000-0000-0000-00000000030e"),
                             CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedById = new Guid("00000000-0000-0000-0000-000000000010"),
                             Description = "Стихійне сміттєзвалище утворилося в лісосмузі за містом.",
                             Latitude = 50.327199999999998,
                             Longitude = 26.519500000000001,
                             StatusId = new Guid("00000000-0000-0000-0000-000000000201"),
                             Title = "Сміттєзвалище в лісосмузі",
                             UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            UserConfirmationStatus = 0,
-                            UserId = new Guid("00000000-0000-0000-0000-000000000010")
+                            UserConfirmationStatus = 0
                         },
                         new
                         {
                             Id = new Guid("00000000-0000-0000-0000-00000000030f"),
                             CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedById = new Guid("00000000-0000-0000-0000-000000000010"),
                             Description = "Огорожа школи №1 іржава та потребує фарбування.",
                             Latitude = 50.328800000000001,
                             Longitude = 26.5138,
                             StatusId = new Guid("00000000-0000-0000-0000-000000000203"),
                             Title = "Потребує фарбування огорожа школи",
                             UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            UserConfirmationStatus = 0,
-                            UserId = new Guid("00000000-0000-0000-0000-000000000010")
+                            UserConfirmationStatus = 0
                         },
                         new
                         {
                             Id = new Guid("00000000-0000-0000-0000-000000000310"),
                             CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedById = new Guid("00000000-0000-0000-0000-000000000010"),
                             Description = "На автобусній зупинці 'Центр' немає урн для сміття.",
                             Latitude = 50.330199999999998,
                             Longitude = 26.5153,
                             StatusId = new Guid("00000000-0000-0000-0000-000000000201"),
                             Title = "Відсутні урни на зупинці",
                             UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            UserConfirmationStatus = 0,
-                            UserId = new Guid("00000000-0000-0000-0000-000000000010")
+                            UserConfirmationStatus = 0
                         },
                         new
                         {
                             Id = new Guid("00000000-0000-0000-0000-000000000311"),
                             CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedById = new Guid("00000000-0000-0000-0000-000000000010"),
                             Description = "Бордюр зруйнований на протяжності 5 метрів.",
                             Latitude = 50.329900000000002,
                             Longitude = 26.516400000000001,
                             StatusId = new Guid("00000000-0000-0000-0000-000000000201"),
                             Title = "Зламаний бордюр на вул. Князів Острозьких",
                             UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            UserConfirmationStatus = 0,
-                            UserId = new Guid("00000000-0000-0000-0000-000000000010")
+                            UserConfirmationStatus = 0
                         },
                         new
                         {
                             Id = new Guid("00000000-0000-0000-0000-000000000312"),
                             CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedById = new Guid("00000000-0000-0000-0000-000000000010"),
                             Description = "Гілки дерева загрожують електричним проводам.",
                             Latitude = 50.328600000000002,
                             Longitude = 26.514700000000001,
                             StatusId = new Guid("00000000-0000-0000-0000-000000000202"),
                             Title = "Потребує обрізки дерева біля будинку",
                             UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            UserConfirmationStatus = 0,
-                            UserId = new Guid("00000000-0000-0000-0000-000000000010")
+                            UserConfirmationStatus = 0
                         },
                         new
                         {
                             Id = new Guid("00000000-0000-0000-0000-000000000313"),
                             CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedById = new Guid("00000000-0000-0000-0000-000000000010"),
                             Description = "Після дощу утворюються великі калюжі через відсутність каналізації.",
                             Latitude = 50.3279,
                             Longitude = 26.513200000000001,
                             StatusId = new Guid("00000000-0000-0000-0000-000000000201"),
                             Title = "Відсутня каналізація на вул. Садова",
                             UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            UserConfirmationStatus = 0,
-                            UserId = new Guid("00000000-0000-0000-0000-000000000010")
+                            UserConfirmationStatus = 0
                         },
                         new
                         {
                             Id = new Guid("00000000-0000-0000-0000-000000000314"),
                             CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedById = new Guid("00000000-0000-0000-0000-000000000010"),
                             Description = "Вандали розмалювали фасад історичної будівлі в центрі міста.",
                             Latitude = 50.329300000000003,
                             Longitude = 26.517499999999998,
                             StatusId = new Guid("00000000-0000-0000-0000-000000000203"),
                             Title = "Граффіті на фасаді історичної будівлі",
                             UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            UserConfirmationStatus = 0,
-                            UserId = new Guid("00000000-0000-0000-0000-000000000010")
+                            UserConfirmationStatus = 0
                         });
                 });
 
@@ -876,8 +895,9 @@ namespace Infrastructure.Persistence.Migrations
                     b.HasIndex("ProblemId")
                         .HasDatabaseName("ix_ratings_problem_id");
 
-                    b.HasIndex("UserId")
-                        .HasDatabaseName("ix_ratings_user_id");
+                    b.HasIndex("UserId", "ProblemId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_ratings_user_id_problem_id");
 
                     b.ToTable("ratings", null, t =>
                         {
@@ -1082,6 +1102,16 @@ namespace Infrastructure.Persistence.Migrations
                         {
                             RolesId = new Guid("00000000-0000-0000-0000-000000000001"),
                             UsersId = new Guid("00000000-0000-0000-0000-000000000010")
+                        },
+                        new
+                        {
+                            RolesId = new Guid("00000000-0000-0000-0000-000000000002"),
+                            UsersId = new Guid("00000000-0000-0000-0000-000000000011")
+                        },
+                        new
+                        {
+                            RolesId = new Guid("00000000-0000-0000-0000-000000000003"),
+                            UsersId = new Guid("00000000-0000-0000-0000-000000000012")
                         });
                 });
 
@@ -1140,7 +1170,15 @@ namespace Infrastructure.Persistence.Migrations
                     b.HasOne("Domain.Identity.Users.User", "Coordinator")
                         .WithMany()
                         .HasForeignKey("CoordinatorId")
+                        .OnDelete(DeleteBehavior.Restrict)
                         .HasConstraintName("fk_problems_users_coordinator_id");
+
+                    b.HasOne("Domain.Identity.Users.User", "CreatedBy")
+                        .WithMany("Problems")
+                        .HasForeignKey("CreatedById")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_problems_users_created_by_id");
 
                     b.HasOne("Domain.Statuses.Status", "ProblemStatus")
                         .WithMany("Problems")
@@ -1149,18 +1187,11 @@ namespace Infrastructure.Persistence.Migrations
                         .IsRequired()
                         .HasConstraintName("fk_problems_statuses_status_id");
 
-                    b.HasOne("Domain.Identity.Users.User", "User")
-                        .WithMany("Problems")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_problems_users_user_id");
-
                     b.Navigation("Coordinator");
 
-                    b.Navigation("ProblemStatus");
+                    b.Navigation("CreatedBy");
 
-                    b.Navigation("User");
+                    b.Navigation("ProblemStatus");
                 });
 
             modelBuilder.Entity("Domain.Problems.ProblemImage", b =>
