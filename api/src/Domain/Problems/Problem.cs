@@ -17,8 +17,8 @@ public class Problem
     public DateTime UpdatedAt { get; private set; }
     public StatusId StatusId { get; private set; }
     public Status? ProblemStatus { get; set; }
-    public UserId UserId { get; private set; }
-    public User? User { get; set; }
+    public UserId CreatedById { get; private set; }
+    public User? CreatedBy { get; set; }
     public UserId? CoordinatorId { get; private set; }
     public User? Coordinator { get; set; }
     public string? RejectionReason { get; private set; }
@@ -30,7 +30,7 @@ public class Problem
     public List<ProblemImage> Images { get; private set; } = [];
 
     private Problem(ProblemId id, string title, double latitude, double longitude, string description,
-        StatusId statusId, DateTime createdAt, DateTime updatedAt, UserId userId)
+        StatusId statusId, DateTime createdAt, DateTime updatedAt, UserId createdById)
     {
         Id = id;
         Title = title;
@@ -40,15 +40,15 @@ public class Problem
         StatusId = statusId;
         CreatedAt = createdAt;
         UpdatedAt = updatedAt;
-        UserId = userId;
+        CreatedById = createdById;
         UserConfirmationStatus = UserConfirmationStatus.Pending;
     }
 
     public static Problem New(ProblemId id, string title, double latitude, double longitude, string description,
-        StatusId statusId, UserId userId)
+        StatusId statusId, UserId createdById)
     {
         return new Problem(id, title, latitude, longitude, description, statusId, DateTime.UtcNow,
-            DateTime.UtcNow, userId);
+            DateTime.UtcNow, createdById);
     }
 
     public void UpdateProblem(string title, double latitude, double longitude, string description, StatusId statusId)

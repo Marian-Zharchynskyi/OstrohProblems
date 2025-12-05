@@ -16,7 +16,7 @@ public class ProblemRepository(ApplicationDbContext context) : IProblemQueries, 
             .Include(x => x.Comments)
             .Include(x => x.ProblemStatus)
             .Include(x => x.Images)
-            .Include(x => x.User)
+            .Include(x => x.CreatedBy)
             .Include(x => x.Ratings)
             .AsSplitQuery()
             .AsNoTracking();
@@ -38,7 +38,7 @@ public class ProblemRepository(ApplicationDbContext context) : IProblemQueries, 
             .Include(x => x.Comments)
             .Include(x => x.ProblemStatus)
             .Include(x => x.Images)
-            .Include(x => x.User)
+            .Include(x => x.CreatedBy)
             .Include(x => x.Ratings)
             .AsSplitQuery()
             .AsNoTracking()
@@ -52,7 +52,7 @@ public class ProblemRepository(ApplicationDbContext context) : IProblemQueries, 
             .Include(x => x.Comments)
             .Include(x => x.ProblemStatus)
             .Include(x => x.Images)
-            .Include(x => x.User)
+            .Include(x => x.CreatedBy)
             .AsSplitQuery()
             .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
 

@@ -126,7 +126,7 @@ export default function CoordinatorPage() {
               <CardContent>
                 <p className="text-sm text-gray-600 mb-4">{problem.description}</p>
                 <p className="text-xs text-gray-500 mb-4">
-                  Автор: {problem.user?.email} | Створено: {new Date(problem.createdAt).toLocaleString('uk-UA')}
+                  Автор: {problem.createdBy?.email} | Створено: {new Date(problem.createdAt).toLocaleString('uk-UA')}
                 </p>
                 <div className="flex gap-2">
                   <Button onClick={() => handleAssignToMe(problem.id!)}>Взяти в роботу</Button>
@@ -173,7 +173,7 @@ export default function CoordinatorPage() {
               <CardContent>
                 <p className="text-sm text-gray-600 mb-2">{problem.description}</p>
                 <p className="text-xs text-gray-500 mb-4">
-                  Автор: {problem.user?.email} | Створено: {new Date(problem.createdAt).toLocaleString('uk-UA')}
+                  Автор: {problem.createdBy?.email} | Створено: {new Date(problem.createdAt).toLocaleString('uk-UA')}
                 </p>
                 {problem.coordinatorComment && (
                   <div className="bg-blue-50 p-3 rounded mb-4">

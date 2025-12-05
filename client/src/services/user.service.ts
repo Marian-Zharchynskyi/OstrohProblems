@@ -109,10 +109,11 @@ export const userService = {
   ): Promise<UserDto> {
     const response = await axios.put<UserDto>(
       `${API_URL}/users/update-roles/${userId}`,
-      roleId,
+      JSON.stringify(roleId),
       {
         headers: {
           Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
         },
       }
     )

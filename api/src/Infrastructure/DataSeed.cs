@@ -13,10 +13,10 @@ namespace Infrastructure;
 
 public static class DataSeed
 {
-    public static void Seed(ModelBuilder modelBuilder, IHashPasswordService hashPasswordService)
+    public static void Seed(ModelBuilder modelBuilder)
     {
         var roleIds = _seedRoles(modelBuilder);
-        var adminUserId = _seedUsers(modelBuilder, hashPasswordService, roleIds);
+        var adminUserId = _seedUsers(modelBuilder, roleIds);
         var categoryIds = _seedCategories(modelBuilder);
         var statusIds = _seedStatuses(modelBuilder);
         var problemIds = _seedProblems(modelBuilder, adminUserId, categoryIds, statusIds);
@@ -28,28 +28,51 @@ public static class DataSeed
     {
         var adminRoleId = Guid.Parse("00000000-0000-0000-0000-000000000001");
         var userRoleId = Guid.Parse("00000000-0000-0000-0000-000000000002");
+        var coordinatorRoleId = Guid.Parse("00000000-0000-0000-0000-000000000003");
 
         modelBuilder.Entity<Role>().HasData(
             new { Id = new RoleId(adminRoleId), Name = RoleNames.Admin },
-            new { Id = new RoleId(userRoleId), Name = RoleNames.User }
+            new { Id = new RoleId(userRoleId), Name = RoleNames.User },
+            new { Id = new RoleId(coordinatorRoleId), Name = RoleNames.Coordinator }
         );
 
-        return new[] { adminRoleId, userRoleId };
+        return new[] { adminRoleId, userRoleId, coordinatorRoleId };
     }
 
-    private static Guid _seedUsers(ModelBuilder modelBuilder, IHashPasswordService hashPasswordService,
-        IReadOnlyList<Guid> roles)
+    private static Guid _seedUsers(ModelBuilder modelBuilder, IReadOnlyList<Guid> roles)
     {
         var adminUserId = Guid.Parse("00000000-0000-0000-0000-000000000010");
+        var regularUserId = Guid.Parse("00000000-0000-0000-0000-000000000011");
+        var coordinatorUserId = Guid.Parse("00000000-0000-0000-0000-000000000012");
+        
         var adminRoleId = roles[0];
+        var userRoleId = roles[1];
+        var coordinatorRoleId = roles[2];
 
         modelBuilder.Entity<User>().HasData(
+            // Password: Admin123!
             new
             {
                 Id = new UserId(adminUserId),
                 Email = "admin@ostroh.edu.ua",
                 FullName = "Адміністратор Острога",
-                PasswordHash = hashPasswordService.HashPassword("Admin123!")
+                PasswordHash = "31jGqnyNWeEpqqSOGrrFYA==:pt36JXYoIE3w8xtI8rEJU/h50muKgFwRs0p/h4am3A0="
+            },
+            // Password: User123!
+            new
+            {
+                Id = new UserId(regularUserId),
+                Email = "user@ostroh.edu.ua",
+                FullName = "Звичайний Користувач",
+                PasswordHash = "OeuuWFIVglEfvDvcH349ow==:OXOk32vZFxUcodlJVPaLj/qOApIGP9SSVu9RBy+O4Sc="
+            },
+            // Password: Coord123!
+            new
+            {
+                Id = new UserId(coordinatorUserId),
+                Email = "coordinator@ostroh.edu.ua",
+                FullName = "Координатор Острога",
+                PasswordHash = "DXIF+E53jMJS34YZkf0Jkw==:ccAPZCJbWy/stpuqDGYoAeNnHM5rABefB+bMZL+EaZY="
             }
         );
 
@@ -57,7 +80,9 @@ public static class DataSeed
             .HasMany(u => u.Roles)
             .WithMany(r => r.Users)
             .UsingEntity(j => j.HasData(
-                new { UsersId = new UserId(adminUserId), RolesId = new RoleId(adminRoleId) }
+                new { UsersId = new UserId(adminUserId), RolesId = new RoleId(adminRoleId) },
+                new { UsersId = new UserId(regularUserId), RolesId = new RoleId(userRoleId) },
+                new { UsersId = new UserId(coordinatorUserId), RolesId = new RoleId(coordinatorRoleId) }
             ));
 
         return adminUserId;
@@ -201,7 +226,7 @@ public static class DataSeed
                 StatusId = new StatusId(statuses[data.StatusIndex]),
                 CreatedAt = baseDate,
                 UpdatedAt = baseDate,
-                UserId = new UserId(adminUserId),
+                CreatedById = new UserId(adminUserId),
                 UserConfirmationStatus = UserConfirmationStatus.Pending
             })
             .ToArray();

@@ -48,9 +48,22 @@ public class CreateRatingCommandHandler : IRequestHandler<CreateRatingCommand, R
 
             var userId = new UserId(userIdGuid);
 
-            var rating = Rating.New(ratingId, problemId, userId, request.Points);
+            // Check if user already has a rating for this problem
+            var existingRating = await _ratingRepository.GetByUserAndProblem(userId, problemId, cancellationToken);
 
-            return await _ratingRepository.Add(rating, cancellationToken);
+            return await existingRating.Match(
+                async rating =>
+                {
+                    // Update existing rating
+                    rating.UpdatePoints(request.Points);
+                    return await _ratingRepository.Update(rating, cancellationToken);
+                },
+                async () =>
+                {
+                    // Create new rating
+                    var rating = Rating.New(ratingId, problemId, userId, request.Points);
+                    return await _ratingRepository.Add(rating, cancellationToken);
+                });
         }
         catch (Exception exception)
         {

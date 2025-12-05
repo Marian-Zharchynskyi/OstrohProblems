@@ -30,7 +30,7 @@ namespace Infrastructure.Persistence
             builder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
             base.OnModelCreating(builder);
 
-            DataSeed.Seed(builder, hashPasswordService);
+            DataSeed.Seed(builder);
         }
     }
 }

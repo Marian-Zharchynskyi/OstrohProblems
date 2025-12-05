@@ -66,7 +66,7 @@ export interface Problem {
   longitude: number
   description: string
   problemStatus: Status | null
-  user: User | null
+  createdBy: User | null
   coordinator: User | null
   rejectionReason: string | null
   coordinatorComment: string | null

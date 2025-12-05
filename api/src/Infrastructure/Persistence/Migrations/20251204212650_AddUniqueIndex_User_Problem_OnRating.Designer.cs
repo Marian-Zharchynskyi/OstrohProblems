@@ -3,6 +3,7 @@ using System;
 using Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251204212650_AddUniqueIndex_User_Problem_OnRating")]
+    partial class AddUniqueIndex_User_Problem_OnRating
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -465,21 +468,21 @@ namespace Infrastructure.Persistence.Migrations
                             Id = new Guid("00000000-0000-0000-0000-000000000010"),
                             Email = "admin@ostroh.edu.ua",
                             FullName = "Адміністратор Острога",
-                            PasswordHash = "31jGqnyNWeEpqqSOGrrFYA==:pt36JXYoIE3w8xtI8rEJU/h50muKgFwRs0p/h4am3A0="
+                            PasswordHash = "GnkYAp+/tVH8KN/DVyGecg==:xgkO/qCIPyKF77kcKY4Pm1U/mQEoUJmW/AJnoiSeQ0A="
                         },
                         new
                         {
                             Id = new Guid("00000000-0000-0000-0000-000000000011"),
                             Email = "user@ostroh.edu.ua",
                             FullName = "Звичайний Користувач",
-                            PasswordHash = "OeuuWFIVglEfvDvcH349ow==:OXOk32vZFxUcodlJVPaLj/qOApIGP9SSVu9RBy+O4Sc="
+                            PasswordHash = "RAf6HjNH1wYKyix9nUMpbA==:edORBR0LRLKo33nXWbUd1ccEaHyut3kJsYctDS+oCR8="
                         },
                         new
                         {
                             Id = new Guid("00000000-0000-0000-0000-000000000012"),
                             Email = "coordinator@ostroh.edu.ua",
                             FullName = "Координатор Острога",
-                            PasswordHash = "DXIF+E53jMJS34YZkf0Jkw==:ccAPZCJbWy/stpuqDGYoAeNnHM5rABefB+bMZL+EaZY="
+                            PasswordHash = "PKixVmMOM0AvjLJFgj6+SQ==:uvnUFLYpdhKWWwUeVsA6mzGI2nlyoeF7Ow4eQvTpxAM="
                         });
                 });
 
