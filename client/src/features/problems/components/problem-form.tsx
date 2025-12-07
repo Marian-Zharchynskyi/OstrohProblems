@@ -10,7 +10,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { useStatuses } from '@/features/statuses/hooks/use-statuses'
 import { useCategories } from '@/features/categories/hooks/use-categories'
 
 interface ProblemFormProps {
@@ -28,7 +27,6 @@ export function ProblemForm({
   initialData,
   isLoading,
 }: ProblemFormProps) {
-  const { data: statuses } = useStatuses()
   const { data: categories } = useCategories()
 
   const [formData, setFormData] = useState<CreateProblem>({
@@ -36,7 +34,6 @@ export function ProblemForm({
     latitude: 0,
     longitude: 0,
     description: '',
-    problemStatusId: '',
     problemCategoryIds: [],
   })
 
@@ -47,7 +44,6 @@ export function ProblemForm({
         latitude: initialData.latitude,
         longitude: initialData.longitude,
         description: initialData.description,
-        problemStatusId: initialData.problemStatus?.id || '',
         problemCategoryIds: initialData.categories?.map((c) => c.id || '') || [],
       })
     } else {
@@ -56,7 +52,6 @@ export function ProblemForm({
         latitude: 0,
         longitude: 0,
         description: '',
-        problemStatusId: '',
         problemCategoryIds: [],
       })
     }
@@ -133,28 +128,6 @@ export function ProblemForm({
                 required
                 placeholder="Enter longitude"
               />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="status">
-                Status <span className="text-destructive ml-1">*</span>
-              </Label>
-              <select
-                id="status"
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                value={formData.problemStatusId}
-                onChange={(e) =>
-                  setFormData({ ...formData, problemStatusId: e.target.value })
-                }
-                required
-              >
-                <option value="">Select a status</option>
-                {statuses?.map((status) => (
-                  <option key={status.id} value={status.id || ''}>
-                    {status.name}
-                  </option>
-                ))}
-              </select>
             </div>
 
             <div className="space-y-2">

@@ -6,18 +6,18 @@ using MediatR;
 
 namespace Application.Problems.Commands;
 
-public record RejectProblemCommand : IRequest<Result<Problem, ProblemException>>
+public record UpdateCurrentStateCommand : IRequest<Result<Problem, ProblemException>>
 {
     public required Guid ProblemId { get; init; }
-    public required string RejectionReason { get; init; }
+    public required string CurrentState { get; init; }
 }
 
-public class RejectProblemCommandHandler(
+public class UpdateCurrentStateCommandHandler(
     IProblemRepository problemRepository)
-    : IRequestHandler<RejectProblemCommand, Result<Problem, ProblemException>>
+    : IRequestHandler<UpdateCurrentStateCommand, Result<Problem, ProblemException>>
 {
     public async Task<Result<Problem, ProblemException>> Handle(
-        RejectProblemCommand request,
+        UpdateCurrentStateCommand request,
         CancellationToken cancellationToken)
     {
         var problemId = new ProblemId(request.ProblemId);
@@ -28,8 +28,7 @@ public class RejectProblemCommandHandler(
             {
                 try
                 {
-                    problem.Reject(request.RejectionReason);
-                    problem.UpdateStatus(ProblemStatus.Rejected);
+                    problem.UpdateCurrentState(request.CurrentState);
                     return await problemRepository.Update(problem, cancellationToken);
                 }
                 catch (Exception exception)
@@ -42,4 +41,3 @@ public class RejectProblemCommandHandler(
         );
     }
 }
-

@@ -12,15 +12,16 @@ export interface Category {
   name: string
 }
 
-// Status types
-export interface Status {
-  id: string | null
-  name: string
-}
+// Problem Status constants
+export const ProblemStatusConstants = {
+  New: 'Нова',
+  InProgress: 'В роботі',
+  Completed: 'Виконано',
+  Rejected: 'Відхилено',
+  NeedsClarification: 'Потребує уточнення',
+} as const
 
-export interface CreateStatus {
-  name: string
-}
+export type ProblemStatusType = (typeof ProblemStatusConstants)[keyof typeof ProblemStatusConstants]
 
 // Comment types
 export interface Comment {
@@ -57,7 +58,14 @@ export interface ProblemImage {
   url: string
 }
 
-export type UserConfirmationStatus = 0 | 1 | 2 // Pending = 0, Confirmed = 1, Rejected = 2
+// User Confirmation Status constants
+export const UserConfirmationStatusConstants = {
+  Pending: 'Очікує підтвердження',
+  Confirmed: 'Підтверджено',
+  Rejected: 'Відхилено користувачем',
+} as const
+
+export type UserConfirmationStatusType = (typeof UserConfirmationStatusConstants)[keyof typeof UserConfirmationStatusConstants]
 
 export interface Problem {
   id: string | null
@@ -65,12 +73,13 @@ export interface Problem {
   latitude: number
   longitude: number
   description: string
-  problemStatus: Status | null
+  status: string
   createdBy: User | null
   coordinator: User | null
   rejectionReason: string | null
   coordinatorComment: string | null
-  userConfirmationStatus: UserConfirmationStatus
+  currentState: string | null
+  userConfirmationStatus: string
   comments: Comment[] | null
   images: ProblemImage[] | null
   categories: Category[] | null
@@ -83,7 +92,6 @@ export interface CreateProblem {
   latitude: number
   longitude: number
   description: string
-  problemStatusId: string
   problemCategoryIds: string[]
 }
 

@@ -3,6 +3,7 @@ import type { User } from '@/types/auth'
 
 interface JwtPayload {
   sub?: string
+  id?: string
   email?: string
   name?: string
   role?: string | string[]
@@ -14,7 +15,7 @@ export function decodeToken(token: string): User | null {
     const decoded = jwtDecode<JwtPayload>(token)
 
     return {
-      id: decoded.sub || '',
+      id: decoded.id || decoded.sub || '',
       email: decoded.email || '',
       name: decoded.name,
       roles: Array.isArray(decoded.role)

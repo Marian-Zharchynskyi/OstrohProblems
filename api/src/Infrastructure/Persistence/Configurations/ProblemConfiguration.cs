@@ -49,10 +49,22 @@ public class ProblemConfiguration : IEntityTypeConfiguration<Problem>
             .IsRequired()
             .HasColumnType("varchar(300)");
         
-        builder.HasOne(ps => ps.ProblemStatus)
-            .WithMany(pr => pr.Problems)
-            .HasForeignKey(p => p.StatusId)
-            .OnDelete(DeleteBehavior.Restrict);
+        builder.Property(p => p.Status)
+            .HasConversion(
+                status => status.Value,
+                value => ProblemStatus.From(value))
+            .IsRequired()
+            .HasColumnType("varchar(50)");
+
+        builder.Property(p => p.CurrentState)
+            .HasColumnType("varchar(2000)");
+
+        builder.Property(p => p.UserConfirmationStatus)
+            .HasConversion(
+                status => status.Value,
+                value => UserConfirmationStatus.From(value))
+            .IsRequired()
+            .HasColumnType("varchar(50)");
 
         builder.HasMany(p => p.Comments)
             .WithOne(c => c.Problem)

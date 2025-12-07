@@ -38,10 +38,6 @@ public static class ConfigurePersistence
 
     private static void AddRepositories(this IServiceCollection services)
     {
-        services.AddScoped<StatusRepository>();
-        services.AddScoped<IStatusRepository>(provider => provider.GetRequiredService<StatusRepository>());
-        services.AddScoped<IStatusQueries>(provider => provider.GetRequiredService<StatusRepository>());
-
         services.AddScoped<ProblemRepository>();
         services.AddScoped<IProblemRepository>(provider => provider.GetRequiredService<ProblemRepository>());
         services.AddScoped<IProblemQueries>(provider => provider.GetRequiredService<ProblemRepository>());

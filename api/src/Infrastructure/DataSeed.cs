@@ -1,12 +1,9 @@
-using System;
-using Application.Services.HashPasswordService;
 using Domain.Categories;
 using Domain.Comments;
 using Domain.Identity.Roles;
 using Domain.Identity.Users;
 using Domain.Problems;
 using Domain.Ratings;
-using Domain.Statuses;
 using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure;
@@ -18,8 +15,7 @@ public static class DataSeed
         var roleIds = _seedRoles(modelBuilder);
         var adminUserId = _seedUsers(modelBuilder, roleIds);
         var categoryIds = _seedCategories(modelBuilder);
-        var statusIds = _seedStatuses(modelBuilder);
-        var problemIds = _seedProblems(modelBuilder, adminUserId, categoryIds, statusIds);
+        var problemIds = _seedProblems(modelBuilder, adminUserId, categoryIds);
         _seedComments(modelBuilder, adminUserId, problemIds);
         _seedRatings(modelBuilder, adminUserId, problemIds);
     }
@@ -130,41 +126,18 @@ public static class DataSeed
         return categoryIds;
     }
 
-    private static IReadOnlyList<Guid> _seedStatuses(ModelBuilder modelBuilder)
-    {
-        var statusNames = new[]
-        {
-            "Нова",
-            "В роботі",
-            "Виконано",
-            "Відхилено",
-            "Потребує уточнення"
-        };
-
-        var statusIds = new[]
-        {
-            Guid.Parse("00000000-0000-0000-0000-000000000201"),
-            Guid.Parse("00000000-0000-0000-0000-000000000202"),
-            Guid.Parse("00000000-0000-0000-0000-000000000203"),
-            Guid.Parse("00000000-0000-0000-0000-000000000204"),
-            Guid.Parse("00000000-0000-0000-0000-000000000205")
-        };
-
-        var statuses = statusNames
-            .Select((name, index) => new
-            {
-                Id = new StatusId(statusIds[index]),
-                Name = name
-            })
-            .ToArray();
-
-        modelBuilder.Entity<Status>().HasData(statuses);
-        return statusIds;
-    }
-
     private static IReadOnlyList<Guid> _seedProblems(ModelBuilder modelBuilder, Guid adminUserId,
-        IReadOnlyList<Guid> categories, IReadOnlyList<Guid> statuses)
+        IReadOnlyList<Guid> categories)
     {
+        var statusValues = new[]
+        {
+            ProblemStatusConstants.New,
+            ProblemStatusConstants.InProgress,
+            ProblemStatusConstants.Completed,
+            ProblemStatusConstants.Rejected,
+            ProblemStatusConstants.NeedsClarification
+        };
+
         var problemsData = new[]
         {
             new { Title = "Розбита дорога на вул. Академічна", Lat = 50.3294, Lon = 26.5144, Desc = "Велика яма на дорозі біля будинку №15. Потрібує термінового ремонту.", CategoryIndices = new[] { 0 }, StatusIndex = 0 },
@@ -223,7 +196,7 @@ public static class DataSeed
                 Latitude = data.Lat,
                 Longitude = data.Lon,
                 Description = data.Desc,
-                StatusId = new StatusId(statuses[data.StatusIndex]),
+                Status = ProblemStatus.From(statusValues[data.StatusIndex]),
                 CreatedAt = baseDate,
                 UpdatedAt = baseDate,
                 CreatedById = new UserId(adminUserId),

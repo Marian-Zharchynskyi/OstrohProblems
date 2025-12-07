@@ -3,6 +3,7 @@ using System;
 using Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251206212548_ProblemStatusValueObjectMigration")]
+    partial class ProblemStatusValueObjectMigration
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -565,9 +568,8 @@ namespace Infrastructure.Persistence.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("updated_at");
 
-                    b.Property<string>("UserConfirmationStatus")
-                        .IsRequired()
-                        .HasColumnType("varchar(50)")
+                    b.Property<int>("UserConfirmationStatus")
+                        .HasColumnType("integer")
                         .HasColumnName("user_confirmation_status");
 
                     b.HasKey("Id")
@@ -593,7 +595,7 @@ namespace Infrastructure.Persistence.Migrations
                             Status = "Нова",
                             Title = "Розбита дорога на вул. Академічна",
                             UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            UserConfirmationStatus = "Очікує підтвердження"
+                            UserConfirmationStatus = 0
                         },
                         new
                         {
@@ -606,7 +608,7 @@ namespace Infrastructure.Persistence.Migrations
                             Status = "В роботі",
                             Title = "Не працює вуличне освітлення на вул. Семінарська",
                             UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            UserConfirmationStatus = "Очікує підтвердження"
+                            UserConfirmationStatus = 0
                         },
                         new
                         {
@@ -619,7 +621,7 @@ namespace Infrastructure.Persistence.Migrations
                             Status = "Нова",
                             Title = "Переповнені сміттєві баки біля ринку",
                             UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            UserConfirmationStatus = "Очікує підтвердження"
+                            UserConfirmationStatus = 0
                         },
                         new
                         {
@@ -632,7 +634,7 @@ namespace Infrastructure.Persistence.Migrations
                             Status = "Виконано",
                             Title = "Зламана лавка в парку Тараса Шевченка",
                             UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            UserConfirmationStatus = "Очікує підтвердження"
+                            UserConfirmationStatus = 0
                         },
                         new
                         {
@@ -645,7 +647,7 @@ namespace Infrastructure.Persistence.Migrations
                             Status = "В роботі",
                             Title = "Аварійне дерево на вул. Луцька",
                             UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            UserConfirmationStatus = "Очікує підтвердження"
+                            UserConfirmationStatus = 0
                         },
                         new
                         {
@@ -658,7 +660,7 @@ namespace Infrastructure.Persistence.Migrations
                             Status = "Нова",
                             Title = "Відсутня розмітка на пішохідному переході",
                             UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            UserConfirmationStatus = "Очікує підтвердження"
+                            UserConfirmationStatus = 0
                         },
                         new
                         {
@@ -671,7 +673,7 @@ namespace Infrastructure.Persistence.Migrations
                             Status = "Нова",
                             Title = "Тріщина на тротуарі вул. Папаніна",
                             UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            UserConfirmationStatus = "Очікує підтвердження"
+                            UserConfirmationStatus = 0
                         },
                         new
                         {
@@ -684,7 +686,7 @@ namespace Infrastructure.Persistence.Migrations
                             Status = "Відхилено",
                             Title = "Незаконне будівництво на вул. Князів Острозьких",
                             UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            UserConfirmationStatus = "Очікує підтвердження"
+                            UserConfirmationStatus = 0
                         },
                         new
                         {
@@ -697,7 +699,7 @@ namespace Infrastructure.Persistence.Migrations
                             Status = "В роботі",
                             Title = "Потребує ремонту дитячий майданчик",
                             UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            UserConfirmationStatus = "Очікує підтвердження"
+                            UserConfirmationStatus = 0
                         },
                         new
                         {
@@ -710,7 +712,7 @@ namespace Infrastructure.Persistence.Migrations
                             Status = "Нова",
                             Title = "Відсутній дорожній знак на перехресті",
                             UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            UserConfirmationStatus = "Очікує підтвердження"
+                            UserConfirmationStatus = 0
                         },
                         new
                         {
@@ -723,7 +725,7 @@ namespace Infrastructure.Persistence.Migrations
                             Status = "В роботі",
                             Title = "Прорив водопроводу на вул. Замкова",
                             UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            UserConfirmationStatus = "Очікує підтвердження"
+                            UserConfirmationStatus = 0
                         },
                         new
                         {
@@ -736,7 +738,7 @@ namespace Infrastructure.Persistence.Migrations
                             Status = "Нова",
                             Title = "Зарослі бур'яном клумби в центрі",
                             UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            UserConfirmationStatus = "Очікує підтвердження"
+                            UserConfirmationStatus = 0
                         },
                         new
                         {
@@ -749,7 +751,7 @@ namespace Infrastructure.Persistence.Migrations
                             Status = "В роботі",
                             Title = "Не працює світлофор на вул. Луцька",
                             UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            UserConfirmationStatus = "Очікує підтвердження"
+                            UserConfirmationStatus = 0
                         },
                         new
                         {
@@ -762,7 +764,7 @@ namespace Infrastructure.Persistence.Migrations
                             Status = "Нова",
                             Title = "Сміттєзвалище в лісосмузі",
                             UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            UserConfirmationStatus = "Очікує підтвердження"
+                            UserConfirmationStatus = 0
                         },
                         new
                         {
@@ -775,7 +777,7 @@ namespace Infrastructure.Persistence.Migrations
                             Status = "Виконано",
                             Title = "Потребує фарбування огорожа школи",
                             UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            UserConfirmationStatus = "Очікує підтвердження"
+                            UserConfirmationStatus = 0
                         },
                         new
                         {
@@ -788,7 +790,7 @@ namespace Infrastructure.Persistence.Migrations
                             Status = "Нова",
                             Title = "Відсутні урни на зупинці",
                             UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            UserConfirmationStatus = "Очікує підтвердження"
+                            UserConfirmationStatus = 0
                         },
                         new
                         {
@@ -801,7 +803,7 @@ namespace Infrastructure.Persistence.Migrations
                             Status = "Нова",
                             Title = "Зламаний бордюр на вул. Князів Острозьких",
                             UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            UserConfirmationStatus = "Очікує підтвердження"
+                            UserConfirmationStatus = 0
                         },
                         new
                         {
@@ -814,7 +816,7 @@ namespace Infrastructure.Persistence.Migrations
                             Status = "В роботі",
                             Title = "Потребує обрізки дерева біля будинку",
                             UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            UserConfirmationStatus = "Очікує підтвердження"
+                            UserConfirmationStatus = 0
                         },
                         new
                         {
@@ -827,7 +829,7 @@ namespace Infrastructure.Persistence.Migrations
                             Status = "Нова",
                             Title = "Відсутня каналізація на вул. Садова",
                             UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            UserConfirmationStatus = "Очікує підтвердження"
+                            UserConfirmationStatus = 0
                         },
                         new
                         {
@@ -840,7 +842,7 @@ namespace Infrastructure.Persistence.Migrations
                             Status = "Виконано",
                             Title = "Граффіті на фасаді історичної будівлі",
                             UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            UserConfirmationStatus = "Очікує підтвердження"
+                            UserConfirmationStatus = 0
                         });
                 });
 

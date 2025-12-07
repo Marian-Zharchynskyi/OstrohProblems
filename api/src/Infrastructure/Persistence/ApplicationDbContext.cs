@@ -7,17 +7,14 @@ using Domain.Identity.Users;
 using Domain.Problems;
 using Domain.Ratings;
 using Domain.RefreshTokens;
-using Domain.Statuses;
 using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Persistence
 {
     public class ApplicationDbContext(
-        DbContextOptions<ApplicationDbContext> options,
-        IHashPasswordService hashPasswordService) : DbContext(options)
+        DbContextOptions<ApplicationDbContext> options) : DbContext(options)
     {
         public DbSet<Category> Categories { get; set; }
-        public DbSet<Status> Statuses { get; set; }
         public DbSet<Problem> Problems { get; set; }
         public DbSet<Comment> Comments { get; set; }
         public DbSet<Rating> Ratings { get; set; }

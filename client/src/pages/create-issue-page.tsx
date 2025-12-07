@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import type { CreateProblem } from '@/types'
-import { useStatuses } from '@/features/statuses/hooks/use-statuses'
 import { useCategories } from '@/features/categories/hooks/use-categories'
 import {
   useCreateProblem,
@@ -13,7 +12,6 @@ import { FormField } from '@/components/shared/form-field'
 import { toast } from '@/lib/toast'
 
 export function CreateIssuePage() {
-  const { data: statuses } = useStatuses()
   const { data: categories } = useCategories()
   const createMutation = useCreateProblem()
   const uploadImagesMutation = useUploadProblemImages()
@@ -23,7 +21,6 @@ export function CreateIssuePage() {
     latitude: 0,
     longitude: 0,
     description: '',
-    problemStatusId: '',
     problemCategoryIds: [],
   })
 
@@ -66,7 +63,6 @@ export function CreateIssuePage() {
         latitude: 0,
         longitude: 0,
         description: '',
-        problemStatusId: '',
         problemCategoryIds: [],
       })
       setFiles(null)
@@ -98,50 +94,26 @@ export function CreateIssuePage() {
             placeholder="Введіть тут"
           />
 
-          <div className="grid gap-4 md:grid-cols-2">
-            <div className="space-y-2">
-              <Label htmlFor="status">
-                Статус <span className="text-destructive ml-1">*</span>
-              </Label>
-              <select
-                id="status"
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                value={formData.problemStatusId}
-                onChange={(e) =>
-                  setFormData({ ...formData, problemStatusId: e.target.value })
-                }
-                required
-              >
-                <option value="">Вибрати статус</option>
-                {statuses?.map((status) => (
-                  <option key={status.id} value={status.id || ''}>
-                    {status.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="space-y-2">
-              <Label>Категорії</Label>
-              <div className="border rounded-md p-3 space-y-1 max-h-40 overflow-y-auto bg-background">
-                {categories?.map((category) => (
-                  <div key={category.id} className="flex items-center space-x-2">
-                    <input
-                      type="checkbox"
-                      id={`category-${category.id}`}
-                      checked={formData.problemCategoryIds.includes(category.id || '')}
-                      onChange={() => handleCategoryToggle(category.id || '')}
-                      className="h-4 w-4"
-                    />
-                    <label
-                      htmlFor={`category-${category.id}`}
-                      className="text-sm cursor-pointer"
-                    >
-                      {category.name}
-                    </label>
-                  </div>
-                ))}
-              </div>
+          <div className="space-y-2">
+            <Label>Категорії</Label>
+            <div className="border rounded-md p-3 space-y-1 max-h-40 overflow-y-auto bg-background">
+              {categories?.map((category) => (
+                <div key={category.id} className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    id={`category-${category.id}`}
+                    checked={formData.problemCategoryIds.includes(category.id || '')}
+                    onChange={() => handleCategoryToggle(category.id || '')}
+                    className="h-4 w-4"
+                  />
+                  <label
+                    htmlFor={`category-${category.id}`}
+                    className="text-sm cursor-pointer"
+                  >
+                    {category.name}
+                  </label>
+                </div>
+              ))}
             </div>
           </div>
 

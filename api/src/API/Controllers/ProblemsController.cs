@@ -5,7 +5,6 @@ using Application.Problems.Commands;
 using Domain.Identity.Roles;
 using Domain.PagedResults;
 using Domain.Problems;
-using Domain.Statuses;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -67,7 +66,6 @@ public class ProblemsController(ISender sender, IProblemQueries problemQueries) 
             Latitude = request.Latitude,
             Longitude = request.Longitude,
             Description = request.Description,
-            StatusId = new StatusId(request.ProblemStatusId),
             ProblemCategoryIds = request.ProblemCategoryIds
         };
 
@@ -92,7 +90,6 @@ public class ProblemsController(ISender sender, IProblemQueries problemQueries) 
             Latitude = request.Latitude,
             Longitude = request.Longitude,
             Description = request.Description,
-            StatusId = new StatusId(request.ProblemStatusId),
             ProblemCategoryIds = request.ProblemCategoryIds 
         };
 
@@ -221,13 +218,93 @@ public class ProblemsController(ISender sender, IProblemQueries problemQueries) 
     [HttpPut("confirm/{problemId:guid}")]
     public async Task<ActionResult<ProblemDto>> ConfirmByUser(
         [FromRoute] Guid problemId,
-        [FromBody] int confirmationStatus,
+        [FromBody] string confirmationStatus,
         CancellationToken cancellationToken)
     {
         var input = new ConfirmProblemByUserCommand
         {
             ProblemId = problemId,
-            ConfirmationStatus = (UserConfirmationStatus)confirmationStatus
+            ConfirmationStatus = UserConfirmationStatus.From(confirmationStatus)
+        };
+
+        var result = await sender.Send(input, cancellationToken);
+
+        return result.Match<ActionResult<ProblemDto>>(
+            problem => ProblemDto.FromDomainModel(problem),
+            e => e.ToObjectResult());
+    }
+
+    [Authorize(Roles = $"{RoleNames.Admin}, {RoleNames.Coordinator}")]
+    [HttpPut("update-current-state/{problemId:guid}")]
+    public async Task<ActionResult<ProblemDto>> UpdateCurrentState(
+        [FromRoute] Guid problemId,
+        [FromBody] string currentState,
+        CancellationToken cancellationToken)
+    {
+        var input = new UpdateCurrentStateCommand
+        {
+            ProblemId = problemId,
+            CurrentState = currentState
+        };
+
+        var result = await sender.Send(input, cancellationToken);
+
+        return result.Match<ActionResult<ProblemDto>>(
+            problem => ProblemDto.FromDomainModel(problem),
+            e => e.ToObjectResult());
+    }
+
+    [Authorize(Roles = $"{RoleNames.Admin}, {RoleNames.Coordinator}")]
+    [HttpPut("update-status/{problemId:guid}")]
+    public async Task<ActionResult<ProblemDto>> UpdateStatus(
+        [FromRoute] Guid problemId,
+        [FromBody] string status,
+        CancellationToken cancellationToken)
+    {
+        var input = new UpdateProblemStatusCommand
+        {
+            ProblemId = problemId,
+            Status = status
+        };
+
+        var result = await sender.Send(input, cancellationToken);
+
+        return result.Match<ActionResult<ProblemDto>>(
+            problem => ProblemDto.FromDomainModel(problem),
+            e => e.ToObjectResult());
+    }
+
+    [Authorize(Roles = $"{RoleNames.Admin}, {RoleNames.Coordinator}")]
+    [HttpPut("start/{problemId:guid}")]
+    public async Task<ActionResult<ProblemDto>> StartProblem(
+        [FromRoute] Guid problemId,
+        [FromBody] string? currentState,
+        CancellationToken cancellationToken)
+    {
+        var input = new StartProblemCommand
+        {
+            ProblemId = problemId,
+            CurrentState = currentState
+        };
+
+        var result = await sender.Send(input, cancellationToken);
+
+        return result.Match<ActionResult<ProblemDto>>(
+            problem => ProblemDto.FromDomainModel(problem),
+            e => e.ToObjectResult());
+    }
+
+    [Authorize(Roles = $"{RoleNames.Admin}, {RoleNames.Coordinator}")]
+    [HttpPut("complete/{problemId:guid}")]
+    public async Task<ActionResult<ProblemDto>> CompleteProblem(
+        [FromRoute] Guid problemId,
+        [FromBody] string currentState,
+        CancellationToken cancellationToken)
+    {
+        var input = new CompleteProblemCommand
+        {
+            ProblemId = problemId,
+            CurrentState = currentState
         };
 
         var result = await sender.Send(input, cancellationToken);

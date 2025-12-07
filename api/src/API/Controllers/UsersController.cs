@@ -17,7 +17,6 @@ namespace API.Controllers;
 [Route("users")]
 [ApiController]
 [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-[Authorize(Roles = RoleNames.Admin)]
 public class UsersController(ISender sender, IUserQueries userQueries, IIdentityService identityService) : ControllerBase
 {
     [Authorize(Roles = $"{RoleNames.Admin},{RoleNames.User}")]
@@ -38,6 +37,7 @@ public class UsersController(ISender sender, IUserQueries userQueries, IIdentity
         );
     }
 
+    [Authorize(Roles = RoleNames.Admin)]
     [HttpGet("paged")]
     public async Task<ActionResult<PagedResult<UserDto>>> GetPaged(
         [FromQuery] int page = 1,
@@ -56,6 +56,7 @@ public class UsersController(ISender sender, IUserQueries userQueries, IIdentity
         );
     }
     
+    [Authorize(Roles = RoleNames.Admin)]
     [HttpGet("get-all")]
     public async Task<ActionResult<IReadOnlyList<UserDto>>> GetAll(CancellationToken cancellationToken)
     {
@@ -64,6 +65,7 @@ public class UsersController(ISender sender, IUserQueries userQueries, IIdentity
         return entities.Select(UserDto.FromDomainModel).ToList();
     }
 
+    [Authorize(Roles = RoleNames.Admin)]
     [HttpPost("create")]
     public async Task<ActionResult<UserDto>> Create(
         [FromBody] CreateUserDto createUserDto,
@@ -84,6 +86,7 @@ public class UsersController(ISender sender, IUserQueries userQueries, IIdentity
             error => error.ToObjectResult());
     }
     
+    [Authorize(Roles = RoleNames.Admin)]
     [HttpGet("get-by-id/{userId:guid}")]
     public async Task<ActionResult<UserDto>> Get([FromRoute] Guid userId, CancellationToken cancellationToken)
     {
@@ -94,6 +97,7 @@ public class UsersController(ISender sender, IUserQueries userQueries, IIdentity
             () => NotFound());
     }
     
+    [Authorize(Roles = RoleNames.Admin)]
     [HttpDelete("delete/{userId:guid}")]
     public async Task<ActionResult<UserDto>>
         Delete([FromRoute] Guid userId, CancellationToken cancellationToken)
@@ -110,6 +114,7 @@ public class UsersController(ISender sender, IUserQueries userQueries, IIdentity
             e => e.ToObjectResult());
     }
     
+    [Authorize(Roles = RoleNames.Admin)]
     [HttpPut("update-roles/{userId}")]
     public async Task<ActionResult<UserDto>> UpdateRoles(
         [FromRoute] Guid userId,

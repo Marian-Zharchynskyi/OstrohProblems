@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import {
@@ -16,6 +16,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog'
+import { useAuth } from '@/contexts/auth-context'
 
 interface ServiceInfo {
   title: string
@@ -41,13 +42,28 @@ const services: ServiceInfo[] = [
 ]
 
 export function PublicHomePage() {
+  const navigate = useNavigate()
+  const { isAuthenticated, user } = useAuth()
   const [selectedService, setSelectedService] = useState<ServiceInfo | null>(null)
   const [isServiceDialogOpen, setIsServiceDialogOpen] = useState(false)
   const [isSupportDialogOpen, setIsSupportDialogOpen] = useState(false)
+  const [isAuthRequiredDialogOpen, setIsAuthRequiredDialogOpen] = useState(false)
 
   const openServiceDialog = (service: ServiceInfo) => {
     setSelectedService(service)
     setIsServiceDialogOpen(true)
+  }
+
+  const handleSubmitProposalClick = () => {
+    const roles = user?.roles || []
+    const canCreate =
+      isAuthenticated && (roles.includes('User') || roles.includes('Administrator'))
+
+    if (canCreate) {
+      navigate('/problems/create')
+    } else {
+      setIsAuthRequiredDialogOpen(true)
+    }
   }
 
   return (
@@ -72,8 +88,12 @@ export function PublicHomePage() {
               сьогодні.
             </p>
             <div className="flex flex-wrap gap-4 pt-4">
-              <Button asChild size="lg" className="bg-rose-600 hover:bg-rose-700">
-                <Link to="/problems/create">ПОДАТИ ПРОПОЗИЦІЮ</Link>
+              <Button
+                size="lg"
+                className="bg-rose-600 hover:bg-rose-700"
+                onClick={handleSubmitProposalClick}
+              >
+                ПОДАТИ ПРОПОЗИЦІЮ
               </Button>
               <Button asChild variant="outline" size="lg" className="border-gray-300 bg-white/10 text-white hover:bg-white/20">
                 <Link to="/register">Приєднатися</Link>
@@ -225,6 +245,35 @@ export function PublicHomePage() {
           </DialogContent>
         </Dialog>
       </section>
+
+      {/* Auth required dialog for submitting a problem */}
+      <Dialog open={isAuthRequiredDialogOpen} onOpenChange={setIsAuthRequiredDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Потрібна авторизація</DialogTitle>
+            <DialogDescription>
+              Лише авторизовані користувачі можуть подавати проблеми. Будь ласка,
+              увійдіть у свій акаунт або зареєструйтесь, щоб продовжити.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex justify-end gap-2 mt-4">
+            <Button
+              variant="outline"
+              onClick={() => setIsAuthRequiredDialogOpen(false)}
+            >
+              Скасувати
+            </Button>
+            <Button
+              onClick={() => {
+                setIsAuthRequiredDialogOpen(false)
+                navigate('/login')
+              }}
+            >
+              Продовжити
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
