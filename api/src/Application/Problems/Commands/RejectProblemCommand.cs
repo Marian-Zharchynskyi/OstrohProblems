@@ -29,6 +29,7 @@ public class RejectProblemCommandHandler(
                 try
                 {
                     problem.Reject(request.RejectionReason);
+                    problem.UpdateStatus(ProblemStatus.Rejected);
                     return await problemRepository.Update(problem, cancellationToken);
                 }
                 catch (Exception exception)

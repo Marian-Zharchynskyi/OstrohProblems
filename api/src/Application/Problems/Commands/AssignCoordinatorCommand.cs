@@ -38,6 +38,7 @@ public class AssignCoordinatorCommandHandler(
                         try
                         {
                             problem.AssignCoordinator(coordinatorId);
+                            problem.UpdateStatus(ProblemStatus.InProgress);
                             return await problemRepository.Update(problem, cancellationToken);
                         }
                         catch (Exception exception)

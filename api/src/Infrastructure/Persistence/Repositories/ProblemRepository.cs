@@ -14,9 +14,9 @@ public class ProblemRepository(ApplicationDbContext context) : IProblemQueries, 
         var query = context.Problems
             .Include(x => x.Categories)
             .Include(x => x.Comments)
-            .Include(x => x.ProblemStatus)
             .Include(x => x.Images)
             .Include(x => x.CreatedBy)
+            .Include(x => x.Coordinator)
             .Include(x => x.Ratings)
             .AsSplitQuery()
             .AsNoTracking();
@@ -36,9 +36,9 @@ public class ProblemRepository(ApplicationDbContext context) : IProblemQueries, 
         return await context.Problems
             .Include(x => x.Categories)
             .Include(x => x.Comments)
-            .Include(x => x.ProblemStatus)
             .Include(x => x.Images)
             .Include(x => x.CreatedBy)
+            .Include(x => x.Coordinator)
             .Include(x => x.Ratings)
             .AsSplitQuery()
             .AsNoTracking()
@@ -50,9 +50,9 @@ public class ProblemRepository(ApplicationDbContext context) : IProblemQueries, 
         var entity = await context.Problems
             .Include(x => x.Categories)
             .Include(x => x.Comments)
-            .Include(x => x.ProblemStatus)
             .Include(x => x.Images)
             .Include(x => x.CreatedBy)
+            .Include(x => x.Coordinator)
             .AsSplitQuery()
             .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
 

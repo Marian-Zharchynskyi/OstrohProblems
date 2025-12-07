@@ -530,6 +530,10 @@ namespace Infrastructure.Persistence.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("created_by_id");
 
+                    b.Property<string>("CurrentState")
+                        .HasColumnType("varchar(2000)")
+                        .HasColumnName("current_state");
+
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasColumnType("varchar(300)")
@@ -547,9 +551,10 @@ namespace Infrastructure.Persistence.Migrations
                         .HasColumnType("text")
                         .HasColumnName("rejection_reason");
 
-                    b.Property<Guid>("StatusId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("status_id");
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("varchar(50)")
+                        .HasColumnName("status");
 
                     b.Property<string>("Title")
                         .IsRequired()
@@ -560,8 +565,9 @@ namespace Infrastructure.Persistence.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("updated_at");
 
-                    b.Property<int>("UserConfirmationStatus")
-                        .HasColumnType("integer")
+                    b.Property<string>("UserConfirmationStatus")
+                        .IsRequired()
+                        .HasColumnType("varchar(50)")
                         .HasColumnName("user_confirmation_status");
 
                     b.HasKey("Id")
@@ -572,9 +578,6 @@ namespace Infrastructure.Persistence.Migrations
 
                     b.HasIndex("CreatedById")
                         .HasDatabaseName("ix_problems_created_by_id");
-
-                    b.HasIndex("StatusId")
-                        .HasDatabaseName("ix_problems_status_id");
 
                     b.ToTable("problems", (string)null);
 
@@ -587,10 +590,10 @@ namespace Infrastructure.Persistence.Migrations
                             Description = "Велика яма на дорозі біля будинку №15. Потрібує термінового ремонту.",
                             Latitude = 50.3294,
                             Longitude = 26.514399999999998,
-                            StatusId = new Guid("00000000-0000-0000-0000-000000000201"),
+                            Status = "Нова",
                             Title = "Розбита дорога на вул. Академічна",
                             UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            UserConfirmationStatus = 0
+                            UserConfirmationStatus = "Очікує підтвердження"
                         },
                         new
                         {
@@ -600,10 +603,10 @@ namespace Infrastructure.Persistence.Migrations
                             Description = "Вже тиждень не світять ліхтарі на ділянці від будинку №10 до №20.",
                             Latitude = 50.328499999999998,
                             Longitude = 26.512499999999999,
-                            StatusId = new Guid("00000000-0000-0000-0000-000000000202"),
+                            Status = "В роботі",
                             Title = "Не працює вуличне освітлення на вул. Семінарська",
                             UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            UserConfirmationStatus = 0
+                            UserConfirmationStatus = "Очікує підтвердження"
                         },
                         new
                         {
@@ -613,10 +616,10 @@ namespace Infrastructure.Persistence.Migrations
                             Description = "Сміттєві контейнери не вивозяться вже 3 дні, сміття розкидане навколо.",
                             Latitude = 50.330100000000002,
                             Longitude = 26.5167,
-                            StatusId = new Guid("00000000-0000-0000-0000-000000000201"),
+                            Status = "Нова",
                             Title = "Переповнені сміттєві баки біля ринку",
                             UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            UserConfirmationStatus = 0
+                            UserConfirmationStatus = "Очікує підтвердження"
                         },
                         new
                         {
@@ -626,10 +629,10 @@ namespace Infrastructure.Persistence.Migrations
                             Description = "Дерев'яна лавка зламана, потребує заміни або ремонту.",
                             Latitude = 50.327800000000003,
                             Longitude = 26.518899999999999,
-                            StatusId = new Guid("00000000-0000-0000-0000-000000000203"),
+                            Status = "Виконано",
                             Title = "Зламана лавка в парку Тараса Шевченка",
                             UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            UserConfirmationStatus = 0
+                            UserConfirmationStatus = "Очікує підтвердження"
                         },
                         new
                         {
@@ -639,10 +642,10 @@ namespace Infrastructure.Persistence.Migrations
                             Description = "Старе дерево нахилилося і може впасти на дорогу. Небезпечно для пішоходів та транспорту.",
                             Latitude = 50.331200000000003,
                             Longitude = 26.509799999999998,
-                            StatusId = new Guid("00000000-0000-0000-0000-000000000202"),
+                            Status = "В роботі",
                             Title = "Аварійне дерево на вул. Луцька",
                             UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            UserConfirmationStatus = 0
+                            UserConfirmationStatus = "Очікує підтвердження"
                         },
                         new
                         {
@@ -652,10 +655,10 @@ namespace Infrastructure.Persistence.Migrations
                             Description = "Пішохідний перехід біля школи №2 без розмітки, небезпечно для дітей.",
                             Latitude = 50.328899999999997,
                             Longitude = 26.515599999999999,
-                            StatusId = new Guid("00000000-0000-0000-0000-000000000201"),
+                            Status = "Нова",
                             Title = "Відсутня розмітка на пішохідному переході",
                             UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            UserConfirmationStatus = 0
+                            UserConfirmationStatus = "Очікує підтвердження"
                         },
                         new
                         {
@@ -665,10 +668,10 @@ namespace Infrastructure.Persistence.Migrations
                             Description = "Великі тріщини на тротуарі, небезпечно для пішоходів, особливо в темний час доби.",
                             Latitude = 50.330500000000001,
                             Longitude = 26.513400000000001,
-                            StatusId = new Guid("00000000-0000-0000-0000-000000000201"),
+                            Status = "Нова",
                             Title = "Тріщина на тротуарі вул. Папаніна",
                             UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            UserConfirmationStatus = 0
+                            UserConfirmationStatus = "Очікує підтвердження"
                         },
                         new
                         {
@@ -678,10 +681,10 @@ namespace Infrastructure.Persistence.Migrations
                             Description = "Ведеться будівництво без відповідних дозволів, порушується архітектурний вигляд міста.",
                             Latitude = 50.329799999999999,
                             Longitude = 26.517800000000001,
-                            StatusId = new Guid("00000000-0000-0000-0000-000000000204"),
+                            Status = "Відхилено",
                             Title = "Незаконне будівництво на вул. Князів Острозьких",
                             UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            UserConfirmationStatus = 0
+                            UserConfirmationStatus = "Очікує підтвердження"
                         },
                         new
                         {
@@ -691,10 +694,10 @@ namespace Infrastructure.Persistence.Migrations
                             Description = "Гойдалки та гірка на дитячому майданчику в аварійному стані.",
                             Latitude = 50.328200000000002,
                             Longitude = 26.514199999999999,
-                            StatusId = new Guid("00000000-0000-0000-0000-000000000202"),
+                            Status = "В роботі",
                             Title = "Потребує ремонту дитячий майданчик",
                             UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            UserConfirmationStatus = 0
+                            UserConfirmationStatus = "Очікує підтвердження"
                         },
                         new
                         {
@@ -704,10 +707,10 @@ namespace Infrastructure.Persistence.Migrations
                             Description = "На перехресті вул. Академічна та вул. Семінарська відсутній знак пріоритету.",
                             Latitude = 50.3307,
                             Longitude = 26.516100000000002,
-                            StatusId = new Guid("00000000-0000-0000-0000-000000000201"),
+                            Status = "Нова",
                             Title = "Відсутній дорожній знак на перехресті",
                             UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            UserConfirmationStatus = 0
+                            UserConfirmationStatus = "Очікує підтвердження"
                         },
                         new
                         {
@@ -717,10 +720,10 @@ namespace Infrastructure.Persistence.Migrations
                             Description = "Витік води з водопровідної труби, вода заливає дорогу.",
                             Latitude = 50.329099999999997,
                             Longitude = 26.517099999999999,
-                            StatusId = new Guid("00000000-0000-0000-0000-000000000202"),
+                            Status = "В роботі",
                             Title = "Прорив водопроводу на вул. Замкова",
                             UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            UserConfirmationStatus = 0
+                            UserConfirmationStatus = "Очікує підтвердження"
                         },
                         new
                         {
@@ -730,10 +733,10 @@ namespace Infrastructure.Persistence.Migrations
                             Description = "Клумби біля центральної площі не доглядаються, заросли бур'яном.",
                             Latitude = 50.329599999999999,
                             Longitude = 26.514900000000001,
-                            StatusId = new Guid("00000000-0000-0000-0000-000000000201"),
+                            Status = "Нова",
                             Title = "Зарослі бур'яном клумби в центрі",
                             UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            UserConfirmationStatus = 0
+                            UserConfirmationStatus = "Очікує підтвердження"
                         },
                         new
                         {
@@ -743,10 +746,10 @@ namespace Infrastructure.Persistence.Migrations
                             Description = "Світлофор на перехресті не працює вже другий день.",
                             Latitude = 50.331499999999998,
                             Longitude = 26.510200000000001,
-                            StatusId = new Guid("00000000-0000-0000-0000-000000000202"),
+                            Status = "В роботі",
                             Title = "Не працює світлофор на вул. Луцька",
                             UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            UserConfirmationStatus = 0
+                            UserConfirmationStatus = "Очікує підтвердження"
                         },
                         new
                         {
@@ -756,10 +759,10 @@ namespace Infrastructure.Persistence.Migrations
                             Description = "Стихійне сміттєзвалище утворилося в лісосмузі за містом.",
                             Latitude = 50.327199999999998,
                             Longitude = 26.519500000000001,
-                            StatusId = new Guid("00000000-0000-0000-0000-000000000201"),
+                            Status = "Нова",
                             Title = "Сміттєзвалище в лісосмузі",
                             UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            UserConfirmationStatus = 0
+                            UserConfirmationStatus = "Очікує підтвердження"
                         },
                         new
                         {
@@ -769,10 +772,10 @@ namespace Infrastructure.Persistence.Migrations
                             Description = "Огорожа школи №1 іржава та потребує фарбування.",
                             Latitude = 50.328800000000001,
                             Longitude = 26.5138,
-                            StatusId = new Guid("00000000-0000-0000-0000-000000000203"),
+                            Status = "Виконано",
                             Title = "Потребує фарбування огорожа школи",
                             UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            UserConfirmationStatus = 0
+                            UserConfirmationStatus = "Очікує підтвердження"
                         },
                         new
                         {
@@ -782,10 +785,10 @@ namespace Infrastructure.Persistence.Migrations
                             Description = "На автобусній зупинці 'Центр' немає урн для сміття.",
                             Latitude = 50.330199999999998,
                             Longitude = 26.5153,
-                            StatusId = new Guid("00000000-0000-0000-0000-000000000201"),
+                            Status = "Нова",
                             Title = "Відсутні урни на зупинці",
                             UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            UserConfirmationStatus = 0
+                            UserConfirmationStatus = "Очікує підтвердження"
                         },
                         new
                         {
@@ -795,10 +798,10 @@ namespace Infrastructure.Persistence.Migrations
                             Description = "Бордюр зруйнований на протяжності 5 метрів.",
                             Latitude = 50.329900000000002,
                             Longitude = 26.516400000000001,
-                            StatusId = new Guid("00000000-0000-0000-0000-000000000201"),
+                            Status = "Нова",
                             Title = "Зламаний бордюр на вул. Князів Острозьких",
                             UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            UserConfirmationStatus = 0
+                            UserConfirmationStatus = "Очікує підтвердження"
                         },
                         new
                         {
@@ -808,10 +811,10 @@ namespace Infrastructure.Persistence.Migrations
                             Description = "Гілки дерева загрожують електричним проводам.",
                             Latitude = 50.328600000000002,
                             Longitude = 26.514700000000001,
-                            StatusId = new Guid("00000000-0000-0000-0000-000000000202"),
+                            Status = "В роботі",
                             Title = "Потребує обрізки дерева біля будинку",
                             UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            UserConfirmationStatus = 0
+                            UserConfirmationStatus = "Очікує підтвердження"
                         },
                         new
                         {
@@ -821,10 +824,10 @@ namespace Infrastructure.Persistence.Migrations
                             Description = "Після дощу утворюються великі калюжі через відсутність каналізації.",
                             Latitude = 50.3279,
                             Longitude = 26.513200000000001,
-                            StatusId = new Guid("00000000-0000-0000-0000-000000000201"),
+                            Status = "Нова",
                             Title = "Відсутня каналізація на вул. Садова",
                             UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            UserConfirmationStatus = 0
+                            UserConfirmationStatus = "Очікує підтвердження"
                         },
                         new
                         {
@@ -834,10 +837,10 @@ namespace Infrastructure.Persistence.Migrations
                             Description = "Вандали розмалювали фасад історичної будівлі в центрі міста.",
                             Latitude = 50.329300000000003,
                             Longitude = 26.517499999999998,
-                            StatusId = new Guid("00000000-0000-0000-0000-000000000203"),
+                            Status = "Виконано",
                             Title = "Граффіті на фасаді історичної будівлі",
                             UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            UserConfirmationStatus = 0
+                            UserConfirmationStatus = "Очікує підтвердження"
                         });
                 });
 
@@ -1035,50 +1038,6 @@ namespace Infrastructure.Persistence.Migrations
                     b.ToTable("refresh_tokens", (string)null);
                 });
 
-            modelBuilder.Entity("Domain.Statuses.Status", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("varchar(100)")
-                        .HasColumnName("name");
-
-                    b.HasKey("Id")
-                        .HasName("pk_statuses");
-
-                    b.ToTable("statuses", (string)null);
-
-                    b.HasData(
-                        new
-                        {
-                            Id = new Guid("00000000-0000-0000-0000-000000000201"),
-                            Name = "Нова"
-                        },
-                        new
-                        {
-                            Id = new Guid("00000000-0000-0000-0000-000000000202"),
-                            Name = "В роботі"
-                        },
-                        new
-                        {
-                            Id = new Guid("00000000-0000-0000-0000-000000000203"),
-                            Name = "Виконано"
-                        },
-                        new
-                        {
-                            Id = new Guid("00000000-0000-0000-0000-000000000204"),
-                            Name = "Відхилено"
-                        },
-                        new
-                        {
-                            Id = new Guid("00000000-0000-0000-0000-000000000205"),
-                            Name = "Потребує уточнення"
-                        });
-                });
-
             modelBuilder.Entity("RoleUser", b =>
                 {
                     b.Property<Guid>("RolesId")
@@ -1180,18 +1139,9 @@ namespace Infrastructure.Persistence.Migrations
                         .IsRequired()
                         .HasConstraintName("fk_problems_users_created_by_id");
 
-                    b.HasOne("Domain.Statuses.Status", "ProblemStatus")
-                        .WithMany("Problems")
-                        .HasForeignKey("StatusId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired()
-                        .HasConstraintName("fk_problems_statuses_status_id");
-
                     b.Navigation("Coordinator");
 
                     b.Navigation("CreatedBy");
-
-                    b.Navigation("ProblemStatus");
                 });
 
             modelBuilder.Entity("Domain.Problems.ProblemImage", b =>
@@ -1276,11 +1226,6 @@ namespace Infrastructure.Persistence.Migrations
                     b.Navigation("Images");
 
                     b.Navigation("Ratings");
-                });
-
-            modelBuilder.Entity("Domain.Statuses.Status", b =>
-                {
-                    b.Navigation("Problems");
                 });
 #pragma warning restore 612, 618
         }

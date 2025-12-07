@@ -4,7 +4,6 @@ using Application.Common.Interfaces.Repositories;
 using Application.Problems.Exceptions;
 using Application.Services.SignalRService;
 using Domain.Problems;
-using Domain.Statuses;
 using MediatR;
 
 namespace Application.Problems.Commands;
@@ -16,7 +15,6 @@ public record UpdateProblemCommand : IRequest<Result<Problem, ProblemException>>
     public required double Latitude { get; init; }
     public required double Longitude { get; init; }
     public required string Description { get; init; }
-    public required StatusId StatusId { get; init; }
     public List<Guid>? ProblemCategoryIds { get; init; } 
 }
 
@@ -40,7 +38,6 @@ public class UpdateProblemCommandHandler(
                 request.Latitude,
                 request.Longitude,
                 request.Description,
-                request.StatusId,
                 request.ProblemCategoryIds, 
                 cancellationToken),
             () => Task.FromResult<Result<Problem, ProblemException>>(
@@ -54,7 +51,6 @@ public class UpdateProblemCommandHandler(
         double latitude,
         double longitude,
         string description,
-        StatusId statusId,
         List<Guid>? categoryIds,
         CancellationToken cancellationToken)
     {
@@ -69,8 +65,7 @@ public class UpdateProblemCommandHandler(
                 return new ProblemWithTitleAlreadyExistsException(problem.Id, title);
             }
 
-            var oldStatusId = problem.StatusId;
-            problem.UpdateProblem(title, latitude, longitude, description, statusId);
+            problem.UpdateProblem(title, latitude, longitude, description);
 
             if (categoryIds is not null && categoryIds.Any())
             {
@@ -87,21 +82,7 @@ public class UpdateProblemCommandHandler(
                 }
             }
 
-            var result = await problemRepository.Update(problem, cancellationToken);
-            if (oldStatusId.Value != statusId.Value && problem.CreatedBy != null)
-            {
-                var statusName = problem.ProblemStatus?.Name ?? "Невідомий статус";
-                var userId = problem.CoordinatorId;
-                await signalRService.SendNotificationToUser(
-                    userId,
-                    NotificationDto.Create("status_change",
-                        $"Статус вашої проблеми змінено на: {statusName}",
-                        problem.Id.Value.ToString(),
-                        problem.Title),
-                    cancellationToken);
-            }
-
-            return result;
+            return await problemRepository.Update(problem, cancellationToken);
         }
         catch (Exception exception)
         {

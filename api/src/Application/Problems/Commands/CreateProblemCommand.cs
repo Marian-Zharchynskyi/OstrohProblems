@@ -3,7 +3,6 @@ using Application.Common.Interfaces.Repositories;
 using Application.Problems.Exceptions;
 using Domain.Identity.Users;
 using Domain.Problems;
-using Domain.Statuses;
 using MediatR;
 using Microsoft.AspNetCore.Http;
 
@@ -15,7 +14,6 @@ public record CreateProblemCommand : IRequest<Result<Problem, ProblemException>>
     public required double Latitude { get; init; }
     public required double Longitude { get; init; }
     public required string Description { get; init; }
-    public required StatusId StatusId { get; init; }
     public required List<Guid> ProblemCategoryIds { get; init; }
 }
 
@@ -48,7 +46,6 @@ public class CreateProblemCommandHandler : IRequestHandler<CreateProblemCommand,
                 request.Latitude,
                 request.Longitude,
                 request.Description,
-                request.StatusId,
                 request.ProblemCategoryIds,
                 cancellationToken));
     }
@@ -58,7 +55,6 @@ public class CreateProblemCommandHandler : IRequestHandler<CreateProblemCommand,
         double latitude,
         double longitude,
         string description,
-        StatusId statusId,
         List<Guid> categoryIds,
         CancellationToken cancellationToken)
     {
@@ -81,7 +77,6 @@ public class CreateProblemCommandHandler : IRequestHandler<CreateProblemCommand,
                 latitude,
                 longitude,
                 description,
-                statusId,
                 userId
             );
 

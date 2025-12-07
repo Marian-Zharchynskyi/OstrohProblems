@@ -35,7 +35,7 @@ public class CategoriesController(ISender sender, ICategoryQueries categoryQueri
         );
     }
 
-    [Authorize(Roles = RoleNames.Admin)]
+    [Authorize(Roles = $"{RoleNames.Admin},{RoleNames.User}")]
     [HttpGet("get-all")]
     public async Task<ActionResult<IReadOnlyList<CategoryDto>>> GetAll(CancellationToken cancellationToken)
     {

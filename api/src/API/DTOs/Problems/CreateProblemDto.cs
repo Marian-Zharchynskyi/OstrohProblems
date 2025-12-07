@@ -7,7 +7,6 @@ public record CreateProblemDto(
     double Latitude,
     double Longitude,
     string Description,
-    Guid ProblemStatusId,
     List<Guid> ProblemCategoryIds
 )
 {
@@ -17,7 +16,6 @@ public record CreateProblemDto(
             problem.Latitude,
             problem.Longitude,
             problem.Description,
-            problem.StatusId.Value,
             problem.Categories.Select(c => c.Id.Value).ToList()
         );
 }

@@ -209,10 +209,22 @@ export function ProblemDetailPage() {
             </CardHeader>
             <CardContent>
               <span className="inline-flex items-center rounded-full bg-blue-50 px-3 py-1 text-sm text-blue-700">
-                {problem.problemStatus?.name || 'Невідомо'}
+                {problem.status || 'Невідомо'}
               </span>
             </CardContent>
           </Card>
+
+          {/* Current State */}
+          {problem.currentState && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Поточний стан</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground">{problem.currentState}</p>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Location */}
           <Card>

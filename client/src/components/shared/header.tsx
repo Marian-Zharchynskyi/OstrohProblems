@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom'
-import { LogOut, User, Users, UserCircle } from 'lucide-react'
+import { LogOut, User, Users, UserCircle, Plus } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/contexts/auth-context'
 import { NotificationsBell } from '@/components/notifications/notifications-bell'
@@ -10,27 +10,54 @@ const publicNavItems = [
   { path: '/contact', label: 'Контакти' },
 ]
 
-const protectedNavItems = [
+// Меню для адміністратора - повний доступ
+const adminNavItems = [
   { path: '/dashboard', label: 'Головна' },
   { path: '/map', label: 'Карта' },
   { path: '/problems', label: 'Проблеми' },
   { path: '/categories', label: 'Категорії' },
-  { path: '/statuses', label: 'Статуси' },
   { path: '/comments', label: 'Коментарі' },
   { path: '/ratings', label: 'Рейтинги' },
+]
+
+// Меню для координатора
+const coordinatorNavItems = [
+  { path: '/coordinator', label: 'Панель координатора' },
+]
+
+// Меню для звичайного користувача
+const userNavItems = [
+  { path: '/', label: 'Головна' },
+  { path: '/about', label: 'Про нас' },
+  { path: '/contact', label: 'Контакти' },
 ]
 
 export const Header = () => {
   const location = useLocation()
   const { isAuthenticated, user, signOut } = useAuth()
 
-  const navItems = isAuthenticated ? protectedNavItems : publicNavItems
+  const isAdmin = user?.roles?.includes('Administrator')
+  const isCoordinator = user?.roles?.includes('Coordinator')
+  const isUser = user?.roles?.includes('User')
+
+  // Визначаємо меню залежно від ролі
+  const getNavItems = () => {
+    if (!isAuthenticated) return publicNavItems
+    if (isAdmin) return adminNavItems
+    if (isCoordinator) return coordinatorNavItems
+    return userNavItems
+  }
+
+  const navItems = getNavItems()
+
+  // Визначаємо куди веде логотип
+  const logoLink = isAuthenticated && !isUser ? (isAdmin ? '/dashboard' : '/coordinator') : '/'
 
   return (
     <header className="border-b bg-white">
       <div className="container mx-auto px-4 py-4">
         <nav className="flex items-center justify-between">
-          <Link to="/" className="text-2xl font-bold text-primary font-heading">
+          <Link to={logoLink} className="text-2xl font-bold text-primary font-heading">
             Острог разом
           </Link>
           <div className="flex items-center gap-6">
@@ -53,20 +80,48 @@ export const Header = () => {
             </ul>
             {isAuthenticated ? (
               <div className="flex items-center gap-4">
+                {/* Кнопка "Почати" для користувача */}
+                {isUser && (
+                  <Link
+                    to="/problems/create"
+                    className="flex items-center gap-2 text-sm font-medium bg-primary text-primary-foreground px-4 py-2 rounded-md hover:bg-primary/90 transition-colors"
+                  >
+                    <Plus className="h-4 w-4" />
+                    Почати
+                  </Link>
+                )}
+                
+                {/* Мої проблеми для користувача */}
+                {isUser && (
+                  <Link
+                    to="/my-problems"
+                    className={cn(
+                      'text-sm font-medium transition-colors hover:text-primary',
+                      location.pathname === '/my-problems'
+                        ? 'text-primary'
+                        : 'text-muted-foreground'
+                    )}
+                  >
+                    Мої проблеми
+                  </Link>
+                )}
+
                 <NotificationsBell />
-                <Link
-                  to="/profile"
-                  className={cn(
-                    'flex items-center gap-2 text-sm font-medium transition-colors hover:text-primary',
-                    location.pathname === '/profile'
-                      ? 'text-primary'
-                      : 'text-muted-foreground'
-                  )}
-                >
-                  <UserCircle className="h-4 w-4" />
-                  Профіль
-                </Link>
-                {user?.roles?.includes('Administrator') && (
+                {!isCoordinator && (
+                  <Link
+                    to="/profile"
+                    className={cn(
+                      'flex items-center gap-2 text-sm font-medium transition-colors hover:text-primary',
+                      location.pathname === '/profile'
+                        ? 'text-primary'
+                        : 'text-muted-foreground'
+                    )}
+                  >
+                    <UserCircle className="h-4 w-4" />
+                    Профіль
+                  </Link>
+                )}
+                {isAdmin && (
                   <Link
                     to="/admin/users"
                     className={cn(
