@@ -120,4 +120,15 @@ export const problemsApi = {
     )
     return response.data
   },
+
+  // New filtering methods
+  getByUser: async (userId: string) => {
+    const response = await apiClient.get<Problem[]>(`${BASE_URL}/by-user/${userId}`)
+    return response.data
+  },
+
+  getByCoordinator: async (coordinatorId: string) => {
+    const response = await apiClient.get<Problem[]>(`${BASE_URL}/by-coordinator/${coordinatorId}`)
+    return response.data
+  },
 }

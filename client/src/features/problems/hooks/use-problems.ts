@@ -83,3 +83,20 @@ export function useDeleteProblemImage() {
     },
   })
 }
+
+// New filtering hooks
+export function useProblemsByUser(userId: string) {
+  return useQuery({
+    queryKey: [PROBLEMS_QUERY_KEY, 'by-user', userId],
+    queryFn: () => problemsApi.getByUser(userId),
+    enabled: !!userId,
+  })
+}
+
+export function useProblemsByCoordinator(coordinatorId: string) {
+  return useQuery({
+    queryKey: [PROBLEMS_QUERY_KEY, 'by-coordinator', coordinatorId],
+    queryFn: () => problemsApi.getByCoordinator(coordinatorId),
+    enabled: !!coordinatorId,
+  })
+}

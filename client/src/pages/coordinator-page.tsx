@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { problemsApi } from '@/features/problems/api/problems-api'
+import { useProblems, useProblemsByCoordinator } from '@/features/problems/hooks/use-problems'
 import type { Problem } from '@/types'
 import { ProblemStatusConstants } from '@/types'
 import { Button } from '@/components/ui/button'
@@ -7,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Textarea } from '@/components/ui/textarea'
 import { useAuth } from '@/contexts/auth-context'
 import { toast } from '@/lib/toast'
+import { useQueryClient } from '@tanstack/react-query'
 
 const statusOptions = [
   ProblemStatusConstants.New,
@@ -18,27 +20,22 @@ const statusOptions = [
 
 export default function CoordinatorPage() {
   const { user } = useAuth()
-  const [problems, setProblems] = useState<Problem[]>([])
-  const [loading, setLoading] = useState(true)
+  const queryClient = useQueryClient()
+  
+  // Use hooks for fetching problems
+  const { data: allProblems = [], isLoading: loadingAll } = useProblems()
+  const { data: myProblems = [], isLoading: loadingMy } = useProblemsByCoordinator(user?.id || '')
+  
   const [rejectionReason, setRejectionReason] = useState('')
   const [currentStateInput, setCurrentStateInput] = useState('')
   const [activeTab, setActiveTab] = useState<'new' | 'my'>('new')
   const [detailProblem, setDetailProblem] = useState<Problem | null>(null)
   const [actionMode, setActionMode] = useState<'reject' | 'currentState' | 'complete' | null>(null)
 
-  useEffect(() => {
-    loadData()
-  }, [])
+  const loading = loadingAll || loadingMy
 
-  const loadData = async () => {
-    try {
-      const problemsData = await problemsApi.getAll()
-      setProblems(problemsData)
-    } catch {
-      toast.error('Помилка завантаження даних')
-    } finally {
-      setLoading(false)
-    }
+  const invalidateQueries = () => {
+    queryClient.invalidateQueries({ queryKey: ['problems'] })
   }
 
   const handleAssignToMe = async (problemId: string) => {
@@ -47,7 +44,7 @@ export default function CoordinatorPage() {
       await problemsApi.assignCoordinator(problemId, user.id)
       toast.success('Проблему призначено вам')
       setDetailProblem(null)
-      loadData()
+      invalidateQueries()
     } catch {
       toast.error('Помилка призначення')
     }
@@ -59,7 +56,7 @@ export default function CoordinatorPage() {
       toast.success('Роботу над проблемою розпочато')
       setCurrentStateInput('')
       setDetailProblem(null)
-      loadData()
+      invalidateQueries()
     } catch {
       toast.error('Помилка')
     }
@@ -76,7 +73,7 @@ export default function CoordinatorPage() {
       setRejectionReason('')
       setDetailProblem(null)
       setActionMode(null)
-      loadData()
+      invalidateQueries()
     } catch {
       toast.error('Помилка відхилення')
     }
@@ -92,7 +89,7 @@ export default function CoordinatorPage() {
       toast.success('Поточний стан оновлено')
       setCurrentStateInput('')
       setActionMode(null)
-      loadData()
+      invalidateQueries()
     } catch {
       toast.error('Помилка оновлення')
     }
@@ -102,7 +99,7 @@ export default function CoordinatorPage() {
     try {
       await problemsApi.updateStatus(problemId, status)
       toast.success('Статус оновлено')
-      loadData()
+      invalidateQueries()
     } catch {
       toast.error('Помилка оновлення статусу')
     }
@@ -118,7 +115,7 @@ export default function CoordinatorPage() {
       toast.success('Проблему завершено')
       setCurrentStateInput('')
       setActionMode(null)
-      loadData()
+      invalidateQueries()
     } catch {
       toast.error('Помилка завершення')
     }
@@ -128,8 +125,9 @@ export default function CoordinatorPage() {
     return <div className="container mx-auto p-6">Завантаження...</div>
   }
 
-  const newProblems = problems.filter((p) => !p.coordinator && p.status === ProblemStatusConstants.New)
-  const myProblems = problems.filter((p) => p.coordinator?.id === user?.id)
+  const newProblems = allProblems.filter(
+    (p) => !p.coordinator && p.status === ProblemStatusConstants.New
+  )
 
   // Detail view for a specific problem
   if (detailProblem) {
