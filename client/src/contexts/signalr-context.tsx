@@ -1,7 +1,7 @@
-import { useEffect, useState, type ReactNode } from 'react'
+import { useEffect, useState, useCallback, type ReactNode } from 'react'
 import { signalRService } from '@/services/signalr-service'
 import { useAuth } from './auth-context'
-import type { Notification } from '@/types'
+import type { Notification, Comment } from '@/types'
 import { SignalRContext } from './signalr-context'
 
 export function SignalRProvider({ children }: { children: ReactNode }) {
@@ -42,26 +42,31 @@ export function SignalRProvider({ children }: { children: ReactNode }) {
     }
   }, [user, tokens])
 
-  const joinProblemGroup = async (problemId: string) => {
+  const joinProblemGroup = useCallback(async (problemId: string) => {
     await signalRService.joinProblemGroup(problemId)
-  }
+  }, [])
 
-  const leaveProblemGroup = async (problemId: string) => {
+  const leaveProblemGroup = useCallback(async (problemId: string) => {
     await signalRService.leaveProblemGroup(problemId)
-  }
+  }, [])
 
   // We expose a subscribe method via context value
-  const onCommentReceived = signalRService.onCommentReceived.bind(signalRService)
+  const onCommentReceived = useCallback(
+    (callback: (comment: Comment) => void) => {
+      signalRService.onCommentReceived(callback)
+    },
+    []
+  )
 
-  const markAsRead = (notificationId: string) => {
+  const markAsRead = useCallback((notificationId: string) => {
     setNotifications((prev) =>
       prev.map((n) => (n.id === notificationId ? { ...n, isRead: true } : n))
     )
-  }
+  }, [])
 
-  const clearNotifications = () => {
+  const clearNotifications = useCallback(() => {
     setNotifications([])
-  }
+  }, [])
 
   const unreadCount = notifications.filter((n) => !n.isRead).length
 

@@ -26,7 +26,7 @@ export function ProblemDetailPage() {
   const { user } = useAuth()
   const { data: problem, isLoading, refetch } = useProblem(id || '')
   
-  const realtimeComments = useRealtimeComments(id || null, problem?.comments || [])
+  const realtimeComments = useRealtimeComments(id || null, problem?.comments ?? undefined)
   
   const [newComment, setNewComment] = useState('')
   const [isSubmittingComment, setIsSubmittingComment] = useState(false)

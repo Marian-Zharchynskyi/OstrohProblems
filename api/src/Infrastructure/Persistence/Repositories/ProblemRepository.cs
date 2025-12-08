@@ -1,5 +1,6 @@
 using Application.Common.Interfaces.Queries;
 using Application.Common.Interfaces.Repositories;
+using Domain.Identity.Users;
 using Domain.Problems;
 using Microsoft.EntityFrameworkCore;
 using Optional;
@@ -87,5 +88,37 @@ public class ProblemRepository(ApplicationDbContext context) : IProblemQueries, 
         context.Problems.Remove(problem);
         await context.SaveChangesAsync(cancellationToken);
         return problem;
+    }
+
+    public async Task<IReadOnlyList<Problem>> GetByUserId(UserId userId, CancellationToken cancellationToken)
+    {
+        return await context.Problems
+            .Include(x => x.Categories)
+            .Include(x => x.Comments)
+            .Include(x => x.Images)
+            .Include(x => x.CreatedBy)
+            .Include(x => x.Coordinator)
+            .Include(x => x.Ratings)
+            .AsSplitQuery()
+            .AsNoTracking()
+            .Where(x => x.CreatedById == userId)
+            .OrderByDescending(x => x.CreatedAt)
+            .ToListAsync(cancellationToken);
+    }
+
+    public async Task<IReadOnlyList<Problem>> GetByCoordinatorId(UserId coordinatorId, CancellationToken cancellationToken)
+    {
+        return await context.Problems
+            .Include(x => x.Categories)
+            .Include(x => x.Comments)
+            .Include(x => x.Images)
+            .Include(x => x.CreatedBy)
+            .Include(x => x.Coordinator)
+            .Include(x => x.Ratings)
+            .AsSplitQuery()
+            .AsNoTracking()
+            .Where(x => x.CoordinatorId == coordinatorId)
+            .OrderByDescending(x => x.CreatedAt)
+            .ToListAsync(cancellationToken);
     }
 }

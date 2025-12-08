@@ -3,6 +3,7 @@ using API.Modules.Errors;
 using Application.Common.Interfaces.Queries;
 using Application.Problems.Commands;
 using Domain.Identity.Roles;
+using Domain.Identity.Users;
 using Domain.PagedResults;
 using Domain.Problems;
 using MediatR;
@@ -34,7 +35,7 @@ public class ProblemsController(ISender sender, IProblemQueries problemQueries) 
         );
     }
     
-    [Authorize(Roles = $"{RoleNames.Admin}, {RoleNames.User}")]
+    [Authorize(Roles = $"{RoleNames.Admin}, {RoleNames.User}, {RoleNames.Coordinator}")]
     [HttpGet("get-all")]
     public async Task<ActionResult<IReadOnlyList<ProblemDto>>> GetAll(CancellationToken cancellationToken)
     {
@@ -43,6 +44,26 @@ public class ProblemsController(ISender sender, IProblemQueries problemQueries) 
     }
 
     [Authorize(Roles = $"{RoleNames.Admin}, {RoleNames.User}")]
+    [HttpGet("by-user/{userId:guid}")]
+    public async Task<ActionResult<IReadOnlyList<ProblemDto>>> GetByUser(
+        [FromRoute] Guid userId,
+        CancellationToken cancellationToken)
+    {
+        var entities = await problemQueries.GetByUserId(new UserId(userId), cancellationToken);
+        return entities.Select(ProblemDto.FromDomainModel).ToList();
+    }
+
+    [Authorize(Roles = $"{RoleNames.Admin}, {RoleNames.Coordinator}")]
+    [HttpGet("by-coordinator/{coordinatorId:guid}")]
+    public async Task<ActionResult<IReadOnlyList<ProblemDto>>> GetByCoordinator(
+        [FromRoute] Guid coordinatorId,
+        CancellationToken cancellationToken)
+    {
+        var entities = await problemQueries.GetByCoordinatorId(new UserId(coordinatorId), cancellationToken);
+        return entities.Select(ProblemDto.FromDomainModel).ToList();
+    }
+
+    [Authorize(Roles = $"{RoleNames.Admin}, {RoleNames.User}, {RoleNames.Coordinator}")]
     [HttpGet("get-by-id/{problemId:guid}")]
     public async Task<ActionResult<ProblemDto>> Get([FromRoute] Guid problemId,
         CancellationToken cancellationToken)
