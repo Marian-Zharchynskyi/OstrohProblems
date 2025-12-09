@@ -30,6 +30,7 @@ public class RejectProblemCommandHandler(
                 {
                     problem.Reject(request.RejectionReason);
                     problem.UpdateStatus(ProblemStatus.Rejected);
+                    problem.ClearCoordinator();
                     return await problemRepository.Update(problem, cancellationToken);
                 }
                 catch (Exception exception)

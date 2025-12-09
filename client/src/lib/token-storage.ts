@@ -5,8 +5,8 @@ const REFRESH_TOKEN_KEY = 'refresh_token'
 
 export const tokenStorage = {
   getTokens(): JwtTokens | null {
-    const accessToken = localStorage.getItem(ACCESS_TOKEN_KEY)
-    const refreshToken = localStorage.getItem(REFRESH_TOKEN_KEY)
+    const accessToken = sessionStorage.getItem(ACCESS_TOKEN_KEY)
+    const refreshToken = sessionStorage.getItem(REFRESH_TOKEN_KEY)
 
     if (!accessToken || !refreshToken) {
       return null
@@ -16,16 +16,16 @@ export const tokenStorage = {
   },
 
   setTokens(tokens: JwtTokens): void {
-    localStorage.setItem(ACCESS_TOKEN_KEY, tokens.accessToken)
-    localStorage.setItem(REFRESH_TOKEN_KEY, tokens.refreshToken)
+    sessionStorage.setItem(ACCESS_TOKEN_KEY, tokens.accessToken)
+    sessionStorage.setItem(REFRESH_TOKEN_KEY, tokens.refreshToken)
   },
 
   clearTokens(): void {
-    localStorage.removeItem(ACCESS_TOKEN_KEY)
-    localStorage.removeItem(REFRESH_TOKEN_KEY)
+    sessionStorage.removeItem(ACCESS_TOKEN_KEY)
+    sessionStorage.removeItem(REFRESH_TOKEN_KEY)
   },
 
   getAccessToken(): string | null {
-    return localStorage.getItem(ACCESS_TOKEN_KEY)
+    return sessionStorage.getItem(ACCESS_TOKEN_KEY)
   },
 }

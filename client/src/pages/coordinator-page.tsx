@@ -28,9 +28,10 @@ export default function CoordinatorPage() {
   
   const [rejectionReason, setRejectionReason] = useState('')
   const [currentStateInput, setCurrentStateInput] = useState('')
-  const [activeTab, setActiveTab] = useState<'new' | 'my'>('new')
+  const [selectedStatus, setSelectedStatus] = useState('')
+  const [activeTab, setActiveTab] = useState<'new' | 'my' | 'rejected'>('new')
   const [detailProblem, setDetailProblem] = useState<Problem | null>(null)
-  const [actionMode, setActionMode] = useState<'reject' | 'currentState' | 'complete' | null>(null)
+  const [actionMode, setActionMode] = useState<'reject' | 'currentState' | 'complete' | 'updateStatus' | null>(null)
 
   const loading = loadingAll || loadingMy
 
@@ -95,13 +96,35 @@ export default function CoordinatorPage() {
     }
   }
 
-  const handleStatusChange = async (problemId: string, status: string) => {
+  const handleStatusChange = async (problemId: string) => {
+    if (!selectedStatus) {
+      toast.error('Оберіть статус')
+      return
+    }
     try {
-      await problemsApi.updateStatus(problemId, status)
+      // Update status and current state together
+      await problemsApi.updateStatus(problemId, selectedStatus)
+      if (currentStateInput.trim()) {
+        await problemsApi.updateCurrentState(problemId, currentStateInput)
+      }
       toast.success('Статус оновлено')
+      setSelectedStatus('')
+      setCurrentStateInput('')
+      setActionMode(null)
       invalidateQueries()
     } catch {
       toast.error('Помилка оновлення статусу')
+    }
+  }
+
+  const handleRestoreProblem = async (problemId: string) => {
+    try {
+      await problemsApi.restoreProblem(problemId)
+      toast.success('Проблему повернено')
+      setDetailProblem(null)
+      invalidateQueries()
+    } catch {
+      toast.error('Помилка повернення проблеми')
     }
   }
 
@@ -127,6 +150,10 @@ export default function CoordinatorPage() {
 
   const newProblems = allProblems.filter(
     (p) => !p.coordinator && p.status === ProblemStatusConstants.New
+  )
+
+  const rejectedProblems = allProblems.filter(
+    (p) => p.status === ProblemStatusConstants.Rejected
   )
 
   // Detail view for a specific problem
@@ -228,20 +255,48 @@ export default function CoordinatorPage() {
                   </Button>
                 </div>
 
-                <div className="flex gap-2 items-center">
-                  <span className="font-semibold">Змінити статус:</span>
-                  <select
-                    className="border rounded px-3 py-2"
-                    value={detailProblem.status}
-                    onChange={(e) => handleStatusChange(detailProblem.id!, e.target.value)}
-                  >
-                    {statusOptions.map((status) => (
-                      <option key={status} value={status}>
-                        {status}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+                <Button variant="outline" onClick={() => {
+                  setSelectedStatus(detailProblem.status || '')
+                  setActionMode('updateStatus')
+                }}>
+                  Змінити статус
+                </Button>
+
+                {actionMode === 'updateStatus' && (
+                  <div className="space-y-3 p-4 bg-gray-50 rounded">
+                    <div>
+                      <label className="block text-sm font-medium mb-1">Новий статус</label>
+                      <select
+                        className="border rounded px-3 py-2 w-full"
+                        value={selectedStatus}
+                        onChange={(e) => setSelectedStatus(e.target.value)}
+                      >
+                        <option value="">Оберіть статус...</option>
+                        {statusOptions.map((status) => (
+                          <option key={status} value={status}>
+                            {status}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-1">Опис змін (опційно)</label>
+                      <Textarea
+                        placeholder="Опишіть поточний стан або причину зміни статусу..."
+                        value={currentStateInput}
+                        onChange={(e) => setCurrentStateInput(e.target.value)}
+                      />
+                    </div>
+                    <div className="flex gap-2">
+                      <Button onClick={() => handleStatusChange(detailProblem.id!)}>Зберегти</Button>
+                      <Button variant="outline" onClick={() => {
+                        setActionMode(null)
+                        setSelectedStatus('')
+                        setCurrentStateInput('')
+                      }}>Скасувати</Button>
+                    </div>
+                  </div>
+                )}
 
                 {actionMode === 'currentState' && (
                   <div className="space-y-2">
@@ -288,6 +343,20 @@ export default function CoordinatorPage() {
                 )}
               </div>
             )}
+
+            {/* Restore button for rejected problems */}
+            {detailProblem.status === ProblemStatusConstants.Rejected && (
+              <div className="space-y-4 pt-4 border-t">
+                <div className="bg-red-50 p-4 rounded">
+                  <p className="text-sm text-red-700">
+                    Ця проблема була відхилена. Ви можете повернути її до статусу "Нова".
+                  </p>
+                </div>
+                <Button onClick={() => handleRestoreProblem(detailProblem.id!)}>
+                  Повернути проблему
+                </Button>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
@@ -310,6 +379,12 @@ export default function CoordinatorPage() {
           onClick={() => setActiveTab('my')}
         >
           Мої проблеми ({myProblems.length})
+        </Button>
+        <Button
+          variant={activeTab === 'rejected' ? 'default' : 'outline'}
+          onClick={() => setActiveTab('rejected')}
+        >
+          Відхилені ({rejectedProblems.length})
         </Button>
       </div>
 
@@ -365,6 +440,38 @@ export default function CoordinatorPage() {
                   {problem.currentState && (
                     <p className="text-sm text-blue-600 mb-2 line-clamp-1">
                       <span className="font-semibold">Стан:</span> {problem.currentState}
+                    </p>
+                  )}
+                  <p className="text-xs text-gray-500">
+                    Автор: {problem.createdBy?.email} | {new Date(problem.createdAt).toLocaleDateString('uk-UA')}
+                  </p>
+                </CardContent>
+              </Card>
+            ))
+          )}
+        </div>
+      )}
+
+      {activeTab === 'rejected' && (
+        <div className="grid gap-4">
+          {rejectedProblems.length === 0 ? (
+            <p className="text-gray-500">Немає відхилених проблем</p>
+          ) : (
+            rejectedProblems.map((problem) => (
+              <Card key={problem.id} className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => setDetailProblem(problem)}>
+                <CardHeader>
+                  <CardTitle className="flex justify-between items-center">
+                    <span>{problem.title}</span>
+                    <span className="inline-flex items-center rounded-full bg-red-100 px-2 py-1 text-xs font-medium text-red-800">
+                      {problem.status}
+                    </span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-gray-600 mb-2 line-clamp-2">{problem.description}</p>
+                  {problem.rejectionReason && (
+                    <p className="text-sm text-red-600 mb-2 line-clamp-1">
+                      <span className="font-semibold">Причина:</span> {problem.rejectionReason}
                     </p>
                   )}
                   <p className="text-xs text-gray-500">
