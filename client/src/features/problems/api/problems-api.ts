@@ -121,7 +121,6 @@ export const problemsApi = {
     return response.data
   },
 
-  // New filtering methods
   getByUser: async (userId: string) => {
     const response = await apiClient.get<Problem[]>(`${BASE_URL}/by-user/${userId}`)
     return response.data
@@ -129,6 +128,11 @@ export const problemsApi = {
 
   getByCoordinator: async (coordinatorId: string) => {
     const response = await apiClient.get<Problem[]>(`${BASE_URL}/by-coordinator/${coordinatorId}`)
+    return response.data
+  },
+
+  restoreProblem: async (problemId: string) => {
+    const response = await apiClient.put<Problem>(`${BASE_URL}/restore/${problemId}`)
     return response.data
   },
 }

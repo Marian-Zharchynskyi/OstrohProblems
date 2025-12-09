@@ -97,9 +97,22 @@ public class Problem
         UpdatedAt = DateTime.UtcNow;
     }
 
+    public void ClearCoordinator()
+    {
+        CoordinatorId = null;
+        Coordinator = null;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
     public void Reject(string reason)
     {
         RejectionReason = reason;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    public void ClearRejection()
+    {
+        RejectionReason = null;
         UpdatedAt = DateTime.UtcNow;
     }
 

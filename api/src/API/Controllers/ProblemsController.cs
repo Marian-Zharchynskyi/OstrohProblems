@@ -334,4 +334,22 @@ public class ProblemsController(ISender sender, IProblemQueries problemQueries) 
             problem => ProblemDto.FromDomainModel(problem),
             e => e.ToObjectResult());
     }
+
+    [Authorize(Roles = $"{RoleNames.Admin}, {RoleNames.Coordinator}")]
+    [HttpPut("restore/{problemId:guid}")]
+    public async Task<ActionResult<ProblemDto>> RestoreProblem(
+        [FromRoute] Guid problemId,
+        CancellationToken cancellationToken)
+    {
+        var input = new RestoreProblemCommand
+        {
+            ProblemId = problemId
+        };
+
+        var result = await sender.Send(input, cancellationToken);
+
+        return result.Match<ActionResult<ProblemDto>>(
+            problem => ProblemDto.FromDomainModel(problem),
+            e => e.ToObjectResult());
+    }
 }
