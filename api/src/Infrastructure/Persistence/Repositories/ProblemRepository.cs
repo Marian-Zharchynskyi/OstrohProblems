@@ -121,4 +121,20 @@ public class ProblemRepository(ApplicationDbContext context) : IProblemQueries, 
             .OrderByDescending(x => x.CreatedAt)
             .ToListAsync(cancellationToken);
     }
+
+    public async Task<IReadOnlyList<Problem>> GetByStatus(ProblemStatus status, CancellationToken cancellationToken)
+    {
+        return await context.Problems
+            .Include(x => x.Categories)
+            .Include(x => x.Comments)
+            .Include(x => x.Images)
+            .Include(x => x.CreatedBy)
+            .Include(x => x.Coordinator)
+            .Include(x => x.Ratings)
+            .AsSplitQuery()
+            .AsNoTracking()
+            .Where(x => x.Status == status)
+            .OrderByDescending(x => x.CreatedAt)
+            .ToListAsync(cancellationToken);
+    }
 }

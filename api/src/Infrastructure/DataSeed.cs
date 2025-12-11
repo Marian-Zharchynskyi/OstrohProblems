@@ -134,8 +134,7 @@ public static class DataSeed
             ProblemStatusConstants.New,
             ProblemStatusConstants.InProgress,
             ProblemStatusConstants.Completed,
-            ProblemStatusConstants.Rejected,
-            ProblemStatusConstants.NeedsClarification
+            ProblemStatusConstants.Rejected
         };
 
         var problemsData = new[]
@@ -199,8 +198,7 @@ public static class DataSeed
                 Status = ProblemStatus.From(statusValues[data.StatusIndex]),
                 CreatedAt = baseDate,
                 UpdatedAt = baseDate,
-                CreatedById = new UserId(adminUserId),
-                UserConfirmationStatus = UserConfirmationStatus.Pending
+                CreatedById = new UserId(adminUserId)
             })
             .ToArray();
 

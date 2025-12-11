@@ -59,13 +59,6 @@ public class ProblemConfiguration : IEntityTypeConfiguration<Problem>
         builder.Property(p => p.CurrentState)
             .HasColumnType("varchar(2000)");
 
-        builder.Property(p => p.UserConfirmationStatus)
-            .HasConversion(
-                status => status.Value,
-                value => UserConfirmationStatus.From(value))
-            .IsRequired()
-            .HasColumnType("varchar(50)");
-
         builder.HasMany(p => p.Comments)
             .WithOne(c => c.Problem)
             .HasForeignKey(c => c.ProblemId)

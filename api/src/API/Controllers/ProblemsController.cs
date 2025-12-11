@@ -235,37 +235,17 @@ public class ProblemsController(ISender sender, IProblemQueries problemQueries) 
             e => e.ToObjectResult());
     }
 
-    [Authorize(Roles = $"{RoleNames.Admin}, {RoleNames.User}")]
-    [HttpPut("confirm/{problemId:guid}")]
-    public async Task<ActionResult<ProblemDto>> ConfirmByUser(
-        [FromRoute] Guid problemId,
-        [FromBody] string confirmationStatus,
-        CancellationToken cancellationToken)
-    {
-        var input = new ConfirmProblemByUserCommand
-        {
-            ProblemId = problemId,
-            ConfirmationStatus = UserConfirmationStatus.From(confirmationStatus)
-        };
-
-        var result = await sender.Send(input, cancellationToken);
-
-        return result.Match<ActionResult<ProblemDto>>(
-            problem => ProblemDto.FromDomainModel(problem),
-            e => e.ToObjectResult());
-    }
-
     [Authorize(Roles = $"{RoleNames.Admin}, {RoleNames.Coordinator}")]
     [HttpPut("update-current-state/{problemId:guid}")]
     public async Task<ActionResult<ProblemDto>> UpdateCurrentState(
         [FromRoute] Guid problemId,
-        [FromBody] string currentState,
+        [FromBody] UpdateCurrentStateDto request,
         CancellationToken cancellationToken)
     {
         var input = new UpdateCurrentStateCommand
         {
             ProblemId = problemId,
-            CurrentState = currentState
+            CurrentState = request.CurrentState
         };
 
         var result = await sender.Send(input, cancellationToken);
@@ -351,5 +331,16 @@ public class ProblemsController(ISender sender, IProblemQueries problemQueries) 
         return result.Match<ActionResult<ProblemDto>>(
             problem => ProblemDto.FromDomainModel(problem),
             e => e.ToObjectResult());
+    }
+
+    [Authorize(Roles = $"{RoleNames.Admin}, {RoleNames.Coordinator}")]
+    [HttpGet("by-status/{status}")]
+    public async Task<ActionResult<IReadOnlyList<ProblemDto>>> GetByStatus(
+        [FromRoute] string status,
+        CancellationToken cancellationToken)
+    {
+        var problemStatus = ProblemStatus.From(status);
+        var entities = await problemQueries.GetByStatus(problemStatus, cancellationToken);
+        return entities.Select(ProblemDto.FromDomainModel).ToList();
     }
 }

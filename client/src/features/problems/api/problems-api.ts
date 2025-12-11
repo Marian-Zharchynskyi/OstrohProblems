@@ -81,14 +81,6 @@ export const problemsApi = {
     return response.data
   },
 
-  confirmByUser: async (problemId: string, confirmationStatus: string) => {
-    const response = await apiClient.put<Problem>(
-      `${BASE_URL}/confirm/${problemId}`,
-      confirmationStatus
-    )
-    return response.data
-  },
-
   updateCurrentState: async (problemId: string, currentState: string) => {
     const response = await apiClient.put<Problem>(
       `${BASE_URL}/update-current-state/${problemId}`,
@@ -96,23 +88,6 @@ export const problemsApi = {
     )
     return response.data
   },
-
-  updateStatus: async (problemId: string, status: string) => {
-    const response = await apiClient.put<Problem>(
-      `${BASE_URL}/update-status/${problemId}`,
-      status
-    )
-    return response.data
-  },
-
-  startProblem: async (problemId: string, currentState?: string) => {
-    const response = await apiClient.put<Problem>(
-      `${BASE_URL}/start/${problemId}`,
-      currentState || ''
-    )
-    return response.data
-  },
-
   completeProblem: async (problemId: string, currentState: string) => {
     const response = await apiClient.put<Problem>(
       `${BASE_URL}/complete/${problemId}`,
@@ -133,6 +108,11 @@ export const problemsApi = {
 
   restoreProblem: async (problemId: string) => {
     const response = await apiClient.put<Problem>(`${BASE_URL}/restore/${problemId}`)
+    return response.data
+  },
+
+  getByStatus: async (status: string) => {
+    const response = await apiClient.get<Problem[]>(`${BASE_URL}/by-status/${encodeURIComponent(status)}`)
     return response.data
   },
 }

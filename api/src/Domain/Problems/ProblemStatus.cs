@@ -8,7 +8,6 @@ public class ProblemStatusConstants
     public const string InProgress = "В роботі";
     public const string Completed = "Виконано";
     public const string Rejected = "Відхилено";
-    public const string NeedsClarification = "Потребує уточнення";
 }
 
 public class ProblemStatus : ValueObject
@@ -36,7 +35,6 @@ public class ProblemStatus : ValueObject
     public static ProblemStatus InProgress => new(ProblemStatusConstants.InProgress);
     public static ProblemStatus Completed => new(ProblemStatusConstants.Completed);
     public static ProblemStatus Rejected => new(ProblemStatusConstants.Rejected);
-    public static ProblemStatus NeedsClarification => new(ProblemStatusConstants.NeedsClarification);
 
     public static implicit operator string(ProblemStatus status)
     {
@@ -66,7 +64,6 @@ public class ProblemStatus : ValueObject
             yield return InProgress;
             yield return Completed;
             yield return Rejected;
-            yield return NeedsClarification;
         }
     }
 }

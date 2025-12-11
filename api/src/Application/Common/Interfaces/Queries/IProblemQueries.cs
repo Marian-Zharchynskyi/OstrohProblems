@@ -20,4 +20,9 @@ public interface IProblemQueries
     /// Get problems assigned to a specific coordinator
     /// </summary>
     Task<IReadOnlyList<Problem>> GetByCoordinatorId(UserId coordinatorId, CancellationToken cancellationToken);
+    
+    /// <summary>
+    /// Get problems by status
+    /// </summary>
+    Task<IReadOnlyList<Problem>> GetByStatus(ProblemStatus status, CancellationToken cancellationToken);
 }

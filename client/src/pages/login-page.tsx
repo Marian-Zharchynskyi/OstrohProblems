@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '@/contexts/auth-context'
+import { getDefaultRouteForUser } from '@/lib/auth-routes'
 
 export function LoginPage() {
   const [email, setEmail] = useState('')
@@ -17,11 +18,12 @@ export function LoginPage() {
     setIsLoading(true)
 
     try {
-      await signIn(email, password)
-      navigate('/')
-    } catch (err) {
-      setError('Invalid email or password. Please try again.')
-      console.error('Login error:', err)
+      const user = await signIn(email, password)
+      navigate(getDefaultRouteForUser(user))
+    } catch (err: unknown) {
+      const errorMessage = typeof err === 'string' ? err : 'Invalid email or password. Please try again.'
+      setError(errorMessage)
+      console.error('Login error:', err instanceof Error ? err.message : String(err))
     } finally {
       setIsLoading(false)
     }

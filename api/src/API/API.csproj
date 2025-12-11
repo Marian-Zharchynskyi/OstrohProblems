@@ -29,11 +29,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="data\images\problemImages\" />
-      <Folder Include="data\images\userImages\" />
-    </ItemGroup>
-
-    <ItemGroup>
       <Content Include="..\..\.dockerignore">
         <Link>.dockerignore</Link>
       </Content>
