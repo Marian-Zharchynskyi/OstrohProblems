@@ -18,7 +18,6 @@ export const ProblemStatusConstants = {
   InProgress: 'В роботі',
   Completed: 'Виконано',
   Rejected: 'Відхилено',
-  NeedsClarification: 'Потребує уточнення',
 } as const
 
 export type ProblemStatusType = (typeof ProblemStatusConstants)[keyof typeof ProblemStatusConstants]
@@ -58,15 +57,6 @@ export interface ProblemImage {
   url: string
 }
 
-// User Confirmation Status constants
-export const UserConfirmationStatusConstants = {
-  Pending: 'Очікує підтвердження',
-  Confirmed: 'Підтверджено',
-  Rejected: 'Відхилено користувачем',
-} as const
-
-export type UserConfirmationStatusType = (typeof UserConfirmationStatusConstants)[keyof typeof UserConfirmationStatusConstants]
-
 export interface Problem {
   id: string | null
   title: string
@@ -79,7 +69,6 @@ export interface Problem {
   rejectionReason: string | null
   coordinatorComment: string | null
   currentState: string | null
-  userConfirmationStatus: string
   comments: Comment[] | null
   images: ProblemImage[] | null
   categories: Category[] | null

@@ -100,3 +100,11 @@ export function useProblemsByCoordinator(coordinatorId: string) {
     enabled: !!coordinatorId,
   })
 }
+
+export function useProblemsByStatus(status: string) {
+  return useQuery({
+    queryKey: [PROBLEMS_QUERY_KEY, 'by-status', status],
+    queryFn: () => problemsApi.getByStatus(status),
+    enabled: !!status,
+  })
+}

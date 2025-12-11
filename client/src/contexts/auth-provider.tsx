@@ -57,6 +57,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     const decodedUser = decodeToken(newTokens.accessToken)
     setUser(decodedUser)
+    return decodedUser
   }
 
   const signUp = async (email: string, password: string, name?: string) => {

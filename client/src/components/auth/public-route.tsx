@@ -1,12 +1,13 @@
 import { Navigate } from 'react-router-dom'
 import { useAuth } from '@/contexts/auth-context'
+import { getDefaultRouteForUser } from '@/lib/auth-routes'
 
 interface PublicRouteProps {
   children: React.ReactNode
 }
 
 export function PublicRoute({ children }: PublicRouteProps) {
-  const { isAuthenticated, isLoading } = useAuth()
+  const { isAuthenticated, isLoading, user } = useAuth()
 
   if (isLoading) {
     return (
@@ -20,7 +21,7 @@ export function PublicRoute({ children }: PublicRouteProps) {
   }
 
   if (isAuthenticated) {
-    return <Navigate to="/dashboard" replace />
+    return <Navigate to={getDefaultRouteForUser(user)} replace />
   }
 
   return <>{children}</>

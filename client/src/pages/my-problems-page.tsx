@@ -17,8 +17,6 @@ const getStatusColor = (status: string) => {
       return 'bg-green-100 text-green-800'
     case ProblemStatusConstants.Rejected:
       return 'bg-red-100 text-red-800'
-    case ProblemStatusConstants.NeedsClarification:
-      return 'bg-orange-100 text-orange-800'
     default:
       return 'bg-gray-100 text-gray-800'
   }
