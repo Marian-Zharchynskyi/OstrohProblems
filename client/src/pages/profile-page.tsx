@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { User, Mail, Shield, Image as ImageIcon } from 'lucide-react'
+import { User, Mail, Shield, Image as ImageIcon, Trash2 } from 'lucide-react'
 
 export function ProfilePage() {
   const { tokens } = useAuth()
@@ -80,6 +80,23 @@ export function ProfilePage() {
     }
   }
 
+  const handleImageDelete = async () => {
+    if (!userDetails || !tokens?.accessToken || !userDetails.image) return
+
+    try {
+      setIsSaving(true)
+      const updated = await userService.deleteUserImage(
+        userDetails.id,
+        tokens.accessToken
+      )
+      setUserDetails(updated)
+    } catch (error) {
+      console.error('Failed to delete image:', error)
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -116,9 +133,9 @@ export function ProfilePage() {
           {/* Profile Image */}
           <div className="flex items-center gap-6">
             <div className="w-24 h-24 rounded-full bg-muted flex items-center justify-center overflow-hidden">
-              {userDetails.image?.filePath ? (
+              {userDetails.image?.url ? (
                 <img
-                  src={userDetails.image.filePath}
+                  src={userDetails.image.url}
                   alt="Profile"
                   className="w-full h-full object-cover"
                 />
@@ -141,6 +158,17 @@ export function ProfilePage() {
                 >
                   <ImageIcon className="w-4 h-4 mr-2" />
                   Upload Image
+                </Button>
+              )}
+              {userDetails.image?.url && !selectedImage && (
+                <Button
+                  onClick={handleImageDelete}
+                  disabled={isSaving}
+                  size="sm"
+                  variant="destructive"
+                >
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  Delete Image
                 </Button>
               )}
             </div>

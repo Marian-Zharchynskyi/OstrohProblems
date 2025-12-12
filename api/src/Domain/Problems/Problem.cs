@@ -26,6 +26,7 @@ public class Problem
     public ICollection<Category> Categories { get; private set; } = new List<Category>();
     public ICollection<Rating> Ratings { get; private set; } = new List<Rating>();
     public List<ProblemImage> Images { get; private set; } = [];
+    public List<CoordinatorImage> CoordinatorImages { get; private set; } = [];
 
     private Problem(ProblemId id, string title, double latitude, double longitude, string description,
         ProblemStatus status, DateTime createdAt, DateTime updatedAt, UserId createdById)
@@ -128,5 +129,17 @@ public class Problem
     {
         CoordinatorComment = comment;
         UpdatedAt = DateTime.UtcNow;
+    }
+
+    public void UploadCoordinatorImages(List<CoordinatorImage> images)
+        => CoordinatorImages.AddRange(images);
+
+    public void RemoveCoordinatorImage(CoordinatorImageId coordinatorImageId)
+    {
+        var image = CoordinatorImages.FirstOrDefault(x => x.Id == coordinatorImageId);
+        if (image != null)
+        {
+            CoordinatorImages.Remove(image);
+        }
     }
 }

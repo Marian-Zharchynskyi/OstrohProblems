@@ -508,6 +508,30 @@ namespace Infrastructure.Persistence.Migrations
                     b.ToTable("user_image", (string)null);
                 });
 
+            modelBuilder.Entity("Domain.Problems.CoordinatorImage", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("FilePath")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("file_path");
+
+                    b.Property<Guid>("ProblemId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("problem_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_coordinator_image");
+
+                    b.HasIndex("ProblemId")
+                        .HasDatabaseName("ix_coordinator_image_problem_id");
+
+                    b.ToTable("coordinator_image", (string)null);
+                });
+
             modelBuilder.Entity("Domain.Problems.Problem", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1099,6 +1123,18 @@ namespace Infrastructure.Persistence.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("Domain.Problems.CoordinatorImage", b =>
+                {
+                    b.HasOne("Domain.Problems.Problem", "Problem")
+                        .WithMany("CoordinatorImages")
+                        .HasForeignKey("ProblemId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_coordinator_images_problem_id");
+
+                    b.Navigation("Problem");
+                });
+
             modelBuilder.Entity("Domain.Problems.Problem", b =>
                 {
                     b.HasOne("Domain.Identity.Users.User", "Coordinator")
@@ -1197,6 +1233,8 @@ namespace Infrastructure.Persistence.Migrations
             modelBuilder.Entity("Domain.Problems.Problem", b =>
                 {
                     b.Navigation("Comments");
+
+                    b.Navigation("CoordinatorImages");
 
                     b.Navigation("Images");
 

@@ -37,7 +37,7 @@ public class UploadUserImageCommandHandler(
         CancellationToken cancellationToken)
     {
         var imageSaveResult = await imageService.SaveImageFromFileAsync(
-            ImagePaths.UserImagePath, imageFile, user.UserImage?.FilePath);
+            ImagePaths.UserImages, imageFile, user.UserImage?.FilePath);
 
         return await imageSaveResult.Match<Task<Result<User, UserException>>>(
             async imageName =>

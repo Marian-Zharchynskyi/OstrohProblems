@@ -29,8 +29,17 @@ public class ImageSaveException(ProblemId id)
 public class ImageNotFoundException(ProblemImageId id)
     : ProblemException(ProblemId.Empty, $"Product image under id: {id} not found!");
 
+public class CoordinatorImageNotFoundException(CoordinatorImageId id)
+    : ProblemException(ProblemId.Empty, $"Coordinator image under id: {id} not found!");
+
 public class ProblemConcurrencyException(ProblemId id)
     : ProblemException(id, $"Problem with ID {id.Value} was changed or deleted by another user.");
     
 public class UserIdNotFoundException(ProblemId id)
     : ProblemException(id, "User ID not found in token");
+
+public class MaxImagesExceededException(ProblemId id, int maxCount)
+    : ProblemException(id, $"Problem with ID {id} cannot have more than {maxCount} images.");
+
+public class MaxCoordinatorImagesExceededException(ProblemId id, int maxCount)
+    : ProblemException(id, $"Problem with ID {id} cannot have more than {maxCount} coordinator images.");

@@ -1,6 +1,6 @@
 export interface UserImage {
   id: string
-  filePath: string
+  url: string
 }
 
 export interface Role {

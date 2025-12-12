@@ -115,4 +115,24 @@ export const problemsApi = {
     const response = await apiClient.get<Problem[]>(`${BASE_URL}/by-status/${encodeURIComponent(status)}`)
     return response.data
   },
+
+  uploadCoordinatorImages: async (id: string, files: FileList) => {
+    const formData = new FormData()
+    Array.from(files).forEach((file) => {
+      formData.append('imagesFiles', file)
+    })
+    const response = await apiClient.putFormData<Problem>(
+      `${BASE_URL}/upload-coordinator-images/${id}`,
+      formData
+    )
+    return response.data
+  },
+
+  deleteCoordinatorImage: async (problemId: string, imageId: string) => {
+    const response = await apiClient.put<Problem>(
+      `${BASE_URL}/delete-coordinator-image/${problemId}`,
+      { coordinatorImageId: imageId }
+    )
+    return response.data
+  },
 }

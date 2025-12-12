@@ -1,7 +1,6 @@
 using Infrastructure;
 using API.Modules;
 using Application;
-using Microsoft.Extensions.FileProviders;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -49,18 +48,5 @@ await app.InitialiseDb();
 app.MapControllers();
 app.MapHub<Infrastructure.SignalR.Hubs.CommentsHub>("/hubs/comments");
 app.MapHub<Infrastructure.SignalR.Hubs.NotificationsHub>("/hubs/notifications");
-
-var imagesPath = Path.Combine(builder.Environment.ContentRootPath, "data/images");
-
-if (!Directory.Exists(imagesPath))
-{
-    Directory.CreateDirectory(imagesPath);
-}
-
-app.UseStaticFiles(new StaticFileOptions
-{
-    FileProvider = new PhysicalFileProvider(imagesPath),
-    RequestPath = "/images"
-});
 
 app.Run();

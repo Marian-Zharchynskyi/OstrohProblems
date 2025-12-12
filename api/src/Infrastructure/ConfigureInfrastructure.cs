@@ -1,5 +1,6 @@
 using Infrastructure.Persistence;
 using Infrastructure.SignalR;
+using Infrastructure.Storage;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -11,5 +12,6 @@ public static class ConfigureInfrastructure
     {
         services.AddPersistence(builder);
         services.AddSignalRServices();
+        services.AddStorageServices(builder);
     }
 }

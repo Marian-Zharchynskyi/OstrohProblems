@@ -9,6 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { ProblemImagesManager } from '@/components/problem-images-manager'
 import { 
   MapPin, 
   User, 
@@ -110,26 +111,25 @@ export function ProblemDetailPage() {
       <div className="grid gap-6 md:grid-cols-3">
         {/* Main Info */}
         <div className="md:col-span-2 space-y-6">
-          {/* Images */}
-          {problem.images && problem.images.length > 0 && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Зображення</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-2 gap-4">
-                  {problem.images.map((image) => (
-                    <img
-                      key={image.id}
-                      src={image.url}
-                      alt={problem.title}
-                      className="h-48 w-full rounded-lg object-cover"
-                    />
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          )}
+          {/* Images from Author */}
+          <ProblemImagesManager
+            problemId={problem.id || ''}
+            images={problem.images}
+            onImagesChange={refetch}
+            canEdit={user?.id === problem.createdBy?.id}
+            imageType="problem"
+            title="Фото від автора"
+          />
+
+          {/* Images from Coordinator */}
+          <ProblemImagesManager
+            problemId={problem.id || ''}
+            images={problem.coordinatorImages}
+            onImagesChange={refetch}
+            canEdit={user?.id === problem.coordinator?.id}
+            imageType="coordinator"
+            title="Фото від координатора"
+          />
 
           {/* Description */}
           <Card>
