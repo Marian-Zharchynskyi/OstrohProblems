@@ -102,6 +102,18 @@ export const userService = {
     return response.data
   },
 
+  async deleteUserImage(userId: string, token: string): Promise<UserDto> {
+    const response = await axios.delete<UserDto>(
+      `${API_URL}/users/image/${userId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    )
+    return response.data
+  },
+
   async updateUserRoles(
     userId: string,
     roleId: string,

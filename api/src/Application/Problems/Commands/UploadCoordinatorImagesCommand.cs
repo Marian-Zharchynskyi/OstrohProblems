@@ -9,19 +9,19 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Application.Problems.Commands;
 
-public record UploadProblemImagesCommand : IRequest<Result<Problem, ProblemException>>
+public record UploadCoordinatorImagesCommand : IRequest<Result<Problem, ProblemException>>
 {
     public const int MaxImagesCount = 6;
-    
+
     public Guid ProblemId { get; init; }
     public IFormFileCollection ImagesFiles { get; init; }
 }
 
-public class UploadProblemImagesCommandHandler(
+public class UploadCoordinatorImagesCommandHandler(
     IProblemRepository problemRepository,
-    IImageService imageService) : IRequestHandler<UploadProblemImagesCommand, Result<Problem, ProblemException>>
+    IImageService imageService) : IRequestHandler<UploadCoordinatorImagesCommand, Result<Problem, ProblemException>>
 {
-    public async Task<Result<Problem, ProblemException>> Handle(UploadProblemImagesCommand request,
+    public async Task<Result<Problem, ProblemException>> Handle(UploadCoordinatorImagesCommand request,
         CancellationToken cancellationToken)
     {
         var problemId = new ProblemId(request.ProblemId);
@@ -38,27 +38,27 @@ public class UploadProblemImagesCommandHandler(
         IFormFileCollection imagesFiles,
         CancellationToken cancellationToken)
     {
-        var currentImagesCount = problem.Images.Count;
+        var currentImagesCount = problem.CoordinatorImages.Count;
         var newImagesCount = imagesFiles.Count;
-        
-        if (currentImagesCount + newImagesCount > UploadProblemImagesCommand.MaxImagesCount)
-        {
-            return new MaxImagesExceededException(problem.Id, UploadProblemImagesCommand.MaxImagesCount);
-        }
-        
-        var imageSaveResult = await imageService.SaveImagesFromFilesAsync(ImagePaths.ProblemImages, imagesFiles);
 
-        return await imageSaveResult.Match<Task<Result<Problem, ProblemException>>>(
+        if (currentImagesCount + newImagesCount > UploadCoordinatorImagesCommand.MaxImagesCount)
+        {
+            return new MaxCoordinatorImagesExceededException(problem.Id, UploadCoordinatorImagesCommand.MaxImagesCount);
+        }
+
+        var imageSaveResult = await imageService.SaveImagesFromFilesAsync(ImagePaths.CoordinatorImages, imagesFiles);
+
+        return await imageSaveResult.Match(
             async imagesNames =>
             {
-                var imagesEntities = new List<ProblemImage>();
+                var imagesEntities = new List<CoordinatorImage>();
 
                 foreach (var imageName in imagesNames)
                 {
-                    imagesEntities.Add(ProblemImage.New(ProblemImageId.New(), problem.Id, imageName));
+                    imagesEntities.Add(CoordinatorImage.New(CoordinatorImageId.New(), problem.Id, imageName));
                 }
 
-                problem.UploadProblemImages(imagesEntities);
+                problem.UploadCoordinatorImages(imagesEntities);
 
                 try
                 {

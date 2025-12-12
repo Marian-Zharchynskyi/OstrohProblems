@@ -1,51 +1,50 @@
 using Application.Common;
 using Application.Common.Interfaces.Repositories;
 using Application.Problems.Exceptions;
-using Application.Services;
 using Application.Services.ImageService;
 using Domain.Problems;
 using MediatR;
 
 namespace Application.Problems.Commands;
 
-public record DeleteProblemImageCommand : IRequest<Result<Problem, ProblemException>>
+public record DeleteCoordinatorImageCommand : IRequest<Result<Problem, ProblemException>>
 {
     public Guid ProblemId { get; init; }
-    public Guid ProblemImageId { get; init; }
+    public Guid CoordinatorImageId { get; init; }
 }
 
-public class DeleteProblemImageCommandHandler(
+public class DeleteCoordinatorImageCommandHandler(
     IProblemRepository problemRepository,
-    IImageService imageService) : IRequestHandler<DeleteProblemImageCommand, Result<Problem, ProblemException>>
+    IImageService imageService) : IRequestHandler<DeleteCoordinatorImageCommand, Result<Problem, ProblemException>>
 {
-    public async Task<Result<Problem, ProblemException>> Handle(DeleteProblemImageCommand request,
+    public async Task<Result<Problem, ProblemException>> Handle(DeleteCoordinatorImageCommand request,
         CancellationToken cancellationToken)
     {
-        var problemImageId = new ProblemImageId(request.ProblemImageId);
+        var coordinatorImageId = new CoordinatorImageId(request.CoordinatorImageId);
         var problemId = new ProblemId(request.ProblemId);
         var existingProblem = await problemRepository.GetById(problemId, cancellationToken);
 
         return await existingProblem.Match(
-            async problem => await HandleImageDeletion(problem, problemImageId, cancellationToken),
+            async problem => await HandleImageDeletion(problem, coordinatorImageId, cancellationToken),
             () => Task.FromResult<Result<Problem, ProblemException>>(
                 new ProblemNotFoundException(problemId)));
     }
 
     private async Task<Result<Problem, ProblemException>> HandleImageDeletion(Problem problem,
-        ProblemImageId problemImageId, CancellationToken cancellationToken)
+        CoordinatorImageId coordinatorImageId, CancellationToken cancellationToken)
     {
-        var problemImage = problem.Images.FirstOrDefault(x => x.Id == problemImageId);
-        if (problemImage is null)
+        var coordinatorImage = problem.CoordinatorImages.FirstOrDefault(x => x.Id == coordinatorImageId);
+        if (coordinatorImage is null)
         {
-            return new ImageNotFoundException(problemImageId);
+            return new CoordinatorImageNotFoundException(coordinatorImageId);
         }
 
-        var deleteResult = await imageService.DeleteImageAsync(problemImage.FilePath);
+        var deleteResult = await imageService.DeleteImageAsync(coordinatorImage.FilePath);
 
         return await deleteResult.Match<Task<Result<Problem, ProblemException>>>(
             async _ =>
             {
-                problem.RemoveImage(problemImageId);
+                problem.RemoveCoordinatorImage(coordinatorImageId);
                 await problemRepository.Update(problem, cancellationToken);
                 return problem;
             },

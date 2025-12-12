@@ -57,6 +57,11 @@ export interface ProblemImage {
   url: string
 }
 
+export interface CoordinatorImage {
+  id: string | null
+  url: string
+}
+
 export interface Problem {
   id: string | null
   title: string
@@ -71,6 +76,7 @@ export interface Problem {
   currentState: string | null
   comments: Comment[] | null
   images: ProblemImage[] | null
+  coordinatorImages: CoordinatorImage[] | null
   categories: Category[] | null
   createdAt: string
   updatedAt: string

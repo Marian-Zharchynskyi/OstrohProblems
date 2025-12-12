@@ -2,6 +2,7 @@
 using API.Modules.Errors;
 using Application.Common.Interfaces.Queries;
 using Application.Problems.Commands;
+using Application.Services.ImageService;
 using Domain.Identity.Roles;
 using Domain.Identity.Users;
 using Domain.PagedResults;
@@ -14,7 +15,8 @@ namespace API.Controllers;
 
 [Route("problems")]
 [ApiController]
-public class ProblemsController(ISender sender, IProblemQueries problemQueries) : ControllerBase
+public class ProblemsController(ISender sender, IProblemQueries problemQueries, IImageService imageService)
+    : ControllerBase
 {
     [Authorize(Roles = $"{RoleNames.Admin}, {RoleNames.User}")]
     [HttpGet("paged")]
@@ -25,7 +27,7 @@ public class ProblemsController(ISender sender, IProblemQueries problemQueries) 
     {
         var (items, totalCount) = await problemQueries.GetPaged(page, pageSize, cancellationToken);
 
-        var dtoItems = items.Select(ProblemDto.FromDomainModel).ToList();
+        var dtoItems = items.Select(p => ProblemDto.FromDomainModel(p, imageService.GetImageUrl)).ToList();
 
         return new PagedResult<ProblemDto>(
             Items: dtoItems,
@@ -34,13 +36,13 @@ public class ProblemsController(ISender sender, IProblemQueries problemQueries) 
             PageSize: pageSize
         );
     }
-    
+
     [Authorize(Roles = $"{RoleNames.Admin}, {RoleNames.User}, {RoleNames.Coordinator}")]
     [HttpGet("get-all")]
     public async Task<ActionResult<IReadOnlyList<ProblemDto>>> GetAll(CancellationToken cancellationToken)
     {
         var entities = await problemQueries.GetAll(cancellationToken);
-        return entities.Select(ProblemDto.FromDomainModel).ToList();
+        return entities.Select(p => ProblemDto.FromDomainModel(p, imageService.GetImageUrl)).ToList();
     }
 
     [Authorize(Roles = $"{RoleNames.Admin}, {RoleNames.User}")]
@@ -50,7 +52,7 @@ public class ProblemsController(ISender sender, IProblemQueries problemQueries) 
         CancellationToken cancellationToken)
     {
         var entities = await problemQueries.GetByUserId(new UserId(userId), cancellationToken);
-        return entities.Select(ProblemDto.FromDomainModel).ToList();
+        return entities.Select(p => ProblemDto.FromDomainModel(p, imageService.GetImageUrl)).ToList();
     }
 
     [Authorize(Roles = $"{RoleNames.Admin}, {RoleNames.Coordinator}")]
@@ -60,7 +62,7 @@ public class ProblemsController(ISender sender, IProblemQueries problemQueries) 
         CancellationToken cancellationToken)
     {
         var entities = await problemQueries.GetByCoordinatorId(new UserId(coordinatorId), cancellationToken);
-        return entities.Select(ProblemDto.FromDomainModel).ToList();
+        return entities.Select(p => ProblemDto.FromDomainModel(p, imageService.GetImageUrl)).ToList();
     }
 
     [Authorize(Roles = $"{RoleNames.Admin}, {RoleNames.User}, {RoleNames.Coordinator}")]
@@ -71,7 +73,7 @@ public class ProblemsController(ISender sender, IProblemQueries problemQueries) 
         var entity = await problemQueries.GetById(new ProblemId(problemId), cancellationToken);
 
         return entity.Match<ActionResult<ProblemDto>>(
-            problem => ProblemDto.FromDomainModel(problem),
+            problem => ProblemDto.FromDomainModel(problem, imageService.GetImageUrl),
             () => NotFound());
     }
 
@@ -111,7 +113,7 @@ public class ProblemsController(ISender sender, IProblemQueries problemQueries) 
             Latitude = request.Latitude,
             Longitude = request.Longitude,
             Description = request.Description,
-            ProblemCategoryIds = request.ProblemCategoryIds 
+            ProblemCategoryIds = request.ProblemCategoryIds
         };
 
         var result = await sender.Send(input, cancellationToken);
@@ -124,7 +126,7 @@ public class ProblemsController(ISender sender, IProblemQueries problemQueries) 
     [Authorize(Roles = $"{RoleNames.Admin}, {RoleNames.User}")]
     [HttpDelete("delete/{problemId:guid}")]
     public async Task<ActionResult<ProblemDto>> Delete(
-        [FromRoute] Guid problemId, 
+        [FromRoute] Guid problemId,
         CancellationToken cancellationToken)
     {
         var input = new DeleteProblemCommand
@@ -135,10 +137,10 @@ public class ProblemsController(ISender sender, IProblemQueries problemQueries) 
         var result = await sender.Send(input, cancellationToken);
 
         return result.Match<ActionResult<ProblemDto>>(
-            problem => ProblemDto.FromDomainModel(problem),
+            problem => ProblemDto.FromDomainModel(problem, imageService.GetImageUrl),
             e => e.ToObjectResult());
     }
-    
+
     [Authorize(Roles = $"{RoleNames.Admin}, {RoleNames.User}")]
     [HttpPut("upload-images/{problemId:guid}")]
     public async Task<ActionResult<ProblemDto>> Upload([FromRoute] Guid problemId, IFormFileCollection imagesFiles,
@@ -153,7 +155,7 @@ public class ProblemsController(ISender sender, IProblemQueries problemQueries) 
         var result = await sender.Send(input, cancellationToken);
 
         return result.Match<ActionResult<ProblemDto>>(
-            r => ProblemDto.FromDomainModel(r),
+            r => ProblemDto.FromDomainModel(r, imageService.GetImageUrl),
             e => e.ToObjectResult());
     }
 
@@ -171,7 +173,7 @@ public class ProblemsController(ISender sender, IProblemQueries problemQueries) 
         var result = await sender.Send(input, cancellationToken);
 
         return result.Match<ActionResult<ProblemDto>>(
-            r => ProblemDto.FromDomainModel(r),
+            r => ProblemDto.FromDomainModel(r, imageService.GetImageUrl),
             e => e.ToObjectResult());
     }
 
@@ -191,7 +193,7 @@ public class ProblemsController(ISender sender, IProblemQueries problemQueries) 
         var result = await sender.Send(input, cancellationToken);
 
         return result.Match<ActionResult<ProblemDto>>(
-            problem => ProblemDto.FromDomainModel(problem),
+            problem => ProblemDto.FromDomainModel(problem, imageService.GetImageUrl),
             e => e.ToObjectResult());
     }
 
@@ -211,7 +213,7 @@ public class ProblemsController(ISender sender, IProblemQueries problemQueries) 
         var result = await sender.Send(input, cancellationToken);
 
         return result.Match<ActionResult<ProblemDto>>(
-            problem => ProblemDto.FromDomainModel(problem),
+            problem => ProblemDto.FromDomainModel(problem, imageService.GetImageUrl),
             e => e.ToObjectResult());
     }
 
@@ -231,7 +233,7 @@ public class ProblemsController(ISender sender, IProblemQueries problemQueries) 
         var result = await sender.Send(input, cancellationToken);
 
         return result.Match<ActionResult<ProblemDto>>(
-            problem => ProblemDto.FromDomainModel(problem),
+            problem => ProblemDto.FromDomainModel(problem, imageService.GetImageUrl),
             e => e.ToObjectResult());
     }
 
@@ -251,7 +253,7 @@ public class ProblemsController(ISender sender, IProblemQueries problemQueries) 
         var result = await sender.Send(input, cancellationToken);
 
         return result.Match<ActionResult<ProblemDto>>(
-            problem => ProblemDto.FromDomainModel(problem),
+            problem => ProblemDto.FromDomainModel(problem, imageService.GetImageUrl),
             e => e.ToObjectResult());
     }
 
@@ -271,7 +273,7 @@ public class ProblemsController(ISender sender, IProblemQueries problemQueries) 
         var result = await sender.Send(input, cancellationToken);
 
         return result.Match<ActionResult<ProblemDto>>(
-            problem => ProblemDto.FromDomainModel(problem),
+            problem => ProblemDto.FromDomainModel(problem, imageService.GetImageUrl),
             e => e.ToObjectResult());
     }
 
@@ -291,7 +293,7 @@ public class ProblemsController(ISender sender, IProblemQueries problemQueries) 
         var result = await sender.Send(input, cancellationToken);
 
         return result.Match<ActionResult<ProblemDto>>(
-            problem => ProblemDto.FromDomainModel(problem),
+            problem => ProblemDto.FromDomainModel(problem, imageService.GetImageUrl),
             e => e.ToObjectResult());
     }
 
@@ -311,7 +313,7 @@ public class ProblemsController(ISender sender, IProblemQueries problemQueries) 
         var result = await sender.Send(input, cancellationToken);
 
         return result.Match<ActionResult<ProblemDto>>(
-            problem => ProblemDto.FromDomainModel(problem),
+            problem => ProblemDto.FromDomainModel(problem, imageService.GetImageUrl),
             e => e.ToObjectResult());
     }
 
@@ -329,7 +331,7 @@ public class ProblemsController(ISender sender, IProblemQueries problemQueries) 
         var result = await sender.Send(input, cancellationToken);
 
         return result.Match<ActionResult<ProblemDto>>(
-            problem => ProblemDto.FromDomainModel(problem),
+            problem => ProblemDto.FromDomainModel(problem, imageService.GetImageUrl),
             e => e.ToObjectResult());
     }
 
@@ -341,6 +343,46 @@ public class ProblemsController(ISender sender, IProblemQueries problemQueries) 
     {
         var problemStatus = ProblemStatus.From(status);
         var entities = await problemQueries.GetByStatus(problemStatus, cancellationToken);
-        return entities.Select(ProblemDto.FromDomainModel).ToList();
+        return entities.Select(p => ProblemDto.FromDomainModel(p, imageService.GetImageUrl)).ToList();
+    }
+
+    [Authorize(Roles = $"{RoleNames.Admin}, {RoleNames.Coordinator}")]
+    [HttpPut("upload-coordinator-images/{problemId:guid}")]
+    public async Task<ActionResult<ProblemDto>> UploadCoordinatorImages(
+        [FromRoute] Guid problemId,
+        IFormFileCollection imagesFiles,
+        CancellationToken cancellationToken)
+    {
+        var input = new UploadCoordinatorImagesCommand
+        {
+            ProblemId = problemId,
+            ImagesFiles = imagesFiles
+        };
+
+        var result = await sender.Send(input, cancellationToken);
+
+        return result.Match<ActionResult<ProblemDto>>(
+            r => ProblemDto.FromDomainModel(r, imageService.GetImageUrl),
+            e => e.ToObjectResult());
+    }
+
+    [Authorize(Roles = $"{RoleNames.Admin}, {RoleNames.Coordinator}")]
+    [HttpPut("delete-coordinator-image/{problemId:guid}")]
+    public async Task<ActionResult<ProblemDto>> DeleteCoordinatorImage(
+        [FromRoute] Guid problemId,
+        [FromBody] Guid coordinatorImageId,
+        CancellationToken cancellationToken)
+    {
+        var input = new DeleteCoordinatorImageCommand
+        {
+            ProblemId = problemId,
+            CoordinatorImageId = coordinatorImageId
+        };
+
+        var result = await sender.Send(input, cancellationToken);
+
+        return result.Match<ActionResult<ProblemDto>>(
+            r => ProblemDto.FromDomainModel(r, imageService.GetImageUrl),
+            e => e.ToObjectResult());
     }
 }

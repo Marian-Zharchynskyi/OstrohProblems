@@ -39,6 +39,9 @@ public class User
     public void UpdateUserImage(UserImage userImage)
         => UserImage = userImage;
 
+    public void RemoveUserImage()
+        => UserImage = null;
+
     public void SetRoles(List<Role> roles)
         => Roles = roles;
 }
