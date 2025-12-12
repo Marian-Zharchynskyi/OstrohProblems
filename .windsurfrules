@@ -1,0 +1,49 @@
+<!-- 1. Check whole codebase before generating code.
+2. Go through all dependencies.
+3. Double check data types.
+4. Go through all imports.
+5. Check repositories.
+6. Follow existing patterns in the project.
+7. When generating, check for bugs and all the correct names and imports. -->
+Rules:
+1. Check the data types.
+2. Before implementing anything, check how we handle similar cases.
+3. Do not introduce new approach or logic. 
+4. Look up how we handle .MatchAsync, .Match, .BindAsync cases and for which return data types.
+4.1 Usually we do not use .IsLeft, .IsNone, .Map, .MapAsync, Task.FromResult, try/catch or any of those, stick to what we have in other files.
+5. Be aware how we handle the exeptions.
+6. ALWAYS follow the approach and patters already used in project.
+7. Do the search of each data type return and handles before implementing your own.
+8. Do everything step by step
+9. Do the double check.
+10. Anyleze more files before doing anything
+11. On each layer we have examples of controllers, commands, services usages and so on, CHECK THEM as examples when you create your own files and refactoring
+12. Better to check the whole files, if you have a limit of 100-200 lines and file is not scanned completly use more credits to anylize all of the lines.
+13. You can check examples yourself in the project structure below or just in project api/src before asking me. Examples of the concept.
+14. If you see imports or related functionality, follow it to check all the connections.
+15. when you found an example do the whole file check.
+16. you can use text search and any other type of searches.
+17. When I provide you with a path to the file do the whole file check.
+18. Always check how we do imports, sometimes it's a specific way, for instance all the imports should be orderd alphabetically and could be other things.
+19. We are usin very new .Net and much more simplified contructors and so on, keep that in mind and check examples, sometimes in the file itself, sometimes in other files.
+20. We have a specific ways of doing anything, find and follow the examples in the project.
+21. ALWAYS scan the full file while research and anylize.
+22. IMPORTANT: Check these rules each time you do anything.
+23. If we have mistmathed data types you can create or mach them.
+IMPORTANT: 24. Check these rules each time you do anything.
+
+Project structure and examples where to look:
+1. Api layer contains controllers, dtos, services => api\src\Api
+2. Controllers uses services for get requests and mediatr commands for other requests. => api\src\Api\Controllers
+3. Services have interfaces and implementation for those interfaces. => api\src\Api\Services
+4. Application layer contains Commands, Exeptions and validators, all used in commands which are used in controllers. => api\src\Application
+5. Domain layer contains models which are used in DB => api\src\Domain
+6. Infrasctructure layer contains Configurations, Repositories. => api\src\Infrastructure
+7. Configarations are used for mogrations to create a table in DB. => api\src\Infrastructure\Persistence\Configurations
+8. Repositories used to work with DB and respective models. Repositories usually have IQueries and IRepository, check them as well. => api\src\Infrastructure\Persistence\Repositories
+9. The description of project is at => PROJECT-SUMMARY.md
+
+Error handling:
+1. When you encounter an error, check the similar example implementation.
+2. After finding the cause of issue you can change all the places which are needed to fix it.
+3. If we have mistmathed data types you can create or mach them.
