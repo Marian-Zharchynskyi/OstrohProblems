@@ -1,5 +1,5 @@
 import { apiClient } from '@/lib/api-client'
-import type { Problem, CreateProblem, PagedResult } from '@/types'
+import type { CreateProblem, CreateProblemResponse, Problem, PagedResult } from '@/types'
 
 const BASE_URL = '/problems'
 
@@ -23,7 +23,7 @@ export const problemsApi = {
   },
 
   create: async (data: CreateProblem) => {
-    const response = await apiClient.post<Problem>(`${BASE_URL}/create`, data)
+    const response = await apiClient.post<CreateProblemResponse>(`${BASE_URL}/create`, data)
     return response.data
   },
 
@@ -84,7 +84,7 @@ export const problemsApi = {
   updateCurrentState: async (problemId: string, currentState: string) => {
     const response = await apiClient.put<Problem>(
       `${BASE_URL}/update-current-state/${problemId}`,
-      currentState
+      { currentState }
     )
     return response.data
   },

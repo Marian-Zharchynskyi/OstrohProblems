@@ -1,4 +1,3 @@
-// Common types
 export interface PagedResult<T> {
   items: T[]
   totalCount: number
@@ -6,13 +5,11 @@ export interface PagedResult<T> {
   pageSize: number
 }
 
-// Category types
 export interface Category {
   id: string | null
   name: string
 }
 
-// Problem Status constants
 export const ProblemStatusConstants = {
   New: 'Нова',
   InProgress: 'В роботі',
@@ -22,7 +19,6 @@ export const ProblemStatusConstants = {
 
 export type ProblemStatusType = (typeof ProblemStatusConstants)[keyof typeof ProblemStatusConstants]
 
-// Comment types
 export interface Comment {
   id: string | null
   content: string
@@ -37,7 +33,6 @@ export interface CreateComment {
   problemId: string
 }
 
-// Rating types
 export interface Rating {
   id: string | null
   points: number
@@ -51,7 +46,6 @@ export interface CreateRating {
   problemId: string
 }
 
-// Problem types
 export interface ProblemImage {
   id: string | null
   url: string
@@ -90,7 +84,15 @@ export interface CreateProblem {
   problemCategoryIds: string[]
 }
 
-// User types (for reference in other types)
+export interface CreateProblemResponse {
+  id: string | null
+  title: string
+  latitude: number
+  longitude: number
+  description: string
+  problemCategoryIds: string[]
+}
+
 export interface User {
   id: string | null
   email: string
@@ -104,7 +106,6 @@ export interface UserImage {
   url: string
 }
 
-// Notification types
 export interface Notification {
   id: string
   type: 'comment' | 'status_change' | 'reply'

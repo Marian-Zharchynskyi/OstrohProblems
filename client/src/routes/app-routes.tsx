@@ -120,11 +120,9 @@ export function AppRoutes() {
       <Route
         path="/map"
         element={
-          <ProtectedRoute allowedRoles={['Administrator']}>
-            <Layout>
-              <MapPage />
-            </Layout>
-          </ProtectedRoute>
+          <Layout>
+            <MapPage />
+          </Layout>
         }
       />
       <Route

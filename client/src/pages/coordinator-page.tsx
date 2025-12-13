@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { problemsApi } from '@/features/problems/api/problems-api'
 import { useProblemsByCoordinator, useProblemsByStatus } from '@/features/problems/hooks/use-problems'
 import type { Problem } from '@/types'
@@ -9,6 +10,8 @@ import { Textarea } from '@/components/ui/textarea'
 import { useAuth } from '@/contexts/auth-context'
 import { toast } from '@/lib/toast'
 import { useQueryClient } from '@tanstack/react-query'
+
+const MAX_COORDINATOR_IMAGES = 6
 
 type TabType = 'new' | 'my' | 'completed' | 'rejected'
 
@@ -22,6 +25,7 @@ const tabConfig: { key: TabType; label: string; status?: string }[] = [
 export default function CoordinatorPage() {
   const { user } = useAuth()
   const queryClient = useQueryClient()
+  const navigate = useNavigate()
   
   const [activeTab, setActiveTab] = useState<TabType>('new')
   
@@ -37,6 +41,8 @@ export default function CoordinatorPage() {
   const [currentStateInput, setCurrentStateInput] = useState('')
   const [detailProblem, setDetailProblem] = useState<Problem | null>(null)
   const [actionMode, setActionMode] = useState<'reject' | 'currentState' | 'complete' | null>(null)
+  const [coordinatorFiles, setCoordinatorFiles] = useState<FileList | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const loading = loadingStatus || loadingMy
 
@@ -78,10 +84,24 @@ export default function CoordinatorPage() {
       toast.error('Введіть поточний стан')
       return
     }
+    
+    const currentImagesCount = detailProblem?.coordinatorImages?.length || 0
+    const newFilesCount = coordinatorFiles?.length || 0
+    if (currentImagesCount + newFilesCount > MAX_COORDINATOR_IMAGES) {
+      toast.error(`Максимальна кількість фото: ${MAX_COORDINATOR_IMAGES}. Вже завантажено: ${currentImagesCount}`)
+      return
+    }
+    
     try {
       await problemsApi.updateCurrentState(problemId, currentStateInput)
+      
+      if (coordinatorFiles && coordinatorFiles.length > 0) {
+        await problemsApi.uploadCoordinatorImages(problemId, coordinatorFiles)
+      }
+      
       toast.success('Поточний стан оновлено')
       setCurrentStateInput('')
+      setCoordinatorFiles(null)
       setActionMode(null)
       invalidateQueries()
     } catch {
@@ -105,15 +125,50 @@ export default function CoordinatorPage() {
       toast.error('Опишіть що було зроблено')
       return
     }
+
+    const currentImagesCount = detailProblem?.coordinatorImages?.length || 0
+    const newFilesCount = coordinatorFiles?.length || 0
+    if (currentImagesCount + newFilesCount > MAX_COORDINATOR_IMAGES) {
+      toast.error(`Максимальна кількість фото: ${MAX_COORDINATOR_IMAGES}. Вже завантажено: ${currentImagesCount}`)
+      return
+    }
     try {
       await problemsApi.completeProblem(problemId, currentStateInput)
+      
+      if (coordinatorFiles && coordinatorFiles.length > 0) {
+        await problemsApi.uploadCoordinatorImages(problemId, coordinatorFiles)
+      }
+      
       toast.success('Проблему завершено')
       setCurrentStateInput('')
+      setCoordinatorFiles(null)
       setActionMode(null)
       invalidateQueries()
     } catch {
       toast.error('Помилка завершення')
     }
+  }
+
+  const handleCoordinatorFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFiles = e.target.files
+    const currentImagesCount = detailProblem?.coordinatorImages?.length || 0
+    const maxNewFiles = MAX_COORDINATOR_IMAGES - currentImagesCount
+    
+    if (selectedFiles && selectedFiles.length > maxNewFiles) {
+      toast.error(`Можна додати ще ${maxNewFiles} фото (максимум ${MAX_COORDINATOR_IMAGES})`)
+      e.target.value = ''
+      setCoordinatorFiles(null)
+      return
+    }
+    setCoordinatorFiles(selectedFiles)
+  }
+
+  const resetActionMode = () => {
+    setActionMode(null)
+    setCoordinatorFiles(null)
+    setCurrentStateInput('')
+    setRejectionReason('')
+    if (fileInputRef.current) fileInputRef.current.value = ''
   }
 
   if (loading) {
@@ -222,45 +277,83 @@ export default function CoordinatorPage() {
             {isMyProblem && detailProblem.status !== ProblemStatusConstants.Completed && detailProblem.status !== ProblemStatusConstants.Rejected && (
               <div className="space-y-4 pt-4 border-t">
                 <div className="flex gap-2 flex-wrap">
-                  {actionMode !== 'reject' && actionMode !== 'complete' && (
-                    <Button variant="outline" onClick={() => setActionMode('currentState')}>
-                      Оновити поточний стан
-                    </Button>
+                  {actionMode !== 'reject' && actionMode !== 'complete' && actionMode !== 'currentState' && (
+                    <>
+                      <Button variant="outline" onClick={() => setActionMode('currentState')}>
+                        Оновити поточний стан
+                      </Button>
+                      <Button className="bg-green-600 hover:bg-green-700" onClick={() => setActionMode('complete')}>
+                        Завершити
+                      </Button>
+                      <Button variant="destructive" onClick={() => setActionMode('reject')}>
+                        Відхилити
+                      </Button>
+                    </>
                   )}
-                  <Button className="bg-green-600 hover:bg-green-700" onClick={() => setActionMode('complete')}>
-                    Завершити
-                  </Button>
-                  <Button variant="destructive" onClick={() => setActionMode('reject')}>
-                    Відхилити
-                  </Button>
                 </div>
 
                 {actionMode === 'currentState' && (
-                  <div className="space-y-2">
+                  <div className="space-y-3">
                     <Textarea
                       placeholder="Опишіть поточний стан виконання..."
                       value={currentStateInput}
                       onChange={(e) => setCurrentStateInput(e.target.value)}
                     />
+                    <div className="space-y-2">
+                      <p className="text-sm text-muted-foreground">
+                        Додати фото (завантажено {detailProblem.coordinatorImages?.length || 0} з {MAX_COORDINATOR_IMAGES}, можна ще {MAX_COORDINATOR_IMAGES - (detailProblem.coordinatorImages?.length || 0)})
+                      </p>
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        multiple
+                        accept="image/*"
+                        onChange={handleCoordinatorFileChange}
+                        className="text-sm"
+                      />
+                      {coordinatorFiles && coordinatorFiles.length > 0 && (
+                        <p className="text-sm text-muted-foreground">
+                          Обрано файлів: {coordinatorFiles.length}
+                        </p>
+                      )}
+                    </div>
                     <div className="flex gap-2">
                       <Button onClick={() => handleUpdateCurrentState(detailProblem.id!)}>Зберегти</Button>
-                      <Button variant="outline" onClick={() => setActionMode(null)}>Скасувати</Button>
+                      <Button variant="outline" onClick={resetActionMode}>Скасувати</Button>
                     </div>
                   </div>
                 )}
 
                 {actionMode === 'complete' && (
-                  <div className="space-y-2">
+                  <div className="space-y-3">
                     <Textarea
                       placeholder="Опишіть що було зроблено для вирішення проблеми..."
                       value={currentStateInput}
                       onChange={(e) => setCurrentStateInput(e.target.value)}
                     />
+                    <div className="space-y-2">
+                      <p className="text-sm text-muted-foreground">
+                        Додати фото (завантажено {detailProblem.coordinatorImages?.length || 0} з {MAX_COORDINATOR_IMAGES}, можна ще {MAX_COORDINATOR_IMAGES - (detailProblem.coordinatorImages?.length || 0)})
+                      </p>
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        multiple
+                        accept="image/*"
+                        onChange={handleCoordinatorFileChange}
+                        className="text-sm"
+                      />
+                      {coordinatorFiles && coordinatorFiles.length > 0 && (
+                        <p className="text-sm text-muted-foreground">
+                          Обрано файлів: {coordinatorFiles.length}
+                        </p>
+                      )}
+                    </div>
                     <div className="flex gap-2">
                       <Button className="bg-green-600 hover:bg-green-700" onClick={() => handleCompleteProblem(detailProblem.id!)}>
                         Завершити проблему
                       </Button>
-                      <Button variant="outline" onClick={() => setActionMode(null)}>Скасувати</Button>
+                      <Button variant="outline" onClick={resetActionMode}>Скасувати</Button>
                     </div>
                   </div>
                 )}
@@ -332,7 +425,11 @@ export default function CoordinatorPage() {
           <p className="text-gray-500">Немає проблем у цій категорії</p>
         ) : (
           displayProblems.map((problem) => (
-            <Card key={problem.id} className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => setDetailProblem(problem)}>
+            <Card
+              key={problem.id}
+              className="cursor-pointer hover:shadow-md transition-shadow"
+              onClick={() => setDetailProblem(problem)}
+            >
               <CardHeader>
                 <CardTitle className="flex justify-between items-center">
                   <span>{problem.title}</span>
@@ -356,6 +453,29 @@ export default function CoordinatorPage() {
                 <p className="text-xs text-gray-500">
                   Автор: {problem.createdBy?.email} | {new Date(problem.createdAt).toLocaleDateString('uk-UA')}
                 </p>
+
+                {activeTab === 'my' && (
+                  <div className="mt-3 flex gap-2" onClick={(e) => e.stopPropagation()}>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled={!problem.id}
+                      onClick={() => problem.id && navigate(`/problems/${problem.id}`)}
+                    >
+                      Детальніше
+                    </Button>
+                    <Button
+                      size="sm"
+                      onClick={() => {
+                        setDetailProblem(problem)
+                        setActionMode('currentState')
+                        setCurrentStateInput(problem.currentState || '')
+                      }}
+                    >
+                      Оновити
+                    </Button>
+                  </div>
+                )}
               </CardContent>
             </Card>
           ))
