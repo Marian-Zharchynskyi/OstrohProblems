@@ -22,18 +22,10 @@ const problemIcon = new Icon({
 export function ProblemsMap({ problems }: ProblemsMapProps) {
   const [selectedProblem, setSelectedProblem] = useState<Problem | null>(null)
 
-  // Calculate center of all problems
+  // Fixed center on Ostroh city
   const center = useMemo(() => {
-    if (problems.length === 0) {
-      // Default to Ostroh coordinates
-      return { lat: 50.3294, lng: 26.5144 }
-    }
-
-    const avgLat = problems.reduce((sum, p) => sum + p.latitude, 0) / problems.length
-    const avgLng = problems.reduce((sum, p) => sum + p.longitude, 0) / problems.length
-
-    return { lat: avgLat, lng: avgLng }
-  }, [problems])
+    return { lat: 50.3294, lng: 26.5144 }
+  }, [])
 
   return (
     <>
@@ -64,9 +56,9 @@ export function ProblemsMap({ problems }: ProblemsMapProps) {
                   <p className="text-sm text-gray-600 mb-2 line-clamp-2">
                     {problem.description}
                   </p>
-                  {problem.problemStatus && (
+                  {problem.status && (
                     <span className="inline-flex items-center rounded-full bg-blue-50 px-2 py-1 text-xs text-blue-700">
-                      {problem.problemStatus.name}
+                      {problem.status}
                     </span>
                   )}
                   <button

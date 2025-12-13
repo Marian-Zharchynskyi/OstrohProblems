@@ -12,11 +12,20 @@ public static class ProblemErrorHandler
             StatusCode = exception switch
             {
                 ProblemNotFoundException
-                    or ImageNotFoundException 
+                    or ImageNotFoundException
+                    or CoordinatorImageNotFoundException
                     or UserIdNotFoundException
                     => StatusCodes.Status404NotFound,
                 
-                ProblemAlreadyExistsException 
+                ProblemAlreadyExistsException
+                    or ProblemWithTitleAlreadyExistsException
+                    => StatusCodes.Status409Conflict,
+                
+                MaxImagesExceededException
+                    or MaxCoordinatorImagesExceededException
+                    => StatusCodes.Status400BadRequest,
+                
+                ProblemHasRelatedEntitiesException
                     => StatusCodes.Status409Conflict,
                 
                 ProblemUnknownException 
@@ -24,7 +33,7 @@ public static class ProblemErrorHandler
                     or ProblemConcurrencyException
                     => StatusCodes.Status500InternalServerError,
                 
-                _ => throw new NotImplementedException("Problem error handler does not implemented")
+                _ => StatusCodes.Status500InternalServerError
             }
         };
     }

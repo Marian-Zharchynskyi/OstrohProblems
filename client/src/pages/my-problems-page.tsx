@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useProblems } from '@/features/problems/hooks/use-problems'
 import { useAuth } from '@/contexts/auth-context'
 import { Badge } from '@/components/ui/badge'
@@ -24,6 +24,7 @@ const getStatusColor = (status: string) => {
 
 export function MyProblemsPage() {
   const { user } = useAuth()
+  const navigate = useNavigate()
   const { data: problems, isLoading } = useProblems()
   const [filter, setFilter] = useState<string>('all')
 
@@ -122,6 +123,7 @@ export function MyProblemsPage() {
             <div
               key={problem.id}
               className="bg-white border rounded-lg p-6 hover:shadow-md transition-shadow"
+              onClick={() => problem.id && navigate(`/problems/${problem.id}`)}
             >
               <div className="flex justify-between items-start">
                 <div className="flex-1">
@@ -170,12 +172,14 @@ export function MyProblemsPage() {
                     </div>
                   )}
                 </div>
-                <Link to={`/problems/${problem.id}`}>
-                  <Button variant="outline" size="sm" className="flex items-center gap-2">
-                    <Eye className="h-4 w-4" />
-                    Детальніше
-                  </Button>
-                </Link>
+                <div onClick={(e) => e.stopPropagation()}>
+                  <Link to={`/problems/${problem.id}`}>
+                    <Button variant="outline" size="sm" className="flex items-center gap-2">
+                      <Eye className="h-4 w-4" />
+                      Детальніше
+                    </Button>
+                  </Link>
+                </div>
               </div>
             </div>
           ))}

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import type { CreateProblem } from '@/types'
 import { useCategories } from '@/features/categories/hooks/use-categories'
 import {
@@ -11,7 +12,10 @@ import { Label } from '@/components/ui/label'
 import { FormField } from '@/components/shared/form-field'
 import { toast } from '@/lib/toast'
 
+const MAX_IMAGES_COUNT = 6
+
 export function CreateIssuePage() {
+  const navigate = useNavigate()
   const { data: categories } = useCategories()
   const createMutation = useCreateProblem()
   const uploadImagesMutation = useUploadProblemImages()
@@ -37,12 +41,24 @@ export function CreateIssuePage() {
   }
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFiles(e.target.files)
+    const selectedFiles = e.target.files
+    if (selectedFiles && selectedFiles.length > MAX_IMAGES_COUNT) {
+      toast.error(`Максимальна кількість фото: ${MAX_IMAGES_COUNT}`)
+      e.target.value = ''
+      setFiles(null)
+      return
+    }
+    setFiles(selectedFiles)
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setDescriptionError('')
+
+    if (files && files.length > MAX_IMAGES_COUNT) {
+      toast.error(`Максимальна кількість фото: ${MAX_IMAGES_COUNT}`)
+      return
+    }
 
     if (formData.description.trim().length < 30) {
       setDescriptionError("Введіть щонайменше 30 символів")
@@ -57,15 +73,7 @@ export function CreateIssuePage() {
       }
 
       toast.success('Проблему створено успішно')
-
-      setFormData({
-        title: '',
-        latitude: 0,
-        longitude: 0,
-        description: '',
-        problemCategoryIds: [],
-      })
-      setFiles(null)
+      navigate('/map')
     } catch (error) {
       toast.error('Сталася помилка під час створення проблеми')
       console.error(error)
@@ -176,7 +184,7 @@ export function CreateIssuePage() {
         </CardHeader>
         <CardContent className="space-y-4">
           <p className="text-sm text-muted-foreground">
-            Для кращого відображення проблеми ви можете прикріпити фото.
+            Для кращого відображення проблеми ви можете прикріпити до {MAX_IMAGES_COUNT} фото.
           </p>
           <div className="flex flex-wrap gap-4 items-center">
             <Button
@@ -197,7 +205,7 @@ export function CreateIssuePage() {
             />
             {files && files.length > 0 && (
               <p className="text-sm text-muted-foreground">
-                Обрано файлів: {files.length}
+                Обрано файлів: {files.length} / {MAX_IMAGES_COUNT}
               </p>
             )}
           </div>

@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { User, Mail, Shield, Image as ImageIcon, Trash2 } from 'lucide-react'
+import { User, Mail, Shield, Trash2 } from 'lucide-react'
 
 export function ProfilePage() {
   const { tokens } = useAuth()
@@ -18,7 +18,6 @@ export function ProfilePage() {
     email: '',
     userName: '',
   })
-  const [selectedImage, setSelectedImage] = useState<File | null>(null)
 
   useEffect(() => {
     const loadUserDetails = async () => {
@@ -61,24 +60,6 @@ export function ProfilePage() {
     }
   }
 
-  const handleImageUpload = async () => {
-    if (!selectedImage || !userDetails || !tokens?.accessToken) return
-
-    try {
-      setIsSaving(true)
-      const updated = await userService.uploadUserImage(
-        userDetails.id,
-        selectedImage,
-        tokens.accessToken
-      )
-      setUserDetails(updated)
-      setSelectedImage(null)
-    } catch (error) {
-      console.error('Failed to upload image:', error)
-    } finally {
-      setIsSaving(false)
-    }
-  }
 
   const handleImageDelete = async () => {
     if (!userDetails || !tokens?.accessToken || !userDetails.image) return
@@ -147,20 +128,28 @@ export function ProfilePage() {
               <Input
                 type="file"
                 accept="image/*"
-                onChange={(e) => setSelectedImage(e.target.files?.[0] || null)}
+                onChange={async (e) => {
+                  const file = e.target.files?.[0]
+                  if (!file || !userDetails || !tokens?.accessToken) return
+                  
+                  try {
+                    setIsSaving(true)
+                    const updated = await userService.uploadUserImage(
+                      userDetails.id,
+                      file,
+                      tokens.accessToken
+                    )
+                    setUserDetails(updated)
+                    e.target.value = ''
+                  } catch (error) {
+                    console.error('Failed to upload image:', error)
+                  } finally {
+                    setIsSaving(false)
+                  }
+                }}
                 disabled={isSaving}
               />
-              {selectedImage && (
-                <Button
-                  onClick={handleImageUpload}
-                  disabled={isSaving}
-                  size="sm"
-                >
-                  <ImageIcon className="w-4 h-4 mr-2" />
-                  Upload Image
-                </Button>
-              )}
-              {userDetails.image?.url && !selectedImage && (
+              {userDetails.image?.url && (
                 <Button
                   onClick={handleImageDelete}
                   disabled={isSaving}
