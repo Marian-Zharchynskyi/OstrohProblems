@@ -1,6 +1,5 @@
 using System.Reflection;
 using Application.Services.HashPasswordService;
-using Domain.Categories;
 using Domain.Comments;
 using Domain.Identity.Roles;
 using Domain.Identity.Users;
@@ -14,7 +13,6 @@ namespace Infrastructure.Persistence
     public class ApplicationDbContext(
         DbContextOptions<ApplicationDbContext> options) : DbContext(options)
     {
-        public DbSet<Category> Categories { get; set; }
         public DbSet<Problem> Problems { get; set; }
         public DbSet<Comment> Comments { get; set; }
         public DbSet<Rating> Ratings { get; set; }

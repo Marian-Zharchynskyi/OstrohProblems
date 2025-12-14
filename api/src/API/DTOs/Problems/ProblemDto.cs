@@ -1,4 +1,3 @@
-using API.DTOs.Categories;
 using API.DTOs.Comments;
 using API.DTOs.Users;
 using Domain.Problems;
@@ -20,7 +19,7 @@ public record ProblemDto(
     List<CommentDto>? Comments,
     List<ProblemImageDto>? Images,
     List<CoordinatorImageDto>? CoordinatorImages,
-    List<CategoryDto>? Categories,
+    List<string>? Categories,
     DateTime CreatedAt,
     DateTime UpdatedAt)
 {
@@ -44,7 +43,7 @@ public record ProblemDto(
             getImageUrl != null 
                 ? problem.CoordinatorImages.Select(i => CoordinatorImageDto.FromDomainModel(i, getImageUrl)).ToList() 
                 : new List<CoordinatorImageDto>(),
-            problem.Categories.Count == 0 ? null : problem.Categories.Select(CategoryDto.FromDomainModel).ToList(),
+            problem.Categories.Count == 0 ? null : problem.Categories.Select(c => c.Value).ToList(),
             problem.CreatedAt,
             problem.UpdatedAt
         );

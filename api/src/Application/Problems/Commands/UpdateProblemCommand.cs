@@ -1,8 +1,6 @@
 using Application.Common;
-using Application.Common.DTOs;
 using Application.Common.Interfaces.Repositories;
 using Application.Problems.Exceptions;
-using Application.Services.SignalRService;
 using Domain.Problems;
 using MediatR;
 
@@ -15,13 +13,11 @@ public record UpdateProblemCommand : IRequest<Result<Problem, ProblemException>>
     public required double Latitude { get; init; }
     public required double Longitude { get; init; }
     public required string Description { get; init; }
-    public List<Guid>? ProblemCategoryIds { get; init; } 
+    public List<string>? CategoryNames { get; init; } 
 }
 
 public class UpdateProblemCommandHandler(
-    IProblemRepository problemRepository,
-    ICategoryRepository categoryRepository,
-    ISignalRService signalRService) 
+    IProblemRepository problemRepository) 
     : IRequestHandler<UpdateProblemCommand, Result<Problem, ProblemException>>
 {
     public async Task<Result<Problem, ProblemException>> Handle(
@@ -38,7 +34,7 @@ public class UpdateProblemCommandHandler(
                 request.Latitude,
                 request.Longitude,
                 request.Description,
-                request.ProblemCategoryIds, 
+                request.CategoryNames, 
                 cancellationToken),
             () => Task.FromResult<Result<Problem, ProblemException>>(
                 new ProblemNotFoundException(problemId))
@@ -51,7 +47,7 @@ public class UpdateProblemCommandHandler(
         double latitude,
         double longitude,
         string description,
-        List<Guid>? categoryIds,
+        List<string>? categoryNames,
         CancellationToken cancellationToken)
     {
         try
@@ -67,22 +63,16 @@ public class UpdateProblemCommandHandler(
 
             problem.UpdateProblem(title, latitude, longitude, description);
 
-            if (categoryIds is not null && categoryIds.Any())
+            if (categoryNames is not null && categoryNames.Any())
             {
-                var existingCategoryIds = problem.Categories.Select(c => c.Id.Value).ToHashSet();
-                var newCategoryIds = categoryIds.Except(existingCategoryIds).ToList();
-
-                if (newCategoryIds.Any())
-                {
-                    var newCategories = await categoryRepository.GetByIdsAsync(newCategoryIds, cancellationToken);
-                    foreach (var category in newCategories)
-                    {
-                        problem.AddCategory(category);
-                    }
-                }
+                problem.SetCategories(categoryNames);
             }
 
             return await problemRepository.Update(problem, cancellationToken);
+        }
+        catch (UnsupportedCategoryException ex)
+        {
+            return new ProblemUnknownException(problem.Id, ex);
         }
         catch (Exception exception)
         {

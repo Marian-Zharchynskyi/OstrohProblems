@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react'
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet'
 import { Icon } from 'leaflet'
+import type { LatLngBoundsExpression } from 'leaflet'
 import type { Problem } from '@/types'
 import { ProblemDetailPopup } from './problem-detail-popup'
 import 'leaflet/dist/leaflet.css'
@@ -8,6 +9,15 @@ import 'leaflet/dist/leaflet.css'
 interface ProblemsMapProps {
   problems: Problem[]
 }
+
+// Ostroh city center coordinates
+const OSTROH_CENTER: [number, number] = [50.3292, 26.5143]
+
+// Bounds for Ostroh + ~10km radius (prevents users from panning outside this area)
+const MAP_BOUNDS: LatLngBoundsExpression = [
+  [50.2392, 26.4243], // Southwest corner
+  [50.4192, 26.6043], // Northeast corner
+]
 
 // Custom marker icon
 const problemIcon = new Icon({
@@ -24,7 +34,7 @@ export function ProblemsMap({ problems }: ProblemsMapProps) {
 
   // Fixed center on Ostroh city
   const center = useMemo(() => {
-    return { lat: 50.3294, lng: 26.5144 }
+    return { lat: OSTROH_CENTER[0], lng: OSTROH_CENTER[1] }
   }, [])
 
   return (
@@ -35,6 +45,9 @@ export function ProblemsMap({ problems }: ProblemsMapProps) {
           zoom={14}
           style={{ height: '100%', width: '100%' }}
           className="z-0"
+          maxBounds={MAP_BOUNDS}
+          maxBoundsViscosity={1.0}
+          minZoom={12}
         >
           <TileLayer
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'

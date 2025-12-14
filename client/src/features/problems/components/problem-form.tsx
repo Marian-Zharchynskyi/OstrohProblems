@@ -10,7 +10,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { useCategories } from '@/features/categories/hooks/use-categories'
+import { CATEGORIES } from '@/constants/categories'
 
 interface ProblemFormProps {
   open: boolean
@@ -27,14 +27,12 @@ export function ProblemForm({
   initialData,
   isLoading,
 }: ProblemFormProps) {
-  const { data: categories } = useCategories()
-
   const [formData, setFormData] = useState<CreateProblem>({
     title: '',
     latitude: 0,
     longitude: 0,
     description: '',
-    problemCategoryIds: [],
+    categoryNames: [],
   })
 
   useEffect(() => {
@@ -44,7 +42,7 @@ export function ProblemForm({
         latitude: initialData.latitude,
         longitude: initialData.longitude,
         description: initialData.description,
-        problemCategoryIds: initialData.categories?.map((c) => c.id || '') || [],
+        categoryNames: initialData.categories || [],
       })
     } else {
       setFormData({
@@ -52,7 +50,7 @@ export function ProblemForm({
         latitude: 0,
         longitude: 0,
         description: '',
-        problemCategoryIds: [],
+        categoryNames: [],
       })
     }
   }, [initialData, open])
@@ -62,12 +60,12 @@ export function ProblemForm({
     onSubmit(formData, initialData?.id || undefined)
   }
 
-  const handleCategoryToggle = (categoryId: string) => {
+  const handleCategoryToggle = (categoryName: string) => {
     setFormData((prev) => ({
       ...prev,
-      problemCategoryIds: prev.problemCategoryIds.includes(categoryId)
-        ? prev.problemCategoryIds.filter((id) => id !== categoryId)
-        : [...prev.problemCategoryIds, categoryId],
+      categoryNames: prev.categoryNames.includes(categoryName)
+        ? prev.categoryNames.filter((name) => name !== categoryName)
+        : [...prev.categoryNames, categoryName],
     }))
   }
 
@@ -131,22 +129,22 @@ export function ProblemForm({
             </div>
 
             <div className="space-y-2">
-              <Label>Categories</Label>
+              <Label>Категорії</Label>
               <div className="border rounded-md p-4 space-y-2 max-h-40 overflow-y-auto">
-                {categories?.map((category) => (
-                  <div key={category.id} className="flex items-center space-x-2">
+                {CATEGORIES.map((category) => (
+                  <div key={category.value} className="flex items-center space-x-2">
                     <input
                       type="checkbox"
-                      id={`category-${category.id}`}
-                      checked={formData.problemCategoryIds.includes(category.id || '')}
-                      onChange={() => handleCategoryToggle(category.id || '')}
+                      id={`category-${category.value}`}
+                      checked={formData.categoryNames.includes(category.value)}
+                      onChange={() => handleCategoryToggle(category.value)}
                       className="h-4 w-4"
                     />
                     <label
-                      htmlFor={`category-${category.id}`}
+                      htmlFor={`category-${category.value}`}
                       className="text-sm cursor-pointer"
                     >
-                      {category.name}
+                      {category.label}
                     </label>
                   </div>
                 ))}

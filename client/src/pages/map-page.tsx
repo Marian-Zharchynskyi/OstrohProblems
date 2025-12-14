@@ -1,10 +1,10 @@
 import { ProblemsMap } from '@/features/problems/components/problems-map'
-import { useProblems } from '@/features/problems/hooks/use-problems'
+import { useProblemsForMap } from '@/features/problems/hooks/use-problems'
 import { PageHeader } from '@/components/shared/page-header'
 import { Loader2 } from 'lucide-react'
 
 export function MapPage() {
-  const { data: problems, isLoading, error } = useProblems()
+  const { data: problems, isLoading, error } = useProblemsForMap()
 
   if (isLoading) {
     return (

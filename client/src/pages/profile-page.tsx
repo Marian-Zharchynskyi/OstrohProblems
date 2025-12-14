@@ -211,21 +211,16 @@ export function ProfilePage() {
             <div className="space-y-2">
               <Label>
                 <Shield className="w-4 h-4 inline mr-2" />
-                Roles
+                Роль
               </Label>
               <div className="flex gap-2 flex-wrap">
-                {userDetails.roles && userDetails.roles.length > 0 ? (
-                  userDetails.roles.map((role) => (
-                    <span
-                      key={role.id}
-                      className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm"
-                    >
-                      {role.name}
-                    </span>
-                  ))
+                {userDetails.role ? (
+                  <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm">
+                    {userDetails.role.name}
+                  </span>
                 ) : (
                   <span className="text-sm text-muted-foreground">
-                    No roles assigned
+                    Роль не призначена
                   </span>
                 )}
               </div>

@@ -13,7 +13,6 @@ public class ProblemRepository(ApplicationDbContext context) : IProblemQueries, 
         CancellationToken cancellationToken)
     {
         var query = context.Problems
-            .Include(x => x.Categories)
             .Include(x => x.Comments)
             .Include(x => x.Images)
             .Include(x => x.CoordinatorImages)
@@ -36,7 +35,6 @@ public class ProblemRepository(ApplicationDbContext context) : IProblemQueries, 
     public async Task<IReadOnlyList<Problem>> GetAll(CancellationToken cancellationToken)
     {
         return await context.Problems
-            .Include(x => x.Categories)
             .Include(x => x.Comments)
             .Include(x => x.Images)
             .Include(x => x.CoordinatorImages)
@@ -51,7 +49,6 @@ public class ProblemRepository(ApplicationDbContext context) : IProblemQueries, 
     public async Task<Option<Problem>> GetById(ProblemId id, CancellationToken cancellationToken)
     {
         var entity = await context.Problems
-            .Include(x => x.Categories)
             .Include(x => x.Comments)
             .Include(x => x.Images)
             .Include(x => x.CoordinatorImages)
@@ -96,7 +93,6 @@ public class ProblemRepository(ApplicationDbContext context) : IProblemQueries, 
     public async Task<IReadOnlyList<Problem>> GetByUserId(UserId userId, CancellationToken cancellationToken)
     {
         return await context.Problems
-            .Include(x => x.Categories)
             .Include(x => x.Comments)
             .Include(x => x.Images)
             .Include(x => x.CoordinatorImages)
@@ -113,7 +109,6 @@ public class ProblemRepository(ApplicationDbContext context) : IProblemQueries, 
     public async Task<IReadOnlyList<Problem>> GetByCoordinatorId(UserId coordinatorId, CancellationToken cancellationToken)
     {
         return await context.Problems
-            .Include(x => x.Categories)
             .Include(x => x.Comments)
             .Include(x => x.Images)
             .Include(x => x.CoordinatorImages)
@@ -130,7 +125,6 @@ public class ProblemRepository(ApplicationDbContext context) : IProblemQueries, 
     public async Task<IReadOnlyList<Problem>> GetByStatus(ProblemStatus status, CancellationToken cancellationToken)
     {
         return await context.Problems
-            .Include(x => x.Categories)
             .Include(x => x.Comments)
             .Include(x => x.Images)
             .Include(x => x.CoordinatorImages)
@@ -140,6 +134,23 @@ public class ProblemRepository(ApplicationDbContext context) : IProblemQueries, 
             .AsSplitQuery()
             .AsNoTracking()
             .Where(x => x.Status == status)
+            .OrderByDescending(x => x.CreatedAt)
+            .ToListAsync(cancellationToken);
+    }
+
+    public async Task<IReadOnlyList<Problem>> GetForMap(CancellationToken cancellationToken)
+    {
+        return await context.Problems
+            .Include(x => x.Comments)
+            .Include(x => x.Images)
+            .Include(x => x.CoordinatorImages)
+            .Include(x => x.CreatedBy)
+            .Include(x => x.Coordinator)
+            .Include(x => x.Ratings)
+            .AsSplitQuery()
+            .AsNoTracking()
+            .Where(x => x.Status != ProblemStatus.New
+                     && x.Status != ProblemStatus.Rejected)
             .OrderByDescending(x => x.CreatedAt)
             .ToListAsync(cancellationToken);
     }

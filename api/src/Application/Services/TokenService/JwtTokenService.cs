@@ -31,19 +31,8 @@ namespace Application.Services.TokenService
                 new Claim("image", user.UserImage?.FilePath ?? "N/A"),
             };
 
-            if (user.Roles.Count > 0)
-            {
-                var roleClaims = user.Roles.Select(ur => new Claim(
-                    "role",
-                    ur.Name
-                )).ToArray();
-
-                claims.AddRange(roleClaims);
-            }
-            else
-            {
-                claims.Add(new Claim("role", RoleNames.User));
-            }
+            var roleName = user.Role?.Name ?? RoleNames.User;
+            claims.Add(new Claim("role", roleName));
             
             var token = new JwtSecurityToken(
                 issuer: issuer,

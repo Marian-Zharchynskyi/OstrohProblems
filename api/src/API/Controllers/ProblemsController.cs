@@ -45,6 +45,14 @@ public class ProblemsController(ISender sender, IProblemQueries problemQueries, 
         return entities.Select(p => ProblemDto.FromDomainModel(p, imageService.GetImageUrl)).ToList();
     }
 
+    [AllowAnonymous]
+    [HttpGet("for-map")]
+    public async Task<ActionResult<IReadOnlyList<ProblemDto>>> GetForMap(CancellationToken cancellationToken)
+    {
+        var entities = await problemQueries.GetForMap(cancellationToken);
+        return entities.Select(p => ProblemDto.FromDomainModel(p, imageService.GetImageUrl)).ToList();
+    }
+
     [Authorize(Roles = $"{RoleNames.Admin}, {RoleNames.User}")]
     [HttpGet("by-user/{userId:guid}")]
     public async Task<ActionResult<IReadOnlyList<ProblemDto>>> GetByUser(
@@ -89,7 +97,7 @@ public class ProblemsController(ISender sender, IProblemQueries problemQueries, 
             Latitude = request.Latitude,
             Longitude = request.Longitude,
             Description = request.Description,
-            ProblemCategoryIds = request.ProblemCategoryIds
+            CategoryNames = request.CategoryNames
         };
 
         var result = await sender.Send(input, cancellationToken);
@@ -113,7 +121,7 @@ public class ProblemsController(ISender sender, IProblemQueries problemQueries, 
             Latitude = request.Latitude,
             Longitude = request.Longitude,
             Description = request.Description,
-            ProblemCategoryIds = request.ProblemCategoryIds
+            CategoryNames = request.CategoryNames
         };
 
         var result = await sender.Send(input, cancellationToken);
@@ -185,6 +193,26 @@ public class ProblemsController(ISender sender, IProblemQueries problemQueries, 
         CancellationToken cancellationToken)
     {
         var input = new AssignCoordinatorCommand
+        {
+            ProblemId = problemId,
+            CoordinatorId = coordinatorId
+        };
+
+        var result = await sender.Send(input, cancellationToken);
+
+        return result.Match<ActionResult<ProblemDto>>(
+            problem => ProblemDto.FromDomainModel(problem, imageService.GetImageUrl),
+            e => e.ToObjectResult());
+    }
+
+    [Authorize(Roles = $"{RoleNames.Admin}, {RoleNames.Coordinator}")]
+    [HttpPut("validate/{problemId:guid}")]
+    public async Task<ActionResult<ProblemDto>> ValidateProblem(
+        [FromRoute] Guid problemId,
+        [FromBody] Guid coordinatorId,
+        CancellationToken cancellationToken)
+    {
+        var input = new ValidateProblemCommand
         {
             ProblemId = problemId,
             CoordinatorId = coordinatorId

@@ -14,22 +14,19 @@ public record CreateProblemCommand : IRequest<Result<Problem, ProblemException>>
     public required double Latitude { get; init; }
     public required double Longitude { get; init; }
     public required string Description { get; init; }
-    public required List<Guid> ProblemCategoryIds { get; init; }
+    public required List<string> CategoryNames { get; init; }
 }
 
 public class CreateProblemCommandHandler : IRequestHandler<CreateProblemCommand, Result<Problem, ProblemException>>
 {
     private readonly IProblemRepository _problemRepository;
-    private readonly ICategoryRepository _categoryRepository;
     private readonly IHttpContextAccessor _httpContextAccessor;
 
     public CreateProblemCommandHandler(
         IProblemRepository problemRepository,
-        ICategoryRepository categoryRepository,
         IHttpContextAccessor httpContextAccessor)
     {
         _problemRepository = problemRepository;
-        _categoryRepository = categoryRepository;
         _httpContextAccessor = httpContextAccessor;
     }
 
@@ -46,7 +43,7 @@ public class CreateProblemCommandHandler : IRequestHandler<CreateProblemCommand,
                 request.Latitude,
                 request.Longitude,
                 request.Description,
-                request.ProblemCategoryIds,
+                request.CategoryNames,
                 cancellationToken));
     }
 
@@ -55,7 +52,7 @@ public class CreateProblemCommandHandler : IRequestHandler<CreateProblemCommand,
         double latitude,
         double longitude,
         string description,
-        List<Guid> categoryIds,
+        List<string> categoryNames,
         CancellationToken cancellationToken)
     {
         var problemId = ProblemId.New();
@@ -80,16 +77,19 @@ public class CreateProblemCommandHandler : IRequestHandler<CreateProblemCommand,
                 userId
             );
 
-            if (categoryIds.Any())
+            if (categoryNames.Any())
             {
-                var categories = await _categoryRepository.GetByIdsAsync(categoryIds, cancellationToken);
-                foreach (var category in categories)
+                foreach (var categoryName in categoryNames)
                 {
-                    problem.AddCategory(category);
+                    problem.AddCategory(categoryName);
                 }
             }
 
             return await _problemRepository.Add(problem, cancellationToken);
+        }
+        catch (UnsupportedCategoryException ex)
+        {
+            return new ProblemUnknownException(problemId, ex);
         }
         catch (Exception ex)
         {

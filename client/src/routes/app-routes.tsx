@@ -9,7 +9,6 @@ import { ErrorPage } from '@/pages/error-page'
 import { HomePage } from '@/pages/home-page'
 import { LoginPage } from '@/pages/login-page'
 import { RegisterPage } from '@/pages/register-page'
-import { CategoriesPage } from '@/pages/categories-page'
 import { ProblemsPage } from '@/pages/problems-page'
 import { CommentsPage } from '@/pages/comments-page'
 import { RatingsPage } from '@/pages/ratings-page'
@@ -73,16 +72,6 @@ export function AppRoutes() {
           <ProtectedRoute allowedRoles={['Administrator']}>
             <Layout>
               <HomePage />
-            </Layout>
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/categories"
-        element={
-          <ProtectedRoute allowedRoles={['Administrator']}>
-            <Layout>
-              <CategoriesPage />
             </Layout>
           </ProtectedRoute>
         }

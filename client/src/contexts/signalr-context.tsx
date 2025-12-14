@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, type ReactNode } from 'react'
+import { useEffect, useState, useCallback, useRef, type ReactNode } from 'react'
 import { signalRService } from '@/services/signalr-service'
 import { useAuth } from './auth-context'
 import type { Notification, Comment } from '@/types'
@@ -8,6 +8,11 @@ export function SignalRProvider({ children }: { children: ReactNode }) {
   const { user, tokens } = useAuth()
   const [isConnected, setIsConnected] = useState(false)
   const [notifications, setNotifications] = useState<Notification[]>([])
+  const problemsUpdatedCallbackRef = useRef<(() => void) | null>(null)
+
+  const isCoordinatorOrAdmin = user?.roles?.some(
+    (role) => role === 'Coordinator' || role === 'Administrator'
+  )
 
   useEffect(() => {
     if (user && tokens?.accessToken) {
@@ -23,7 +28,15 @@ export function SignalRProvider({ children }: { children: ReactNode }) {
           }
           // Subscribe to notifications
           signalRService.onNotificationReceived((notification) => {
-            setNotifications((prev) => [notification, ...prev])
+            if (isCoordinatorOrAdmin) {
+              // For coordinators/admins: trigger auto-refresh instead of showing notification
+              if (problemsUpdatedCallbackRef.current) {
+                problemsUpdatedCallbackRef.current()
+              }
+            } else {
+              // For regular users: show notification
+              setNotifications((prev) => [notification, ...prev])
+            }
           })
 
           setIsConnected(true)
@@ -40,7 +53,7 @@ export function SignalRProvider({ children }: { children: ReactNode }) {
         setIsConnected(false)
       }
     }
-  }, [user, tokens])
+  }, [user, tokens, isCoordinatorOrAdmin])
 
   const joinProblemGroup = useCallback(async (problemId: string) => {
     await signalRService.joinProblemGroup(problemId)
@@ -54,6 +67,13 @@ export function SignalRProvider({ children }: { children: ReactNode }) {
   const onCommentReceived = useCallback(
     (callback: (comment: Comment) => void) => {
       signalRService.onCommentReceived(callback)
+    },
+    []
+  )
+
+  const onProblemsUpdated = useCallback(
+    (callback: () => void) => {
+      problemsUpdatedCallbackRef.current = callback
     },
     []
   )
@@ -77,6 +97,7 @@ export function SignalRProvider({ children }: { children: ReactNode }) {
         joinProblemGroup,
         leaveProblemGroup,
         onCommentReceived,
+        onProblemsUpdated,
         notifications,
         unreadCount,
         markAsRead,

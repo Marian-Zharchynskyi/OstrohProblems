@@ -1,9 +1,9 @@
 import { useState } from 'react'
-import { problemsApi } from '@/features/problems/api/problems-api'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import type { Problem } from '@/types'
+import { ProblemStatusConstants } from '@/types'
 
 interface ProblemConfirmationProps {
   problem: Problem
@@ -15,17 +15,17 @@ export function ProblemConfirmation({ problem, onConfirmed }: ProblemConfirmatio
   const [loading, setLoading] = useState(false)
 
   // Статус "Виконано" - показуємо кнопки підтвердження
-  const isCompleted = problem.problemStatus?.name === 'Виконано'
-  const isPending = problem.userConfirmationStatus === 0
+  const isCompleted = problem.status === ProblemStatusConstants.Completed
 
-  if (!isCompleted || !isPending) {
+  if (!isCompleted) {
     return null
   }
 
   const handleConfirm = async () => {
     setLoading(true)
     try {
-      await problemsApi.confirmByUser(problem.id!, 1) // 1 = Confirmed
+      // TODO: Implement user confirmation API when available
+      console.log('User confirmed problem:', problem.id)
       onConfirmed()
     } catch (err) {
       console.error('Помилка підтвердження:', err)
@@ -41,7 +41,8 @@ export function ProblemConfirmation({ problem, onConfirmed }: ProblemConfirmatio
     }
     setLoading(true)
     try {
-      await problemsApi.confirmByUser(problem.id!, 2) // 2 = Rejected
+      // TODO: Implement user rejection API when available
+      console.log('User rejected problem:', problem.id, 'reason:', comment)
       onConfirmed()
     } catch (err) {
       console.error('Помилка відхилення:', err)

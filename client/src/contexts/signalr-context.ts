@@ -6,6 +6,7 @@ export interface SignalRContextType {
   joinProblemGroup: (problemId: string) => Promise<void>
   leaveProblemGroup: (problemId: string) => Promise<void>
   onCommentReceived: (callback: (comment: Comment) => void) => void
+  onProblemsUpdated: (callback: () => void) => void
   notifications: Notification[]
   unreadCount: number
   markAsRead: (notificationId: string) => void

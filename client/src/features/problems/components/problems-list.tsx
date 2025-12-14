@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import type { Problem } from '@/types'
+import type { Problem, CreateProblem } from '@/types'
 import { DataTable, type Column } from '@/components/shared/data-table'
 import { PageHeader } from '@/components/shared/page-header'
 import { DeleteDialog } from '@/components/shared/delete-dialog'
@@ -36,7 +36,7 @@ export function ProblemsList() {
     },
     {
       header: 'Status',
-      accessor: (item) => item.problemStatus?.name || 'N/A',
+      accessor: (item) => item.status || 'N/A',
     },
     {
       header: 'Location',
@@ -45,7 +45,7 @@ export function ProblemsList() {
     {
       header: 'Categories',
       accessor: (item) =>
-        item.categories?.map((c) => c.name).join(', ') || 'N/A',
+        item.categories?.join(', ') || 'N/A',
     },
     {
       header: 'Created At',
@@ -69,17 +69,7 @@ export function ProblemsList() {
     setIsDeleteOpen(true)
   }
 
-  const handleSubmit = async (
-    data: {
-      title: string
-      latitude: number
-      longitude: number
-      description: string
-      problemStatusId: string
-      problemCategoryIds: string[]
-    },
-    id?: string
-  ) => {
+  const handleSubmit = async (data: CreateProblem, id?: string) => {
     try {
       if (id) {
         await updateMutation.mutateAsync({ id, data })

@@ -122,7 +122,7 @@ public class UsersController(ISender sender, IUserQueries userQueries, IIdentity
         [FromBody] Guid roleId,
         CancellationToken cancellationToken)
     {
-        var input = new ChangeRolesForUserCommand
+        var input = new ChangeRoleForUserCommand
         {
             UserId = userId,
             RoleId = roleId
