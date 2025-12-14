@@ -50,11 +50,23 @@ export default function CoordinatorPage() {
     queryClient.invalidateQueries({ queryKey: ['problems'] })
   }
 
+  const handleValidate = async (problemId: string) => {
+    if (!user?.id) return
+    try {
+      await problemsApi.validateProblem(problemId, user.id)
+      toast.success('Проблему провалідовано та призначено вам')
+      setDetailProblem(null)
+      invalidateQueries()
+    } catch {
+      toast.error('Помилка валідації')
+    }
+  }
+
   const handleAssignToMe = async (problemId: string) => {
     if (!user?.id) return
     try {
       await problemsApi.assignCoordinator(problemId, user.id)
-      toast.success('Проблему призначено вам')
+      toast.success('Проблему взято в роботу')
       setDetailProblem(null)
       invalidateQueries()
     } catch {
@@ -251,6 +263,37 @@ export default function CoordinatorPage() {
             {!isMyProblem && detailProblem.status === ProblemStatusConstants.New && (
               <div className="space-y-4 pt-4 border-t">
                 <div className="flex gap-2">
+                  <Button onClick={() => handleValidate(detailProblem.id!)}>
+                    Провалідувати
+                  </Button>
+                  <Button variant="destructive" onClick={() => setActionMode('reject')}>
+                    Відхилити
+                  </Button>
+                </div>
+                {actionMode === 'reject' && (
+                  <div className="space-y-2">
+                    <Textarea
+                      placeholder="Причина відхилення..."
+                      value={rejectionReason}
+                      onChange={(e) => setRejectionReason(e.target.value)}
+                    />
+                    <div className="flex gap-2">
+                      <Button onClick={() => handleReject(detailProblem.id!)}>Підтвердити відхилення</Button>
+                      <Button variant="outline" onClick={() => setActionMode(null)}>Скасувати</Button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {isMyProblem && detailProblem.status === ProblemStatusConstants.Validated && (
+              <div className="space-y-4 pt-4 border-t">
+                <div className="bg-cyan-50 p-4 rounded">
+                  <p className="text-sm text-cyan-700">
+                    Проблема провалідована. Ви можете взяти її в роботу або відхилити.
+                  </p>
+                </div>
+                <div className="flex gap-2">
                   <Button onClick={() => handleAssignToMe(detailProblem.id!)}>
                     Взяти в роботу
                   </Button>
@@ -396,6 +439,7 @@ export default function CoordinatorPage() {
   const getStatusBadgeClass = (status: string) => {
     switch (status) {
       case ProblemStatusConstants.New: return 'bg-blue-100 text-blue-800'
+      case ProblemStatusConstants.Validated: return 'bg-cyan-100 text-cyan-800'
       case ProblemStatusConstants.InProgress: return 'bg-yellow-100 text-yellow-800'
       case ProblemStatusConstants.Completed: return 'bg-green-100 text-green-800'
       case ProblemStatusConstants.Rejected: return 'bg-red-100 text-red-800'

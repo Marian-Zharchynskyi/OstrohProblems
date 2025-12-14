@@ -1,4 +1,3 @@
-using Domain.Categories;
 using Domain.Comments;
 using Domain.Identity.Users;
 using Domain.Ratings;
@@ -23,10 +22,10 @@ public class Problem
     public string? CoordinatorComment { get; private set; }
     public string? CurrentState { get; private set; }
     public ICollection<Comment> Comments { get; private set; } = new List<Comment>();
-    public ICollection<Category> Categories { get; private set; } = new List<Category>();
+    public List<Category> Categories { get; private set; } = new();
     public ICollection<Rating> Ratings { get; private set; } = new List<Rating>();
-    public List<ProblemImage> Images { get; private set; } = [];
-    public List<CoordinatorImage> CoordinatorImages { get; private set; } = [];
+    public List<ProblemImage> Images { get; private set; } = new();
+    public List<CoordinatorImage> CoordinatorImages { get; private set; } = new();
 
     private Problem(ProblemId id, string title, double latitude, double longitude, string description,
         ProblemStatus status, DateTime createdAt, DateTime updatedAt, UserId createdById)
@@ -70,19 +69,21 @@ public class Problem
         UpdatedAt = DateTime.UtcNow;
     }
 
-    public void AddCategory(Category category)
+    public void AddCategory(string categoryName)
     {
-        if (Categories.Any(c => c.Id == category.Id))
+        var category = Category.From(categoryName);
+        if (Categories.Any(c => c.Value == category.Value))
             return;
 
         Categories.Add(category);
     }
 
-    public void SetCategories(IEnumerable<Category> categories)
+    public void SetCategories(IEnumerable<string> categoryNames)
     {
         Categories.Clear();
-        foreach (var category in categories)
+        foreach (var name in categoryNames)
         {
+            var category = Category.From(name);
             Categories.Add(category);
         }
         UpdatedAt = DateTime.UtcNow;

@@ -1,6 +1,8 @@
-﻿using Domain.Problems;
+﻿using System.Text.Json;
 using Domain.Identity.Users;
+using Domain.Problems;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Infrastructure.Persistence.Configurations;
@@ -64,8 +66,20 @@ public class ProblemConfiguration : IEntityTypeConfiguration<Problem>
             .HasForeignKey(c => c.ProblemId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        builder.HasMany(p => p.Categories)
-            .WithMany(c => c.Problems)
-            .UsingEntity(j => j.ToTable("fk_problem_categories"));
+        var categoriesComparer = new ValueComparer<List<Category>>(
+            (c1, c2) => ReferenceEquals(c1, c2) || (c1 != null && c2 != null && c1.SequenceEqual(c2)),
+            c => c == null
+                ? 0
+                : c.Aggregate(0, (a, v) => HashCode.Combine(a, v.Value.GetHashCode())),
+            c => c == null ? new List<Category>() : c.ToList());
+
+        var categoriesProperty = builder.Property(p => p.Categories)
+            .HasConversion(
+                v => JsonSerializer.Serialize(v.Select(c => c.Value).ToList(), (JsonSerializerOptions?)null),
+                v => (JsonSerializer.Deserialize<List<string>>(v, (JsonSerializerOptions?)null) ?? new List<string>())
+                    .Select(Category.From).ToList())
+            .HasColumnType("jsonb");
+
+        categoriesProperty.Metadata.SetValueComparer(categoriesComparer);
     }
 }

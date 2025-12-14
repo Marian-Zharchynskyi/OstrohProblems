@@ -9,6 +9,11 @@ export const problemsApi = {
     return response.data
   },
 
+  getForMap: async () => {
+    const response = await apiClient.get<Problem[]>(`${BASE_URL}/for-map`)
+    return response.data
+  },
+
   getPaged: async (page: number = 1, pageSize: number = 10) => {
     const response = await apiClient.get<PagedResult<Problem>>(
       `${BASE_URL}/paged`,
@@ -60,6 +65,14 @@ export const problemsApi = {
   assignCoordinator: async (problemId: string, coordinatorId: string) => {
     const response = await apiClient.put<Problem>(
       `${BASE_URL}/assign-coordinator/${problemId}`,
+      coordinatorId
+    )
+    return response.data
+  },
+
+  validateProblem: async (problemId: string, coordinatorId: string) => {
+    const response = await apiClient.put<Problem>(
+      `${BASE_URL}/validate/${problemId}`,
       coordinatorId
     )
     return response.data

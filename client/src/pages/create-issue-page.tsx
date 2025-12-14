@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import type { CreateProblem } from '@/types'
-import { useCategories } from '@/features/categories/hooks/use-categories'
+import { CATEGORIES } from '@/constants/categories'
 import {
   useCreateProblem,
   useUploadProblemImages,
@@ -16,7 +16,6 @@ const MAX_IMAGES_COUNT = 6
 
 export function CreateIssuePage() {
   const navigate = useNavigate()
-  const { data: categories } = useCategories()
   const createMutation = useCreateProblem()
   const uploadImagesMutation = useUploadProblemImages()
 
@@ -25,18 +24,18 @@ export function CreateIssuePage() {
     latitude: 0,
     longitude: 0,
     description: '',
-    problemCategoryIds: [],
+    categoryNames: [],
   })
 
   const [files, setFiles] = useState<FileList | null>(null)
   const [descriptionError, setDescriptionError] = useState('')
 
-  const handleCategoryToggle = (categoryId: string) => {
+  const handleCategoryToggle = (categoryName: string) => {
     setFormData((prev) => ({
       ...prev,
-      problemCategoryIds: prev.problemCategoryIds.includes(categoryId)
-        ? prev.problemCategoryIds.filter((id) => id !== categoryId)
-        : [...prev.problemCategoryIds, categoryId],
+      categoryNames: prev.categoryNames.includes(categoryName)
+        ? prev.categoryNames.filter((name) => name !== categoryName)
+        : [...prev.categoryNames, categoryName],
     }))
   }
 
@@ -105,20 +104,20 @@ export function CreateIssuePage() {
           <div className="space-y-2">
             <Label>Категорії</Label>
             <div className="border rounded-md p-3 space-y-1 max-h-40 overflow-y-auto bg-background">
-              {categories?.map((category) => (
-                <div key={category.id} className="flex items-center space-x-2">
+              {CATEGORIES.map((category) => (
+                <div key={category.value} className="flex items-center space-x-2">
                   <input
                     type="checkbox"
-                    id={`category-${category.id}`}
-                    checked={formData.problemCategoryIds.includes(category.id || '')}
-                    onChange={() => handleCategoryToggle(category.id || '')}
+                    id={`category-${category.value}`}
+                    checked={formData.categoryNames.includes(category.value)}
+                    onChange={() => handleCategoryToggle(category.value)}
                     className="h-4 w-4"
                   />
                   <label
-                    htmlFor={`category-${category.id}`}
+                    htmlFor={`category-${category.value}`}
                     className="text-sm cursor-pointer"
                   >
-                    {category.name}
+                    {category.label}
                   </label>
                 </div>
               ))}

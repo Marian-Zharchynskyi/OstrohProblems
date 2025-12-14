@@ -1,42 +1,42 @@
 import { Link } from 'react-router-dom'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { FolderTree, MessageSquare, Star, AlertCircle, Flag } from 'lucide-react'
+import { MessageSquare, Star, AlertCircle, Users, MapPin } from 'lucide-react'
 
 const features = [
   {
-    title: 'Categories',
-    description: 'Manage problem categories',
-    icon: FolderTree,
-    path: '/categories',
-    color: 'text-blue-500',
-  },
-  {
-    title: 'Statuses',
-    description: 'Manage problem statuses',
-    icon: Flag,
-    path: '/statuses',
-    color: 'text-green-500',
-  },
-  {
-    title: 'Problems',
-    description: 'View and manage reported problems',
+    title: 'Проблеми',
+    description: 'Перегляд та управління проблемами',
     icon: AlertCircle,
     path: '/problems',
     color: 'text-red-500',
   },
   {
-    title: 'Comments',
-    description: 'Manage problem comments',
+    title: 'Коментарі',
+    description: 'Управління коментарями до проблем',
     icon: MessageSquare,
     path: '/comments',
     color: 'text-purple-500',
   },
   {
-    title: 'Ratings',
-    description: 'Manage problem ratings',
+    title: 'Оцінки',
+    description: 'Управління оцінками проблем',
     icon: Star,
     path: '/ratings',
     color: 'text-yellow-500',
+  },
+  {
+    title: 'Користувачі',
+    description: 'Управління користувачами системи',
+    icon: Users,
+    path: '/admin/users',
+    color: 'text-blue-500',
+  },
+  {
+    title: 'Карта',
+    description: 'Перегляд проблем на карті',
+    icon: MapPin,
+    path: '/map',
+    color: 'text-green-500',
   },
 ]
 
@@ -44,9 +44,9 @@ export function HomePage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-4xl font-bold tracking-tight">Welcome to Ostroh Problems</h1>
+        <h1 className="text-4xl font-bold tracking-tight">Панель адміністратора</h1>
         <p className="text-muted-foreground mt-2">
-          Manage and track community-reported problems efficiently
+          Управління та відстеження проблем громади
         </p>
       </div>
 
@@ -67,7 +67,7 @@ export function HomePage() {
                 </CardHeader>
                 <CardContent>
                   <p className="text-sm text-muted-foreground">
-                    Click to manage {feature.title.toLowerCase()}
+                    Натисніть для управління
                   </p>
                 </CardContent>
               </Card>

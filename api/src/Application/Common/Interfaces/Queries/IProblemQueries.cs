@@ -25,4 +25,9 @@ public interface IProblemQueries
     /// Get problems by status
     /// </summary>
     Task<IReadOnlyList<Problem>> GetByStatus(ProblemStatus status, CancellationToken cancellationToken);
+    
+    /// <summary>
+    /// Get problems for map display (excludes New, Completed, Rejected statuses)
+    /// </summary>
+    Task<IReadOnlyList<Problem>> GetForMap(CancellationToken cancellationToken);
 }

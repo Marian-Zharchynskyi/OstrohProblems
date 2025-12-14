@@ -22,246 +22,6 @@ namespace Infrastructure.Persistence.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("CategoryProblem", b =>
-                {
-                    b.Property<Guid>("CategoriesId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("categories_id");
-
-                    b.Property<Guid>("ProblemsId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("problems_id");
-
-                    b.HasKey("CategoriesId", "ProblemsId")
-                        .HasName("pk_fk_problem_categories");
-
-                    b.HasIndex("ProblemsId")
-                        .HasDatabaseName("ix_fk_problem_categories_problems_id");
-
-                    b.ToTable("fk_problem_categories", (string)null);
-
-                    b.HasData(
-                        new
-                        {
-                            CategoriesId = new Guid("00000000-0000-0000-0000-000000000101"),
-                            ProblemsId = new Guid("00000000-0000-0000-0000-000000000301")
-                        },
-                        new
-                        {
-                            CategoriesId = new Guid("00000000-0000-0000-0000-000000000102"),
-                            ProblemsId = new Guid("00000000-0000-0000-0000-000000000302")
-                        },
-                        new
-                        {
-                            CategoriesId = new Guid("00000000-0000-0000-0000-000000000104"),
-                            ProblemsId = new Guid("00000000-0000-0000-0000-000000000303")
-                        },
-                        new
-                        {
-                            CategoriesId = new Guid("00000000-0000-0000-0000-000000000103"),
-                            ProblemsId = new Guid("00000000-0000-0000-0000-000000000304")
-                        },
-                        new
-                        {
-                            CategoriesId = new Guid("00000000-0000-0000-0000-000000000108"),
-                            ProblemsId = new Guid("00000000-0000-0000-0000-000000000304")
-                        },
-                        new
-                        {
-                            CategoriesId = new Guid("00000000-0000-0000-0000-000000000107"),
-                            ProblemsId = new Guid("00000000-0000-0000-0000-000000000305")
-                        },
-                        new
-                        {
-                            CategoriesId = new Guid("00000000-0000-0000-0000-000000000108"),
-                            ProblemsId = new Guid("00000000-0000-0000-0000-000000000305")
-                        },
-                        new
-                        {
-                            CategoriesId = new Guid("00000000-0000-0000-0000-000000000101"),
-                            ProblemsId = new Guid("00000000-0000-0000-0000-000000000306")
-                        },
-                        new
-                        {
-                            CategoriesId = new Guid("00000000-0000-0000-0000-000000000107"),
-                            ProblemsId = new Guid("00000000-0000-0000-0000-000000000306")
-                        },
-                        new
-                        {
-                            CategoriesId = new Guid("00000000-0000-0000-0000-000000000101"),
-                            ProblemsId = new Guid("00000000-0000-0000-0000-000000000307")
-                        },
-                        new
-                        {
-                            CategoriesId = new Guid("00000000-0000-0000-0000-000000000109"),
-                            ProblemsId = new Guid("00000000-0000-0000-0000-000000000308")
-                        },
-                        new
-                        {
-                            CategoriesId = new Guid("00000000-0000-0000-0000-000000000103"),
-                            ProblemsId = new Guid("00000000-0000-0000-0000-000000000309")
-                        },
-                        new
-                        {
-                            CategoriesId = new Guid("00000000-0000-0000-0000-000000000107"),
-                            ProblemsId = new Guid("00000000-0000-0000-0000-000000000309")
-                        },
-                        new
-                        {
-                            CategoriesId = new Guid("00000000-0000-0000-0000-000000000106"),
-                            ProblemsId = new Guid("00000000-0000-0000-0000-00000000030a")
-                        },
-                        new
-                        {
-                            CategoriesId = new Guid("00000000-0000-0000-0000-000000000107"),
-                            ProblemsId = new Guid("00000000-0000-0000-0000-00000000030a")
-                        },
-                        new
-                        {
-                            CategoriesId = new Guid("00000000-0000-0000-0000-000000000105"),
-                            ProblemsId = new Guid("00000000-0000-0000-0000-00000000030b")
-                        },
-                        new
-                        {
-                            CategoriesId = new Guid("00000000-0000-0000-0000-000000000103"),
-                            ProblemsId = new Guid("00000000-0000-0000-0000-00000000030c")
-                        },
-                        new
-                        {
-                            CategoriesId = new Guid("00000000-0000-0000-0000-000000000108"),
-                            ProblemsId = new Guid("00000000-0000-0000-0000-00000000030c")
-                        },
-                        new
-                        {
-                            CategoriesId = new Guid("00000000-0000-0000-0000-000000000106"),
-                            ProblemsId = new Guid("00000000-0000-0000-0000-00000000030d")
-                        },
-                        new
-                        {
-                            CategoriesId = new Guid("00000000-0000-0000-0000-000000000107"),
-                            ProblemsId = new Guid("00000000-0000-0000-0000-00000000030d")
-                        },
-                        new
-                        {
-                            CategoriesId = new Guid("00000000-0000-0000-0000-000000000104"),
-                            ProblemsId = new Guid("00000000-0000-0000-0000-00000000030e")
-                        },
-                        new
-                        {
-                            CategoriesId = new Guid("00000000-0000-0000-0000-000000000103"),
-                            ProblemsId = new Guid("00000000-0000-0000-0000-00000000030f")
-                        },
-                        new
-                        {
-                            CategoriesId = new Guid("00000000-0000-0000-0000-000000000104"),
-                            ProblemsId = new Guid("00000000-0000-0000-0000-000000000310")
-                        },
-                        new
-                        {
-                            CategoriesId = new Guid("00000000-0000-0000-0000-000000000106"),
-                            ProblemsId = new Guid("00000000-0000-0000-0000-000000000310")
-                        },
-                        new
-                        {
-                            CategoriesId = new Guid("00000000-0000-0000-0000-000000000101"),
-                            ProblemsId = new Guid("00000000-0000-0000-0000-000000000311")
-                        },
-                        new
-                        {
-                            CategoriesId = new Guid("00000000-0000-0000-0000-000000000108"),
-                            ProblemsId = new Guid("00000000-0000-0000-0000-000000000312")
-                        },
-                        new
-                        {
-                            CategoriesId = new Guid("00000000-0000-0000-0000-000000000107"),
-                            ProblemsId = new Guid("00000000-0000-0000-0000-000000000312")
-                        },
-                        new
-                        {
-                            CategoriesId = new Guid("00000000-0000-0000-0000-000000000105"),
-                            ProblemsId = new Guid("00000000-0000-0000-0000-000000000313")
-                        },
-                        new
-                        {
-                            CategoriesId = new Guid("00000000-0000-0000-0000-000000000103"),
-                            ProblemsId = new Guid("00000000-0000-0000-0000-000000000314")
-                        },
-                        new
-                        {
-                            CategoriesId = new Guid("00000000-0000-0000-0000-000000000107"),
-                            ProblemsId = new Guid("00000000-0000-0000-0000-000000000314")
-                        });
-                });
-
-            modelBuilder.Entity("Domain.Categories.Category", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("varchar(100)")
-                        .HasColumnName("name");
-
-                    b.HasKey("Id")
-                        .HasName("pk_categories");
-
-                    b.ToTable("categories", (string)null);
-
-                    b.HasData(
-                        new
-                        {
-                            Id = new Guid("00000000-0000-0000-0000-000000000101"),
-                            Name = "Дороги та тротуари"
-                        },
-                        new
-                        {
-                            Id = new Guid("00000000-0000-0000-0000-000000000102"),
-                            Name = "Освітлення"
-                        },
-                        new
-                        {
-                            Id = new Guid("00000000-0000-0000-0000-000000000103"),
-                            Name = "Благоустрій"
-                        },
-                        new
-                        {
-                            Id = new Guid("00000000-0000-0000-0000-000000000104"),
-                            Name = "Сміття та екологія"
-                        },
-                        new
-                        {
-                            Id = new Guid("00000000-0000-0000-0000-000000000105"),
-                            Name = "Комунальні послуги"
-                        },
-                        new
-                        {
-                            Id = new Guid("00000000-0000-0000-0000-000000000106"),
-                            Name = "Транспорт"
-                        },
-                        new
-                        {
-                            Id = new Guid("00000000-0000-0000-0000-000000000107"),
-                            Name = "Безпека"
-                        },
-                        new
-                        {
-                            Id = new Guid("00000000-0000-0000-0000-000000000108"),
-                            Name = "Парки та зелені зони"
-                        },
-                        new
-                        {
-                            Id = new Guid("00000000-0000-0000-0000-000000000109"),
-                            Name = "Будівництво"
-                        },
-                        new
-                        {
-                            Id = new Guid("00000000-0000-0000-0000-00000000010a"),
-                            Name = "Інше"
-                        });
-                });
-
             modelBuilder.Entity("Domain.Comments.Comment", b =>
                 {
                     b.Property<Guid>("Id")
@@ -307,93 +67,66 @@ namespace Infrastructure.Persistence.Migrations
                     b.HasData(
                         new
                         {
-                            Id = new Guid("00000000-0000-0000-0000-000000000401"),
-                            Content = "Так, підтверджую. Їздив сьогодні, ледь не зламав підвіску.",
-                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            ProblemId = new Guid("00000000-0000-0000-0000-000000000301"),
-                            UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            UserId = new Guid("00000000-0000-0000-0000-000000000010")
+                            Id = new Guid("00000000-0000-0000-0002-000000000001"),
+                            Content = "Підтверджую, яма дуже глибока, пошкодив колесо.",
+                            CreatedAt = new DateTime(2024, 1, 16, 15, 0, 0, 0, DateTimeKind.Utc),
+                            ProblemId = new Guid("00000000-0000-0000-0001-000000000001"),
+                            UpdatedAt = new DateTime(2024, 1, 16, 15, 0, 0, 0, DateTimeKind.Utc),
+                            UserId = new Guid("00000000-0000-0000-0000-000000000011")
                         },
                         new
                         {
-                            Id = new Guid("00000000-0000-0000-0000-000000000402"),
-                            Content = "Вже місяць як така ситуація. Коли вже відремонтують?",
-                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            ProblemId = new Guid("00000000-0000-0000-0000-000000000301"),
-                            UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            UserId = new Guid("00000000-0000-0000-0000-000000000010")
+                            Id = new Guid("00000000-0000-0000-0002-000000000002"),
+                            Content = "Дякуємо за звернення, передали в дорожню службу.",
+                            CreatedAt = new DateTime(2024, 1, 16, 16, 0, 0, 0, DateTimeKind.Utc),
+                            ProblemId = new Guid("00000000-0000-0000-0001-000000000001"),
+                            UpdatedAt = new DateTime(2024, 1, 16, 16, 0, 0, 0, DateTimeKind.Utc),
+                            UserId = new Guid("00000000-0000-0000-0000-000000000012")
                         },
                         new
                         {
-                            Id = new Guid("00000000-0000-0000-0000-000000000403"),
-                            Content = "Дуже небезпечно ходити ввечері, треба терміново виправити.",
-                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            ProblemId = new Guid("00000000-0000-0000-0000-000000000302"),
-                            UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            UserId = new Guid("00000000-0000-0000-0000-000000000010")
+                            Id = new Guid("00000000-0000-0000-0002-000000000003"),
+                            Content = "Темно ввечері ходити, небезпечно.",
+                            CreatedAt = new DateTime(2024, 1, 16, 17, 0, 0, 0, DateTimeKind.Utc),
+                            ProblemId = new Guid("00000000-0000-0000-0001-000000000002"),
+                            UpdatedAt = new DateTime(2024, 1, 16, 17, 0, 0, 0, DateTimeKind.Utc),
+                            UserId = new Guid("00000000-0000-0000-0000-000000000011")
                         },
                         new
                         {
-                            Id = new Guid("00000000-0000-0000-0000-000000000404"),
-                            Content = "Жахлива ситуація, смердить на всю вулицю.",
-                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            ProblemId = new Guid("00000000-0000-0000-0000-000000000303"),
-                            UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            UserId = new Guid("00000000-0000-0000-0000-000000000010")
+                            Id = new Guid("00000000-0000-0000-0002-000000000004"),
+                            Content = "Жахливий запах, неможливо пройти повз.",
+                            CreatedAt = new DateTime(2024, 1, 16, 18, 0, 0, 0, DateTimeKind.Utc),
+                            ProblemId = new Guid("00000000-0000-0000-0001-000000000003"),
+                            UpdatedAt = new DateTime(2024, 1, 16, 18, 0, 0, 0, DateTimeKind.Utc),
+                            UserId = new Guid("00000000-0000-0000-0000-000000000011")
                         },
                         new
                         {
-                            Id = new Guid("00000000-0000-0000-0000-000000000405"),
-                            Content = "Дякую, що виправили!",
-                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            ProblemId = new Guid("00000000-0000-0000-0000-000000000304"),
-                            UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            UserId = new Guid("00000000-0000-0000-0000-000000000010")
+                            Id = new Guid("00000000-0000-0000-0002-000000000005"),
+                            Content = "Прошу терміново вирішити, гілки вже торкаються проводів.",
+                            CreatedAt = new DateTime(2024, 1, 16, 19, 0, 0, 0, DateTimeKind.Utc),
+                            ProblemId = new Guid("00000000-0000-0000-0001-000000000004"),
+                            UpdatedAt = new DateTime(2024, 1, 16, 19, 0, 0, 0, DateTimeKind.Utc),
+                            UserId = new Guid("00000000-0000-0000-0000-000000000011")
                         },
                         new
                         {
-                            Id = new Guid("00000000-0000-0000-0000-000000000406"),
-                            Content = "Дійсно небезпечно, особливо при сильному вітрі.",
-                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            ProblemId = new Guid("00000000-0000-0000-0000-000000000305"),
-                            UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            UserId = new Guid("00000000-0000-0000-0000-000000000010")
+                            Id = new Guid("00000000-0000-0000-0002-000000000006"),
+                            Content = "Діти переходять дорогу в небезпечному місці.",
+                            CreatedAt = new DateTime(2024, 1, 16, 20, 0, 0, 0, DateTimeKind.Utc),
+                            ProblemId = new Guid("00000000-0000-0000-0001-000000000005"),
+                            UpdatedAt = new DateTime(2024, 1, 16, 20, 0, 0, 0, DateTimeKind.Utc),
+                            UserId = new Guid("00000000-0000-0000-0000-000000000011")
                         },
                         new
                         {
-                            Id = new Guid("00000000-0000-0000-0000-000000000407"),
-                            Content = "Діти щодня переходять дорогу, це дуже небезпечно!",
-                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            ProblemId = new Guid("00000000-0000-0000-0000-000000000306"),
-                            UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            UserId = new Guid("00000000-0000-0000-0000-000000000010")
-                        },
-                        new
-                        {
-                            Id = new Guid("00000000-0000-0000-0000-000000000408"),
-                            Content = "Коли почнуть ремонт? Діти не можуть нормально гратися.",
-                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            ProblemId = new Guid("00000000-0000-0000-0000-000000000309"),
-                            UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            UserId = new Guid("00000000-0000-0000-0000-000000000010")
-                        },
-                        new
-                        {
-                            Id = new Guid("00000000-0000-0000-0000-000000000409"),
-                            Content = "Вода вже затопила половину дороги!",
-                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            ProblemId = new Guid("00000000-0000-0000-0000-00000000030b"),
-                            UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            UserId = new Guid("00000000-0000-0000-0000-000000000010")
-                        },
-                        new
-                        {
-                            Id = new Guid("00000000-0000-0000-0000-00000000040a"),
-                            Content = "Це екологічна катастрофа для нашого міста!",
-                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            ProblemId = new Guid("00000000-0000-0000-0000-00000000030e"),
-                            UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            UserId = new Guid("00000000-0000-0000-0000-000000000010")
+                            Id = new Guid("00000000-0000-0000-0002-000000000007"),
+                            Content = "Вода тече вже третій день, ніхто не реагує.",
+                            CreatedAt = new DateTime(2024, 1, 16, 21, 0, 0, 0, DateTimeKind.Utc),
+                            ProblemId = new Guid("00000000-0000-0000-0001-000000000008"),
+                            UpdatedAt = new DateTime(2024, 1, 16, 21, 0, 0, 0, DateTimeKind.Utc),
+                            UserId = new Guid("00000000-0000-0000-0000-000000000011")
                         });
                 });
 
@@ -454,8 +187,15 @@ namespace Infrastructure.Persistence.Migrations
                         .HasColumnType("character varying(255)")
                         .HasColumnName("password_hash");
 
+                    b.Property<Guid>("RoleId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("role_id");
+
                     b.HasKey("Id")
                         .HasName("pk_users");
+
+                    b.HasIndex("RoleId")
+                        .HasDatabaseName("ix_users_role_id");
 
                     b.ToTable("users", (string)null);
 
@@ -465,21 +205,24 @@ namespace Infrastructure.Persistence.Migrations
                             Id = new Guid("00000000-0000-0000-0000-000000000010"),
                             Email = "admin@ostroh.edu.ua",
                             FullName = "Адміністратор Острога",
-                            PasswordHash = "31jGqnyNWeEpqqSOGrrFYA==:pt36JXYoIE3w8xtI8rEJU/h50muKgFwRs0p/h4am3A0="
+                            PasswordHash = "31jGqnyNWeEpqqSOGrrFYA==:pt36JXYoIE3w8xtI8rEJU/h50muKgFwRs0p/h4am3A0=",
+                            RoleId = new Guid("00000000-0000-0000-0000-000000000001")
                         },
                         new
                         {
                             Id = new Guid("00000000-0000-0000-0000-000000000011"),
                             Email = "user@ostroh.edu.ua",
                             FullName = "Звичайний Користувач",
-                            PasswordHash = "OeuuWFIVglEfvDvcH349ow==:OXOk32vZFxUcodlJVPaLj/qOApIGP9SSVu9RBy+O4Sc="
+                            PasswordHash = "OeuuWFIVglEfvDvcH349ow==:OXOk32vZFxUcodlJVPaLj/qOApIGP9SSVu9RBy+O4Sc=",
+                            RoleId = new Guid("00000000-0000-0000-0000-000000000002")
                         },
                         new
                         {
                             Id = new Guid("00000000-0000-0000-0000-000000000012"),
                             Email = "coordinator@ostroh.edu.ua",
                             FullName = "Координатор Острога",
-                            PasswordHash = "DXIF+E53jMJS34YZkf0Jkw==:ccAPZCJbWy/stpuqDGYoAeNnHM5rABefB+bMZL+EaZY="
+                            PasswordHash = "DXIF+E53jMJS34YZkf0Jkw==:ccAPZCJbWy/stpuqDGYoAeNnHM5rABefB+bMZL+EaZY=",
+                            RoleId = new Guid("00000000-0000-0000-0000-000000000003")
                         });
                 });
 
@@ -537,6 +280,11 @@ namespace Infrastructure.Persistence.Migrations
                     b.Property<Guid>("Id")
                         .HasColumnType("uuid")
                         .HasColumnName("id");
+
+                    b.Property<string>("Categories")
+                        .IsRequired()
+                        .HasColumnType("jsonb")
+                        .HasColumnName("categories");
 
                     b.Property<string>("CoordinatorComment")
                         .HasColumnType("text")
@@ -603,243 +351,133 @@ namespace Infrastructure.Persistence.Migrations
                     b.HasData(
                         new
                         {
-                            Id = new Guid("00000000-0000-0000-0000-000000000301"),
-                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            CreatedById = new Guid("00000000-0000-0000-0000-000000000010"),
-                            Description = "Велика яма на дорозі біля будинку №15. Потрібує термінового ремонту.",
+                            Id = new Guid("00000000-0000-0000-0001-000000000001"),
+                            Categories = "[\"\\u0414\\u043E\\u0440\\u043E\\u0433\\u0438\"]",
+                            CreatedAt = new DateTime(2024, 1, 15, 10, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedById = new Guid("00000000-0000-0000-0000-000000000011"),
+                            Description = "Велика яма на дорозі біля будинку №15. Потребує термінового ремонту.",
                             Latitude = 50.3294,
                             Longitude = 26.514399999999998,
-                            Status = "Нова",
+                            Status = "Провалідована",
                             Title = "Розбита дорога на вул. Академічна",
-                            UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
+                            UpdatedAt = new DateTime(2024, 1, 15, 10, 0, 0, 0, DateTimeKind.Utc)
                         },
                         new
                         {
-                            Id = new Guid("00000000-0000-0000-0000-000000000302"),
-                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            CreatedById = new Guid("00000000-0000-0000-0000-000000000010"),
-                            Description = "Вже тиждень не світять ліхтарі на ділянці від будинку №10 до №20.",
+                            Id = new Guid("00000000-0000-0000-0001-000000000002"),
+                            Categories = "[\"\\u041E\\u0441\\u0432\\u0456\\u0442\\u043B\\u0435\\u043D\\u043D\\u044F\"]",
+                            CreatedAt = new DateTime(2024, 1, 15, 10, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedById = new Guid("00000000-0000-0000-0000-000000000011"),
+                            Description = "Вже тиждень не світять ліхтарі на ділянці від будинку №5 до №15.",
                             Latitude = 50.328499999999998,
                             Longitude = 26.512499999999999,
-                            Status = "В роботі",
+                            Status = "Провалідована",
                             Title = "Не працює вуличне освітлення на вул. Семінарська",
-                            UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
+                            UpdatedAt = new DateTime(2024, 1, 15, 10, 0, 0, 0, DateTimeKind.Utc)
                         },
                         new
                         {
-                            Id = new Guid("00000000-0000-0000-0000-000000000303"),
-                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            CreatedById = new Guid("00000000-0000-0000-0000-000000000010"),
+                            Id = new Guid("00000000-0000-0000-0001-000000000003"),
+                            Categories = "[\"\\u0421\\u043C\\u0456\\u0442\\u0442\\u044F\"]",
+                            CreatedAt = new DateTime(2024, 1, 15, 10, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedById = new Guid("00000000-0000-0000-0000-000000000011"),
                             Description = "Сміттєві контейнери не вивозяться вже 3 дні, сміття розкидане навколо.",
                             Latitude = 50.330100000000002,
                             Longitude = 26.5167,
-                            Status = "Нова",
+                            Status = "Провалідована",
                             Title = "Переповнені сміттєві баки біля ринку",
-                            UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
+                            UpdatedAt = new DateTime(2024, 1, 15, 10, 0, 0, 0, DateTimeKind.Utc)
                         },
                         new
                         {
-                            Id = new Guid("00000000-0000-0000-0000-000000000304"),
-                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            CreatedById = new Guid("00000000-0000-0000-0000-000000000010"),
-                            Description = "Дерев'яна лавка зламана, потребує заміни або ремонту.",
-                            Latitude = 50.327800000000003,
-                            Longitude = 26.518899999999999,
-                            Status = "Виконано",
-                            Title = "Зламана лавка в парку Тараса Шевченка",
-                            UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
-                        },
-                        new
-                        {
-                            Id = new Guid("00000000-0000-0000-0000-000000000305"),
-                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            CreatedById = new Guid("00000000-0000-0000-0000-000000000010"),
-                            Description = "Старе дерево нахилилося і може впасти на дорогу. Небезпечно для пішоходів та транспорту.",
+                            Id = new Guid("00000000-0000-0000-0001-000000000004"),
+                            Categories = "[\"\\u0411\\u0435\\u0437\\u043F\\u0435\\u043A\\u0430\",\"\\u041F\\u0430\\u0440\\u043A\\u0438 \\u0442\\u0430 \\u0437\\u0435\\u043B\\u0435\\u043D\\u0456 \\u0437\\u043E\\u043D\\u0438\"]",
+                            CreatedAt = new DateTime(2024, 1, 15, 10, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedById = new Guid("00000000-0000-0000-0000-000000000011"),
+                            Description = "Старе дерево нахилилося і може впасти на дорогу. Небезпечно для пішоходів.",
                             Latitude = 50.331200000000003,
                             Longitude = 26.509799999999998,
                             Status = "В роботі",
                             Title = "Аварійне дерево на вул. Луцька",
-                            UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
+                            UpdatedAt = new DateTime(2024, 1, 15, 10, 0, 0, 0, DateTimeKind.Utc)
                         },
                         new
                         {
-                            Id = new Guid("00000000-0000-0000-0000-000000000306"),
-                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            CreatedById = new Guid("00000000-0000-0000-0000-000000000010"),
+                            Id = new Guid("00000000-0000-0000-0001-000000000005"),
+                            Categories = "[\"\\u0414\\u043E\\u0440\\u043E\\u0433\\u0438\",\"\\u0411\\u0435\\u0437\\u043F\\u0435\\u043A\\u0430\"]",
+                            CreatedAt = new DateTime(2024, 1, 15, 10, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedById = new Guid("00000000-0000-0000-0000-000000000011"),
                             Description = "Пішохідний перехід біля школи №2 без розмітки, небезпечно для дітей.",
                             Latitude = 50.328899999999997,
                             Longitude = 26.515599999999999,
-                            Status = "Нова",
+                            Status = "В роботі",
                             Title = "Відсутня розмітка на пішохідному переході",
-                            UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
+                            UpdatedAt = new DateTime(2024, 1, 15, 10, 0, 0, 0, DateTimeKind.Utc)
                         },
                         new
                         {
-                            Id = new Guid("00000000-0000-0000-0000-000000000307"),
-                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            CreatedById = new Guid("00000000-0000-0000-0000-000000000010"),
-                            Description = "Великі тріщини на тротуарі, небезпечно для пішоходів, особливо в темний час доби.",
+                            Id = new Guid("00000000-0000-0000-0001-000000000006"),
+                            Categories = "[\"\\u0414\\u043E\\u0440\\u043E\\u0433\\u0438\"]",
+                            CreatedAt = new DateTime(2024, 1, 15, 10, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedById = new Guid("00000000-0000-0000-0000-000000000011"),
+                            Description = "Великі тріщини на тротуарі, небезпечно для пішоходів та велосипедистів.",
                             Latitude = 50.330500000000001,
                             Longitude = 26.513400000000001,
-                            Status = "Нова",
+                            Status = "Провалідована",
                             Title = "Тріщина на тротуарі вул. Папаніна",
-                            UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
+                            UpdatedAt = new DateTime(2024, 1, 15, 10, 0, 0, 0, DateTimeKind.Utc)
                         },
                         new
                         {
-                            Id = new Guid("00000000-0000-0000-0000-000000000308"),
-                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            CreatedById = new Guid("00000000-0000-0000-0000-000000000010"),
-                            Description = "Ведеться будівництво без відповідних дозволів, порушується архітектурний вигляд міста.",
-                            Latitude = 50.329799999999999,
-                            Longitude = 26.517800000000001,
-                            Status = "Відхилено",
-                            Title = "Незаконне будівництво на вул. Князів Острозьких",
-                            UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
-                        },
-                        new
-                        {
-                            Id = new Guid("00000000-0000-0000-0000-000000000309"),
-                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            CreatedById = new Guid("00000000-0000-0000-0000-000000000010"),
+                            Id = new Guid("00000000-0000-0000-0001-000000000007"),
+                            Categories = "[\"\\u0411\\u0435\\u0437\\u043F\\u0435\\u043A\\u0430\",\"\\u041F\\u0430\\u0440\\u043A\\u0438 \\u0442\\u0430 \\u0437\\u0435\\u043B\\u0435\\u043D\\u0456 \\u0437\\u043E\\u043D\\u0438\"]",
+                            CreatedAt = new DateTime(2024, 1, 15, 10, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedById = new Guid("00000000-0000-0000-0000-000000000011"),
                             Description = "Гойдалки та гірка на дитячому майданчику в аварійному стані.",
                             Latitude = 50.328200000000002,
                             Longitude = 26.514199999999999,
                             Status = "В роботі",
                             Title = "Потребує ремонту дитячий майданчик",
-                            UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
+                            UpdatedAt = new DateTime(2024, 1, 15, 10, 0, 0, 0, DateTimeKind.Utc)
                         },
                         new
                         {
-                            Id = new Guid("00000000-0000-0000-0000-00000000030a"),
-                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            CreatedById = new Guid("00000000-0000-0000-0000-000000000010"),
-                            Description = "На перехресті вул. Академічна та вул. Семінарська відсутній знак пріоритету.",
-                            Latitude = 50.3307,
-                            Longitude = 26.516100000000002,
-                            Status = "Нова",
-                            Title = "Відсутній дорожній знак на перехресті",
-                            UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
-                        },
-                        new
-                        {
-                            Id = new Guid("00000000-0000-0000-0000-00000000030b"),
-                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            CreatedById = new Guid("00000000-0000-0000-0000-000000000010"),
+                            Id = new Guid("00000000-0000-0000-0001-000000000008"),
+                            Categories = "[\"\\u0412\\u043E\\u0434\\u043E\\u043F\\u043E\\u0441\\u0442\\u0430\\u0447\\u0430\\u043D\\u043D\\u044F\"]",
+                            CreatedAt = new DateTime(2024, 1, 15, 10, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedById = new Guid("00000000-0000-0000-0000-000000000011"),
                             Description = "Витік води з водопровідної труби, вода заливає дорогу.",
                             Latitude = 50.329099999999997,
                             Longitude = 26.517099999999999,
-                            Status = "В роботі",
+                            Status = "Нова",
                             Title = "Прорив водопроводу на вул. Замкова",
-                            UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
+                            UpdatedAt = new DateTime(2024, 1, 15, 10, 0, 0, 0, DateTimeKind.Utc)
                         },
                         new
                         {
-                            Id = new Guid("00000000-0000-0000-0000-00000000030c"),
-                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            CreatedById = new Guid("00000000-0000-0000-0000-000000000010"),
+                            Id = new Guid("00000000-0000-0000-0001-000000000009"),
+                            Categories = "[\"\\u041F\\u0430\\u0440\\u043A\\u0438 \\u0442\\u0430 \\u0437\\u0435\\u043B\\u0435\\u043D\\u0456 \\u0437\\u043E\\u043D\\u0438\"]",
+                            CreatedAt = new DateTime(2024, 1, 15, 10, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedById = new Guid("00000000-0000-0000-0000-000000000011"),
                             Description = "Клумби біля центральної площі не доглядаються, заросли бур'яном.",
                             Latitude = 50.329599999999999,
                             Longitude = 26.514900000000001,
                             Status = "Нова",
                             Title = "Зарослі бур'яном клумби в центрі",
-                            UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
+                            UpdatedAt = new DateTime(2024, 1, 15, 10, 0, 0, 0, DateTimeKind.Utc)
                         },
                         new
                         {
-                            Id = new Guid("00000000-0000-0000-0000-00000000030d"),
-                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            CreatedById = new Guid("00000000-0000-0000-0000-000000000010"),
-                            Description = "Світлофор на перехресті не працює вже другий день.",
+                            Id = new Guid("00000000-0000-0000-0001-000000000010"),
+                            Categories = "[\"\\u0411\\u0435\\u0437\\u043F\\u0435\\u043A\\u0430\",\"\\u0414\\u043E\\u0440\\u043E\\u0433\\u0438\"]",
+                            CreatedAt = new DateTime(2024, 1, 15, 10, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedById = new Guid("00000000-0000-0000-0000-000000000011"),
+                            Description = "Світлофор на перехресті не працює вже другий день, створює аварійну ситуацію.",
                             Latitude = 50.331499999999998,
                             Longitude = 26.510200000000001,
-                            Status = "В роботі",
+                            Status = "Відхилено",
                             Title = "Не працює світлофор на вул. Луцька",
-                            UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
-                        },
-                        new
-                        {
-                            Id = new Guid("00000000-0000-0000-0000-00000000030e"),
-                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            CreatedById = new Guid("00000000-0000-0000-0000-000000000010"),
-                            Description = "Стихійне сміттєзвалище утворилося в лісосмузі за містом.",
-                            Latitude = 50.327199999999998,
-                            Longitude = 26.519500000000001,
-                            Status = "Нова",
-                            Title = "Сміттєзвалище в лісосмузі",
-                            UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
-                        },
-                        new
-                        {
-                            Id = new Guid("00000000-0000-0000-0000-00000000030f"),
-                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            CreatedById = new Guid("00000000-0000-0000-0000-000000000010"),
-                            Description = "Огорожа школи №1 іржава та потребує фарбування.",
-                            Latitude = 50.328800000000001,
-                            Longitude = 26.5138,
-                            Status = "Виконано",
-                            Title = "Потребує фарбування огорожа школи",
-                            UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
-                        },
-                        new
-                        {
-                            Id = new Guid("00000000-0000-0000-0000-000000000310"),
-                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            CreatedById = new Guid("00000000-0000-0000-0000-000000000010"),
-                            Description = "На автобусній зупинці 'Центр' немає урн для сміття.",
-                            Latitude = 50.330199999999998,
-                            Longitude = 26.5153,
-                            Status = "Нова",
-                            Title = "Відсутні урни на зупинці",
-                            UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
-                        },
-                        new
-                        {
-                            Id = new Guid("00000000-0000-0000-0000-000000000311"),
-                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            CreatedById = new Guid("00000000-0000-0000-0000-000000000010"),
-                            Description = "Бордюр зруйнований на протяжності 5 метрів.",
-                            Latitude = 50.329900000000002,
-                            Longitude = 26.516400000000001,
-                            Status = "Нова",
-                            Title = "Зламаний бордюр на вул. Князів Острозьких",
-                            UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
-                        },
-                        new
-                        {
-                            Id = new Guid("00000000-0000-0000-0000-000000000312"),
-                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            CreatedById = new Guid("00000000-0000-0000-0000-000000000010"),
-                            Description = "Гілки дерева загрожують електричним проводам.",
-                            Latitude = 50.328600000000002,
-                            Longitude = 26.514700000000001,
-                            Status = "В роботі",
-                            Title = "Потребує обрізки дерева біля будинку",
-                            UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
-                        },
-                        new
-                        {
-                            Id = new Guid("00000000-0000-0000-0000-000000000313"),
-                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            CreatedById = new Guid("00000000-0000-0000-0000-000000000010"),
-                            Description = "Після дощу утворюються великі калюжі через відсутність каналізації.",
-                            Latitude = 50.3279,
-                            Longitude = 26.513200000000001,
-                            Status = "Нова",
-                            Title = "Відсутня каналізація на вул. Садова",
-                            UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
-                        },
-                        new
-                        {
-                            Id = new Guid("00000000-0000-0000-0000-000000000314"),
-                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            CreatedById = new Guid("00000000-0000-0000-0000-000000000010"),
-                            Description = "Вандали розмалювали фасад історичної будівлі в центрі міста.",
-                            Latitude = 50.329300000000003,
-                            Longitude = 26.517499999999998,
-                            Status = "Виконано",
-                            Title = "Граффіті на фасаді історичної будівлі",
-                            UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
+                            UpdatedAt = new DateTime(2024, 1, 15, 10, 0, 0, 0, DateTimeKind.Utc)
                         });
                 });
 
@@ -909,83 +547,75 @@ namespace Infrastructure.Persistence.Migrations
                     b.HasData(
                         new
                         {
-                            Id = new Guid("00000000-0000-0000-0000-000000000501"),
-                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Points = 4.5,
-                            ProblemId = new Guid("00000000-0000-0000-0000-000000000301"),
-                            UserId = new Guid("00000000-0000-0000-0000-000000000010")
-                        },
-                        new
-                        {
-                            Id = new Guid("00000000-0000-0000-0000-000000000502"),
-                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Id = new Guid("00000000-0000-0000-0003-000000000001"),
+                            CreatedAt = new DateTime(2024, 1, 17, 11, 0, 0, 0, DateTimeKind.Utc),
                             Points = 5.0,
-                            ProblemId = new Guid("00000000-0000-0000-0000-000000000302"),
+                            ProblemId = new Guid("00000000-0000-0000-0001-000000000001"),
+                            UserId = new Guid("00000000-0000-0000-0000-000000000011")
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0003-000000000002"),
+                            CreatedAt = new DateTime(2024, 1, 17, 12, 0, 0, 0, DateTimeKind.Utc),
+                            Points = 4.0,
+                            ProblemId = new Guid("00000000-0000-0000-0001-000000000001"),
                             UserId = new Guid("00000000-0000-0000-0000-000000000010")
                         },
                         new
                         {
-                            Id = new Guid("00000000-0000-0000-0000-000000000503"),
-                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Points = 4.7999999999999998,
-                            ProblemId = new Guid("00000000-0000-0000-0000-000000000303"),
-                            UserId = new Guid("00000000-0000-0000-0000-000000000010")
+                            Id = new Guid("00000000-0000-0000-0003-000000000003"),
+                            CreatedAt = new DateTime(2024, 1, 17, 13, 0, 0, 0, DateTimeKind.Utc),
+                            Points = 4.0,
+                            ProblemId = new Guid("00000000-0000-0000-0001-000000000002"),
+                            UserId = new Guid("00000000-0000-0000-0000-000000000011")
                         },
                         new
                         {
-                            Id = new Guid("00000000-0000-0000-0000-000000000504"),
-                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Id = new Guid("00000000-0000-0000-0003-000000000004"),
+                            CreatedAt = new DateTime(2024, 1, 17, 14, 0, 0, 0, DateTimeKind.Utc),
                             Points = 5.0,
-                            ProblemId = new Guid("00000000-0000-0000-0000-000000000305"),
-                            UserId = new Guid("00000000-0000-0000-0000-000000000010")
+                            ProblemId = new Guid("00000000-0000-0000-0001-000000000003"),
+                            UserId = new Guid("00000000-0000-0000-0000-000000000011")
                         },
                         new
                         {
-                            Id = new Guid("00000000-0000-0000-0000-000000000505"),
-                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Points = 4.9000000000000004,
-                            ProblemId = new Guid("00000000-0000-0000-0000-000000000306"),
-                            UserId = new Guid("00000000-0000-0000-0000-000000000010")
-                        },
-                        new
-                        {
-                            Id = new Guid("00000000-0000-0000-0000-000000000506"),
-                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Points = 4.2000000000000002,
-                            ProblemId = new Guid("00000000-0000-0000-0000-000000000307"),
-                            UserId = new Guid("00000000-0000-0000-0000-000000000010")
-                        },
-                        new
-                        {
-                            Id = new Guid("00000000-0000-0000-0000-000000000507"),
-                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Points = 4.7000000000000002,
-                            ProblemId = new Guid("00000000-0000-0000-0000-00000000030a"),
-                            UserId = new Guid("00000000-0000-0000-0000-000000000010")
-                        },
-                        new
-                        {
-                            Id = new Guid("00000000-0000-0000-0000-000000000508"),
-                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Id = new Guid("00000000-0000-0000-0003-000000000005"),
+                            CreatedAt = new DateTime(2024, 1, 17, 15, 0, 0, 0, DateTimeKind.Utc),
                             Points = 5.0,
-                            ProblemId = new Guid("00000000-0000-0000-0000-00000000030b"),
-                            UserId = new Guid("00000000-0000-0000-0000-000000000010")
+                            ProblemId = new Guid("00000000-0000-0000-0001-000000000004"),
+                            UserId = new Guid("00000000-0000-0000-0000-000000000011")
                         },
                         new
                         {
-                            Id = new Guid("00000000-0000-0000-0000-000000000509"),
-                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Points = 4.5999999999999996,
-                            ProblemId = new Guid("00000000-0000-0000-0000-00000000030e"),
-                            UserId = new Guid("00000000-0000-0000-0000-000000000010")
+                            Id = new Guid("00000000-0000-0000-0003-000000000006"),
+                            CreatedAt = new DateTime(2024, 1, 17, 16, 0, 0, 0, DateTimeKind.Utc),
+                            Points = 4.0,
+                            ProblemId = new Guid("00000000-0000-0000-0001-000000000005"),
+                            UserId = new Guid("00000000-0000-0000-0000-000000000011")
                         },
                         new
                         {
-                            Id = new Guid("00000000-0000-0000-0000-00000000050a"),
-                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Points = 4.2999999999999998,
-                            ProblemId = new Guid("00000000-0000-0000-0000-000000000311"),
-                            UserId = new Guid("00000000-0000-0000-0000-000000000010")
+                            Id = new Guid("00000000-0000-0000-0003-000000000007"),
+                            CreatedAt = new DateTime(2024, 1, 17, 17, 0, 0, 0, DateTimeKind.Utc),
+                            Points = 3.0,
+                            ProblemId = new Guid("00000000-0000-0000-0001-000000000006"),
+                            UserId = new Guid("00000000-0000-0000-0000-000000000011")
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0003-000000000008"),
+                            CreatedAt = new DateTime(2024, 1, 17, 18, 0, 0, 0, DateTimeKind.Utc),
+                            Points = 5.0,
+                            ProblemId = new Guid("00000000-0000-0000-0001-000000000008"),
+                            UserId = new Guid("00000000-0000-0000-0000-000000000011")
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0003-000000000009"),
+                            CreatedAt = new DateTime(2024, 1, 17, 19, 0, 0, 0, DateTimeKind.Utc),
+                            Points = 5.0,
+                            ProblemId = new Guid("00000000-0000-0000-0001-000000000010"),
+                            UserId = new Guid("00000000-0000-0000-0000-000000000011")
                         });
                 });
 
@@ -1037,59 +667,6 @@ namespace Infrastructure.Persistence.Migrations
                     b.ToTable("refresh_tokens", (string)null);
                 });
 
-            modelBuilder.Entity("RoleUser", b =>
-                {
-                    b.Property<Guid>("RolesId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("roles_id");
-
-                    b.Property<Guid>("UsersId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("users_id");
-
-                    b.HasKey("RolesId", "UsersId")
-                        .HasName("pk_fk_user_roles");
-
-                    b.HasIndex("UsersId")
-                        .HasDatabaseName("ix_fk_user_roles_users_id");
-
-                    b.ToTable("fk_user_roles", (string)null);
-
-                    b.HasData(
-                        new
-                        {
-                            RolesId = new Guid("00000000-0000-0000-0000-000000000001"),
-                            UsersId = new Guid("00000000-0000-0000-0000-000000000010")
-                        },
-                        new
-                        {
-                            RolesId = new Guid("00000000-0000-0000-0000-000000000002"),
-                            UsersId = new Guid("00000000-0000-0000-0000-000000000011")
-                        },
-                        new
-                        {
-                            RolesId = new Guid("00000000-0000-0000-0000-000000000003"),
-                            UsersId = new Guid("00000000-0000-0000-0000-000000000012")
-                        });
-                });
-
-            modelBuilder.Entity("CategoryProblem", b =>
-                {
-                    b.HasOne("Domain.Categories.Category", null)
-                        .WithMany()
-                        .HasForeignKey("CategoriesId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_fk_problem_categories_categories_categories_id");
-
-                    b.HasOne("Domain.Problems.Problem", null)
-                        .WithMany()
-                        .HasForeignKey("ProblemsId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_fk_problem_categories_problems_problems_id");
-                });
-
             modelBuilder.Entity("Domain.Comments.Comment", b =>
                 {
                     b.HasOne("Domain.Problems.Problem", "Problem")
@@ -1111,6 +688,18 @@ namespace Infrastructure.Persistence.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("Domain.Identity.Users.User", b =>
+                {
+                    b.HasOne("Domain.Identity.Roles.Role", "Role")
+                        .WithMany()
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_users_roles_role_id");
+
+                    b.Navigation("Role");
+                });
+
             modelBuilder.Entity("Domain.Identity.Users.UserImage", b =>
                 {
                     b.HasOne("Domain.Identity.Users.User", "User")
@@ -1130,7 +719,7 @@ namespace Infrastructure.Persistence.Migrations
                         .HasForeignKey("ProblemId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("fk_coordinator_images_problem_id");
+                        .HasConstraintName("fk_problem_coordinator_images_id");
 
                     b.Navigation("Problem");
                 });
@@ -1198,23 +787,6 @@ namespace Infrastructure.Persistence.Migrations
                         .HasConstraintName("fk_refresh_tokens_users_user_id");
 
                     b.Navigation("User");
-                });
-
-            modelBuilder.Entity("RoleUser", b =>
-                {
-                    b.HasOne("Domain.Identity.Roles.Role", null)
-                        .WithMany()
-                        .HasForeignKey("RolesId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_fk_user_roles_roles_roles_id");
-
-                    b.HasOne("Domain.Identity.Users.User", null)
-                        .WithMany()
-                        .HasForeignKey("UsersId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_fk_user_roles_users_users_id");
                 });
 
             modelBuilder.Entity("Domain.Identity.Users.User", b =>

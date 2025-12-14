@@ -116,7 +116,7 @@ export function AdminUsersPage() {
     setEditForm({
       email: user.email,
       userName: user.fullName || '',
-      roleId: user.roles && user.roles.length > 0 ? user.roles[0].id : '',
+      roleId: user.role?.id || '',
     })
     setIsEditDialogOpen(true)
   }
@@ -236,27 +236,24 @@ export function AdminUsersPage() {
                       </TableCell>
                       <TableCell>
                         <div className="flex gap-1 flex-wrap">
-                          {user.roles && user.roles.length > 0 ? (
-                            user.roles.map((role) => (
-                              <span
-                                key={role.id}
-                                className="inline-flex items-center gap-1 px-2 py-1 bg-primary/10 text-primary rounded text-xs"
-                              >
-                                <Shield className="w-3 h-3" />
-                                {role.name}
-                              </span>
-                            ))
+                          {user.role ? (
+                            <span
+                              className="inline-flex items-center gap-1 px-2 py-1 bg-primary/10 text-primary rounded text-xs"
+                            >
+                              <Shield className="w-3 h-3" />
+                              {user.role.name}
+                            </span>
                           ) : (
                             <span className="text-muted-foreground text-sm">
-                              Немає ролей
+                              Немає ролі
                             </span>
                           )}
                         </div>
                       </TableCell>
                       <TableCell>
-                        {user.image?.filePath ? (
+                        {user.image?.url ? (
                           <img
-                            src={user.image.filePath}
+                            src={user.image.url}
                             alt={user.fullName || user.email}
                             className="w-10 h-10 rounded-full object-cover"
                           />

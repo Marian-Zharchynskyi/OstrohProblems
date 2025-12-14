@@ -2,7 +2,7 @@ using FluentValidation;
 
 namespace Application.Users.Commands;
 
-public class ChangeRolesForUserCommandValidator : AbstractValidator<ChangeRolesForUserCommand>
+public class ChangeRolesForUserCommandValidator : AbstractValidator<ChangeRoleForUserCommand>
 {
     public ChangeRolesForUserCommandValidator()
     {

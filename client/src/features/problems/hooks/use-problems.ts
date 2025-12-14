@@ -11,6 +11,13 @@ export function useProblems() {
   })
 }
 
+export function useProblemsForMap() {
+  return useQuery({
+    queryKey: [PROBLEMS_QUERY_KEY, 'for-map'],
+    queryFn: problemsApi.getForMap,
+  })
+}
+
 export function useProblemsPaged(page: number = 1, pageSize: number = 10) {
   return useQuery({
     queryKey: [PROBLEMS_QUERY_KEY, 'paged', page, pageSize],

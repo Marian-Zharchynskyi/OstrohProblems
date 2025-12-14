@@ -7,7 +7,7 @@ public record UserDto(
     string Email,
     string? FullName,
     UserImageDto? Image,
-    List<RoleDto>? Roles)
+    RoleDto? Role)
 {
     public static UserDto FromDomainModel(User user, Func<string, string>? getImageUrl = null)
         => new(
@@ -17,5 +17,5 @@ public record UserDto(
             user.UserImage != null && getImageUrl != null 
                 ? UserImageDto.FromDomainModel(user.UserImage, getImageUrl) 
                 : null,
-            user.Roles.Count == 0 ? null : user.Roles.Select(RoleDto.FromDomainModel).ToList());
+            user.Role != null ? RoleDto.FromDomainModel(user.Role) : null);
 }

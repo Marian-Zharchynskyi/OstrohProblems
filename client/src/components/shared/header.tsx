@@ -6,6 +6,7 @@ import { NotificationsBell } from '@/components/notifications/notifications-bell
 
 const publicNavItems = [
   { path: '/', label: 'Головна' },
+  { path: '/map', label: 'Карта' },
   { path: '/about', label: 'Про нас' },
   { path: '/contact', label: 'Контакти' },
 ]
@@ -28,6 +29,7 @@ const coordinatorNavItems = [
 // Меню для звичайного користувача
 const userNavItems = [
   { path: '/', label: 'Головна' },
+  { path: '/map', label: 'Карта' },
   { path: '/about', label: 'Про нас' },
   { path: '/contact', label: 'Контакти' },
 ]

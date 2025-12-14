@@ -54,16 +54,13 @@ public class CreateUserCommandHandler(
                     new Exception("Default role not found"));
             }
 
+            var role = roleResult.ValueOrFailure();
             var userId = UserId.New();
-            var user = User.New(userId, email, name, hashPasswordService.HashPassword(password));
+            var user = User.New(userId, email, name, hashPasswordService.HashPassword(password), role.Id);
 
             await userRepository.Create(user, cancellationToken);
 
-            var role = roleResult.ValueOrFailure();
-            var userWithRole = await userRepository.AddRole(userId, role.Id, cancellationToken);
-
-
-            var token = await jwtTokenService.GenerateTokensAsync(userWithRole, cancellationToken);
+            var token = await jwtTokenService.GenerateTokensAsync(user, cancellationToken);
 
             return token;
         }

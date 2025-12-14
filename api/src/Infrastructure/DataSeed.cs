@@ -1,4 +1,3 @@
-using Domain.Categories;
 using Domain.Comments;
 using Domain.Identity.Roles;
 using Domain.Identity.Users;
@@ -13,11 +12,10 @@ public static class DataSeed
     public static void Seed(ModelBuilder modelBuilder)
     {
         var roleIds = _seedRoles(modelBuilder);
-        var adminUserId = _seedUsers(modelBuilder, roleIds);
-        var categoryIds = _seedCategories(modelBuilder);
-        var problemIds = _seedProblems(modelBuilder, adminUserId, categoryIds);
-        _seedComments(modelBuilder, adminUserId, problemIds);
-        _seedRatings(modelBuilder, adminUserId, problemIds);
+        var userIds = _seedUsers(modelBuilder, roleIds);
+        var problemIds = _seedProblems(modelBuilder, userIds);
+        _seedComments(modelBuilder, problemIds, userIds);
+        _seedRatings(modelBuilder, problemIds, userIds);
     }
 
     private static IReadOnlyList<Guid> _seedRoles(ModelBuilder modelBuilder)
@@ -35,7 +33,7 @@ public static class DataSeed
         return new[] { adminRoleId, userRoleId, coordinatorRoleId };
     }
 
-    private static Guid _seedUsers(ModelBuilder modelBuilder, IReadOnlyList<Guid> roles)
+    private static IReadOnlyList<Guid> _seedUsers(ModelBuilder modelBuilder, IReadOnlyList<Guid> roles)
     {
         var adminUserId = Guid.Parse("00000000-0000-0000-0000-000000000010");
         var regularUserId = Guid.Parse("00000000-0000-0000-0000-000000000011");
@@ -52,7 +50,8 @@ public static class DataSeed
                 Id = new UserId(adminUserId),
                 Email = "admin@ostroh.edu.ua",
                 FullName = "Адміністратор Острога",
-                PasswordHash = "31jGqnyNWeEpqqSOGrrFYA==:pt36JXYoIE3w8xtI8rEJU/h50muKgFwRs0p/h4am3A0="
+                PasswordHash = "31jGqnyNWeEpqqSOGrrFYA==:pt36JXYoIE3w8xtI8rEJU/h50muKgFwRs0p/h4am3A0=",
+                RoleId = new RoleId(adminRoleId)
             },
             // Password: User123!
             new
@@ -60,7 +59,8 @@ public static class DataSeed
                 Id = new UserId(regularUserId),
                 Email = "user@ostroh.edu.ua",
                 FullName = "Звичайний Користувач",
-                PasswordHash = "OeuuWFIVglEfvDvcH349ow==:OXOk32vZFxUcodlJVPaLj/qOApIGP9SSVu9RBy+O4Sc="
+                PasswordHash = "OeuuWFIVglEfvDvcH349ow==:OXOk32vZFxUcodlJVPaLj/qOApIGP9SSVu9RBy+O4Sc=",
+                RoleId = new RoleId(userRoleId)
             },
             // Password: Coord123!
             new
@@ -68,257 +68,120 @@ public static class DataSeed
                 Id = new UserId(coordinatorUserId),
                 Email = "coordinator@ostroh.edu.ua",
                 FullName = "Координатор Острога",
-                PasswordHash = "DXIF+E53jMJS34YZkf0Jkw==:ccAPZCJbWy/stpuqDGYoAeNnHM5rABefB+bMZL+EaZY="
+                PasswordHash = "DXIF+E53jMJS34YZkf0Jkw==:ccAPZCJbWy/stpuqDGYoAeNnHM5rABefB+bMZL+EaZY=",
+                RoleId = new RoleId(coordinatorRoleId)
             }
         );
 
-        modelBuilder.Entity<User>()
-            .HasMany(u => u.Roles)
-            .WithMany(r => r.Users)
-            .UsingEntity(j => j.HasData(
-                new { UsersId = new UserId(adminUserId), RolesId = new RoleId(adminRoleId) },
-                new { UsersId = new UserId(regularUserId), RolesId = new RoleId(userRoleId) },
-                new { UsersId = new UserId(coordinatorUserId), RolesId = new RoleId(coordinatorRoleId) }
-            ));
-
-        return adminUserId;
+        return new[] { adminUserId, regularUserId, coordinatorUserId };
     }
 
-    private static IReadOnlyList<Guid> _seedCategories(ModelBuilder modelBuilder)
+    private static IReadOnlyList<Guid> _seedProblems(ModelBuilder modelBuilder, IReadOnlyList<Guid> userIds)
     {
-        var categoryNames = new[]
-        {
-            "Дороги та тротуари",
-            "Освітлення",
-            "Благоустрій",
-            "Сміття та екологія",
-            "Комунальні послуги",
-            "Транспорт",
-            "Безпека",
-            "Парки та зелені зони",
-            "Будівництво",
-            "Інше"
-        };
-
-        var categoryIds = new[]
-        {
-            Guid.Parse("00000000-0000-0000-0000-000000000101"),
-            Guid.Parse("00000000-0000-0000-0000-000000000102"),
-            Guid.Parse("00000000-0000-0000-0000-000000000103"),
-            Guid.Parse("00000000-0000-0000-0000-000000000104"),
-            Guid.Parse("00000000-0000-0000-0000-000000000105"),
-            Guid.Parse("00000000-0000-0000-0000-000000000106"),
-            Guid.Parse("00000000-0000-0000-0000-000000000107"),
-            Guid.Parse("00000000-0000-0000-0000-000000000108"),
-            Guid.Parse("00000000-0000-0000-0000-000000000109"),
-            Guid.Parse("00000000-0000-0000-0000-00000000010a")
-        };
-
-        var categories = categoryNames
-            .Select((name, index) => new
-            {
-                Id = new CategoryId(categoryIds[index]),
-                Name = name
-            })
-            .ToArray();
-
-        modelBuilder.Entity<Category>().HasData(categories);
-        return categoryIds;
-    }
-
-    private static IReadOnlyList<Guid> _seedProblems(ModelBuilder modelBuilder, Guid adminUserId,
-        IReadOnlyList<Guid> categories)
-    {
-        var statusValues = new[]
-        {
-            ProblemStatusConstants.New,
-            ProblemStatusConstants.InProgress,
-            ProblemStatusConstants.Completed,
-            ProblemStatusConstants.Rejected
-        };
+        var regularUserId = userIds[1];
+        var baseDate = new DateTime(2024, 1, 15, 10, 0, 0, DateTimeKind.Utc);
 
         var problemsData = new[]
         {
-            new { Title = "Розбита дорога на вул. Академічна", Lat = 50.3294, Lon = 26.5144, Desc = "Велика яма на дорозі біля будинку №15. Потрібує термінового ремонту.", CategoryIndices = new[] { 0 }, StatusIndex = 0 },
-            new { Title = "Не працює вуличне освітлення на вул. Семінарська", Lat = 50.3285, Lon = 26.5125, Desc = "Вже тиждень не світять ліхтарі на ділянці від будинку №10 до №20.", CategoryIndices = new[] { 1 }, StatusIndex = 1 },
-            new { Title = "Переповнені сміттєві баки біля ринку", Lat = 50.3301, Lon = 26.5167, Desc = "Сміттєві контейнери не вивозяться вже 3 дні, сміття розкидане навколо.", CategoryIndices = new[] { 3 }, StatusIndex = 0 },
-            new { Title = "Зламана лавка в парку Тараса Шевченка", Lat = 50.3278, Lon = 26.5189, Desc = "Дерев'яна лавка зламана, потребує заміни або ремонту.", CategoryIndices = new[] { 2, 7 }, StatusIndex = 2 },
-            new { Title = "Аварійне дерево на вул. Луцька", Lat = 50.3312, Lon = 26.5098, Desc = "Старе дерево нахилилося і може впасти на дорогу. Небезпечно для пішоходів та транспорту.", CategoryIndices = new[] { 6, 7 }, StatusIndex = 1 },
-            new { Title = "Відсутня розмітка на пішохідному переході", Lat = 50.3289, Lon = 26.5156, Desc = "Пішохідний перехід біля школи №2 без розмітки, небезпечно для дітей.", CategoryIndices = new[] { 0, 6 }, StatusIndex = 0 },
-            new { Title = "Тріщина на тротуарі вул. Папаніна", Lat = 50.3305, Lon = 26.5134, Desc = "Великі тріщини на тротуарі, небезпечно для пішоходів, особливо в темний час доби.", CategoryIndices = new[] { 0 }, StatusIndex = 0 },
-            new { Title = "Незаконне будівництво на вул. Князів Острозьких", Lat = 50.3298, Lon = 26.5178, Desc = "Ведеться будівництво без відповідних дозволів, порушується архітектурний вигляд міста.", CategoryIndices = new[] { 8 }, StatusIndex = 3 },
-            new { Title = "Потребує ремонту дитячий майданчик", Lat = 50.3282, Lon = 26.5142, Desc = "Гойдалки та гірка на дитячому майданчику в аварійному стані.", CategoryIndices = new[] { 2, 6 }, StatusIndex = 1 },
-            new { Title = "Відсутній дорожній знак на перехресті", Lat = 50.3307, Lon = 26.5161, Desc = "На перехресті вул. Академічна та вул. Семінарська відсутній знак пріоритету.", CategoryIndices = new[] { 5, 6 }, StatusIndex = 0 },
-            new { Title = "Прорив водопроводу на вул. Замкова", Lat = 50.3291, Lon = 26.5171, Desc = "Витік води з водопровідної труби, вода заливає дорогу.", CategoryIndices = new[] { 4 }, StatusIndex = 1 },
-            new { Title = "Зарослі бур'яном клумби в центрі", Lat = 50.3296, Lon = 26.5149, Desc = "Клумби біля центральної площі не доглядаються, заросли бур'яном.", CategoryIndices = new[] { 2, 7 }, StatusIndex = 0 },
-            new { Title = "Не працює світлофор на вул. Луцька", Lat = 50.3315, Lon = 26.5102, Desc = "Світлофор на перехресті не працює вже другий день.", CategoryIndices = new[] { 5, 6 }, StatusIndex = 1 },
-            new { Title = "Сміттєзвалище в лісосмузі", Lat = 50.3272, Lon = 26.5195, Desc = "Стихійне сміттєзвалище утворилося в лісосмузі за містом.", CategoryIndices = new[] { 3 }, StatusIndex = 0 },
-            new { Title = "Потребує фарбування огорожа школи", Lat = 50.3288, Lon = 26.5138, Desc = "Огорожа школи №1 іржава та потребує фарбування.", CategoryIndices = new[] { 2 }, StatusIndex = 2 },
-            new { Title = "Відсутні урни на зупинці", Lat = 50.3302, Lon = 26.5153, Desc = "На автобусній зупинці 'Центр' немає урн для сміття.", CategoryIndices = new[] { 3, 5 }, StatusIndex = 0 },
-            new { Title = "Зламаний бордюр на вул. Князів Острозьких", Lat = 50.3299, Lon = 26.5164, Desc = "Бордюр зруйнований на протяжності 5 метрів.", CategoryIndices = new[] { 0 }, StatusIndex = 0 },
-            new { Title = "Потребує обрізки дерева біля будинку", Lat = 50.3286, Lon = 26.5147, Desc = "Гілки дерева загрожують електричним проводам.", CategoryIndices = new[] { 7, 6 }, StatusIndex = 1 },
-            new { Title = "Відсутня каналізація на вул. Садова", Lat = 50.3279, Lon = 26.5132, Desc = "Після дощу утворюються великі калюжі через відсутність каналізації.", CategoryIndices = new[] { 4 }, StatusIndex = 0 },
-            new { Title = "Граффіті на фасаді історичної будівлі", Lat = 50.3293, Lon = 26.5175, Desc = "Вандали розмалювали фасад історичної будівлі в центрі міста.", CategoryIndices = new[] { 2, 6 }, StatusIndex = 2 }
+            new { Id = Guid.Parse("00000000-0000-0000-0001-000000000001"), Title = "Розбита дорога на вул. Академічна", Lat = 50.3294, Lon = 26.5144, Desc = "Велика яма на дорозі біля будинку №15. Потребує термінового ремонту.", Status = ProblemStatus.Validated, Categories = new List<Category> { Category.Roads } },
+            new { Id = Guid.Parse("00000000-0000-0000-0001-000000000002"), Title = "Не працює вуличне освітлення на вул. Семінарська", Lat = 50.3285, Lon = 26.5125, Desc = "Вже тиждень не світять ліхтарі на ділянці від будинку №5 до №15.", Status = ProblemStatus.Validated, Categories = new List<Category> { Category.Lighting } },
+            new { Id = Guid.Parse("00000000-0000-0000-0001-000000000003"), Title = "Переповнені сміттєві баки біля ринку", Lat = 50.3301, Lon = 26.5167, Desc = "Сміттєві контейнери не вивозяться вже 3 дні, сміття розкидане навколо.", Status = ProblemStatus.Validated, Categories = new List<Category> { Category.Garbage } },
+            new { Id = Guid.Parse("00000000-0000-0000-0001-000000000004"), Title = "Аварійне дерево на вул. Луцька", Lat = 50.3312, Lon = 26.5098, Desc = "Старе дерево нахилилося і може впасти на дорогу. Небезпечно для пішоходів.", Status = ProblemStatus.InProgress, Categories = new List<Category> { Category.Safety, Category.Parks } },
+            new { Id = Guid.Parse("00000000-0000-0000-0001-000000000005"), Title = "Відсутня розмітка на пішохідному переході", Lat = 50.3289, Lon = 26.5156, Desc = "Пішохідний перехід біля школи №2 без розмітки, небезпечно для дітей.", Status = ProblemStatus.InProgress, Categories = new List<Category> { Category.Roads, Category.Safety } },
+            new { Id = Guid.Parse("00000000-0000-0000-0001-000000000006"), Title = "Тріщина на тротуарі вул. Папаніна", Lat = 50.3305, Lon = 26.5134, Desc = "Великі тріщини на тротуарі, небезпечно для пішоходів та велосипедистів.", Status = ProblemStatus.Validated, Categories = new List<Category> { Category.Roads } },
+            new { Id = Guid.Parse("00000000-0000-0000-0001-000000000007"), Title = "Потребує ремонту дитячий майданчик", Lat = 50.3282, Lon = 26.5142, Desc = "Гойдалки та гірка на дитячому майданчику в аварійному стані.", Status = ProblemStatus.InProgress, Categories = new List<Category> { Category.Safety, Category.Parks } },
+            new { Id = Guid.Parse("00000000-0000-0000-0001-000000000008"), Title = "Прорив водопроводу на вул. Замкова", Lat = 50.3291, Lon = 26.5171, Desc = "Витік води з водопровідної труби, вода заливає дорогу.", Status = ProblemStatus.New, Categories = new List<Category> { Category.Water } },
+            new { Id = Guid.Parse("00000000-0000-0000-0001-000000000009"), Title = "Зарослі бур'яном клумби в центрі", Lat = 50.3296, Lon = 26.5149, Desc = "Клумби біля центральної площі не доглядаються, заросли бур'яном.", Status = ProblemStatus.New, Categories = new List<Category> { Category.Parks } },
+            new { Id = Guid.Parse("00000000-0000-0000-0001-000000000010"), Title = "Не працює світлофор на вул. Луцька", Lat = 50.3315, Lon = 26.5102, Desc = "Світлофор на перехресті не працює вже другий день, створює аварійну ситуацію.", Status = ProblemStatus.Rejected, Categories = new List<Category> { Category.Safety, Category.Roads } },
         };
 
-        var problemIds = new[]
+        var problemIds = new List<Guid>();
+
+        foreach (var p in problemsData)
         {
-            Guid.Parse("00000000-0000-0000-0000-000000000301"),
-            Guid.Parse("00000000-0000-0000-0000-000000000302"),
-            Guid.Parse("00000000-0000-0000-0000-000000000303"),
-            Guid.Parse("00000000-0000-0000-0000-000000000304"),
-            Guid.Parse("00000000-0000-0000-0000-000000000305"),
-            Guid.Parse("00000000-0000-0000-0000-000000000306"),
-            Guid.Parse("00000000-0000-0000-0000-000000000307"),
-            Guid.Parse("00000000-0000-0000-0000-000000000308"),
-            Guid.Parse("00000000-0000-0000-0000-000000000309"),
-            Guid.Parse("00000000-0000-0000-0000-00000000030a"),
-            Guid.Parse("00000000-0000-0000-0000-00000000030b"),
-            Guid.Parse("00000000-0000-0000-0000-00000000030c"),
-            Guid.Parse("00000000-0000-0000-0000-00000000030d"),
-            Guid.Parse("00000000-0000-0000-0000-00000000030e"),
-            Guid.Parse("00000000-0000-0000-0000-00000000030f"),
-            Guid.Parse("00000000-0000-0000-0000-000000000310"),
-            Guid.Parse("00000000-0000-0000-0000-000000000311"),
-            Guid.Parse("00000000-0000-0000-0000-000000000312"),
-            Guid.Parse("00000000-0000-0000-0000-000000000313"),
-            Guid.Parse("00000000-0000-0000-0000-000000000314")
-        };
-
-        var baseDate = new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc);
-
-        var problems = problemsData
-            .Select((data, index) => new
+            problemIds.Add(p.Id);
+            modelBuilder.Entity<Problem>().HasData(new
             {
-                Id = new ProblemId(problemIds[index]),
-                Title = data.Title,
-                Latitude = data.Lat,
-                Longitude = data.Lon,
-                Description = data.Desc,
-                Status = ProblemStatus.From(statusValues[data.StatusIndex]),
+                Id = new ProblemId(p.Id),
+                Title = p.Title,
+                Latitude = p.Lat,
+                Longitude = p.Lon,
+                Description = p.Desc,
+                Status = p.Status,
                 CreatedAt = baseDate,
                 UpdatedAt = baseDate,
-                CreatedById = new UserId(adminUserId)
-            })
-            .ToArray();
-
-        modelBuilder.Entity<Problem>().HasData(problems);
-
-        modelBuilder.Entity<Problem>()
-            .HasMany(p => p.Categories)
-            .WithMany(c => c.Problems)
-            .UsingEntity(j =>
-            {
-                var entries = new List<object>();
-                for (var i = 0; i < problemsData.Length; i++)
-                {
-                    var problemId = problemIds[i];
-                    foreach (var catIndex in problemsData[i].CategoryIndices)
-                    {
-                        entries.Add(new
-                        {
-                            ProblemsId = new ProblemId(problemId),
-                            CategoriesId = new CategoryId(categories[catIndex])
-                        });
-                    }
-                }
-
-                j.HasData(entries.ToArray());
+                CreatedById = new UserId(regularUserId),
+                Categories = p.Categories
             });
+        }
 
         return problemIds;
     }
 
-    private static void _seedComments(ModelBuilder modelBuilder, Guid adminUserId, IReadOnlyList<Guid> problems)
+    private static void _seedComments(ModelBuilder modelBuilder, IReadOnlyList<Guid> problemIds, IReadOnlyList<Guid> userIds)
     {
+        var regularUserId = userIds[1];
+        var coordinatorUserId = userIds[2];
+        var baseDate = new DateTime(2024, 1, 16, 14, 0, 0, DateTimeKind.Utc);
+
         var commentsData = new[]
         {
-            new { ProblemIndex = 0, Content = "Так, підтверджую. Їздив сьогодні, ледь не зламав підвіску." },
-            new { ProblemIndex = 0, Content = "Вже місяць як така ситуація. Коли вже відремонтують?" },
-            new { ProblemIndex = 1, Content = "Дуже небезпечно ходити ввечері, треба терміново виправити." },
-            new { ProblemIndex = 2, Content = "Жахлива ситуація, смердить на всю вулицю." },
-            new { ProblemIndex = 3, Content = "Дякую, що виправили!" },
-            new { ProblemIndex = 4, Content = "Дійсно небезпечно, особливо при сильному вітрі." },
-            new { ProblemIndex = 5, Content = "Діти щодня переходять дорогу, це дуже небезпечно!" },
-            new { ProblemIndex = 8, Content = "Коли почнуть ремонт? Діти не можуть нормально гратися." },
-            new { ProblemIndex = 10, Content = "Вода вже затопила половину дороги!" },
-            new { ProblemIndex = 13, Content = "Це екологічна катастрофа для нашого міста!" }
+            new { ProblemIndex = 0, Content = "Підтверджую, яма дуже глибока, пошкодив колесо.", UserId = regularUserId },
+            new { ProblemIndex = 0, Content = "Дякуємо за звернення, передали в дорожню службу.", UserId = coordinatorUserId },
+            new { ProblemIndex = 1, Content = "Темно ввечері ходити, небезпечно.", UserId = regularUserId },
+            new { ProblemIndex = 2, Content = "Жахливий запах, неможливо пройти повз.", UserId = regularUserId },
+            new { ProblemIndex = 3, Content = "Прошу терміново вирішити, гілки вже торкаються проводів.", UserId = regularUserId },
+            new { ProblemIndex = 4, Content = "Діти переходять дорогу в небезпечному місці.", UserId = regularUserId },
+            new { ProblemIndex = 7, Content = "Вода тече вже третій день, ніхто не реагує.", UserId = regularUserId },
         };
 
-        var commentIds = new[]
+        var commentId = 1;
+        foreach (var c in commentsData)
         {
-            Guid.Parse("00000000-0000-0000-0000-000000000401"),
-            Guid.Parse("00000000-0000-0000-0000-000000000402"),
-            Guid.Parse("00000000-0000-0000-0000-000000000403"),
-            Guid.Parse("00000000-0000-0000-0000-000000000404"),
-            Guid.Parse("00000000-0000-0000-0000-000000000405"),
-            Guid.Parse("00000000-0000-0000-0000-000000000406"),
-            Guid.Parse("00000000-0000-0000-0000-000000000407"),
-            Guid.Parse("00000000-0000-0000-0000-000000000408"),
-            Guid.Parse("00000000-0000-0000-0000-000000000409"),
-            Guid.Parse("00000000-0000-0000-0000-00000000040a")
-        };
-
-        var baseDate = new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc);
-
-        var comments = commentsData
-            .Select((data, index) => new
+            modelBuilder.Entity<Comment>().HasData(new
             {
-                Id = new CommentId(commentIds[index]),
-                Content = data.Content,
-                CreatedAt = baseDate,
-                UpdatedAt = baseDate,
-                ProblemId = new ProblemId(problems[data.ProblemIndex]),
-                UserId = new UserId(adminUserId)
-            })
-            .ToArray();
-
-        modelBuilder.Entity<Comment>().HasData(comments);
+                Id = new CommentId(Guid.Parse($"00000000-0000-0000-0002-00000000000{commentId}")),
+                Content = c.Content,
+                CreatedAt = baseDate.AddHours(commentId),
+                UpdatedAt = baseDate.AddHours(commentId),
+                ProblemId = new ProblemId(problemIds[c.ProblemIndex]),
+                UserId = new UserId(c.UserId)
+            });
+            commentId++;
+        }
     }
 
-    private static void _seedRatings(ModelBuilder modelBuilder, Guid adminUserId, IReadOnlyList<Guid> problems)
+    private static void _seedRatings(ModelBuilder modelBuilder, IReadOnlyList<Guid> problemIds, IReadOnlyList<Guid> userIds)
     {
+        var regularUserId = userIds[1];
+        var adminUserId = userIds[0];
+        var baseDate = new DateTime(2024, 1, 17, 10, 0, 0, DateTimeKind.Utc);
+
         var ratingsData = new[]
         {
-            new { ProblemIndex = 0, Points = 4.5 },
-            new { ProblemIndex = 1, Points = 5.0 },
-            new { ProblemIndex = 2, Points = 4.8 },
-            new { ProblemIndex = 4, Points = 5.0 },
-            new { ProblemIndex = 5, Points = 4.9 },
-            new { ProblemIndex = 6, Points = 4.2 },
-            new { ProblemIndex = 9, Points = 4.7 },
-            new { ProblemIndex = 10, Points = 5.0 },
-            new { ProblemIndex = 13, Points = 4.6 },
-            new { ProblemIndex = 16, Points = 4.3 }
+            new { ProblemIndex = 0, Points = 5.0, UserId = regularUserId },
+            new { ProblemIndex = 0, Points = 4.0, UserId = adminUserId },
+            new { ProblemIndex = 1, Points = 4.0, UserId = regularUserId },
+            new { ProblemIndex = 2, Points = 5.0, UserId = regularUserId },
+            new { ProblemIndex = 3, Points = 5.0, UserId = regularUserId },
+            new { ProblemIndex = 4, Points = 4.0, UserId = regularUserId },
+            new { ProblemIndex = 5, Points = 3.0, UserId = regularUserId },
+            new { ProblemIndex = 7, Points = 5.0, UserId = regularUserId },
+            new { ProblemIndex = 9, Points = 5.0, UserId = regularUserId },
         };
 
-        var ratingIds = new[]
+        var ratingId = 1;
+        foreach (var r in ratingsData)
         {
-            Guid.Parse("00000000-0000-0000-0000-000000000501"),
-            Guid.Parse("00000000-0000-0000-0000-000000000502"),
-            Guid.Parse("00000000-0000-0000-0000-000000000503"),
-            Guid.Parse("00000000-0000-0000-0000-000000000504"),
-            Guid.Parse("00000000-0000-0000-0000-000000000505"),
-            Guid.Parse("00000000-0000-0000-0000-000000000506"),
-            Guid.Parse("00000000-0000-0000-0000-000000000507"),
-            Guid.Parse("00000000-0000-0000-0000-000000000508"),
-            Guid.Parse("00000000-0000-0000-0000-000000000509"),
-            Guid.Parse("00000000-0000-0000-0000-00000000050a")
-        };
-
-        var baseDate = new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc);
-
-        var ratings = ratingsData
-            .Select((data, index) => new
+            modelBuilder.Entity<Rating>().HasData(new
             {
-                Id = new RatingId(ratingIds[index]),
-                ProblemId = new ProblemId(problems[data.ProblemIndex]),
-                UserId = new UserId(adminUserId),
-                Points = data.Points,
-                CreatedAt = baseDate
-            })
-            .ToArray();
-
-        modelBuilder.Entity<Rating>().HasData(ratings);
+                Id = new RatingId(Guid.Parse($"00000000-0000-0000-0003-00000000000{ratingId}")),
+                ProblemId = new ProblemId(problemIds[r.ProblemIndex]),
+                UserId = new UserId(r.UserId),
+                Points = r.Points,
+                CreatedAt = baseDate.AddHours(ratingId)
+            });
+            ratingId++;
+        }
     }
 }

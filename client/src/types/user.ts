@@ -13,7 +13,7 @@ export interface UserDto {
   email: string
   fullName?: string
   image?: UserImage
-  roles?: Role[]
+  role?: Role
 }
 
 export interface UpdateUserDto {

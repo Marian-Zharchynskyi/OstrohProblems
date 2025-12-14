@@ -70,14 +70,14 @@ export function ProblemDetailPopup({ problem, onClose }: ProblemDetailPopupProps
           </div>
 
           {/* Status */}
-          {problem.problemStatus && (
+          {problem.status && (
             <div className="flex items-start gap-2">
               <div className="h-5 w-5 mt-0.5">
                 <div className="h-3 w-3 rounded-full bg-blue-500" />
               </div>
               <div>
                 <h3 className="text-sm font-medium text-gray-700">Статус</h3>
-                <p className="text-sm text-gray-600">{problem.problemStatus.name}</p>
+                <p className="text-sm text-gray-600">{problem.status}</p>
               </div>
             </div>
           )}
@@ -89,12 +89,12 @@ export function ProblemDetailPopup({ problem, onClose }: ProblemDetailPopupProps
               <div className="flex-1">
                 <h3 className="text-sm font-medium text-gray-700 mb-2">Категорії</h3>
                 <div className="flex flex-wrap gap-2">
-                  {problem.categories.map((category) => (
+                  {problem.categories.map((category, index) => (
                     <span
-                      key={category.id}
+                      key={index}
                       className="inline-flex items-center rounded-full bg-blue-50 px-3 py-1 text-sm text-blue-700"
                     >
-                      {category.name}
+                      {category}
                     </span>
                   ))}
                 </div>

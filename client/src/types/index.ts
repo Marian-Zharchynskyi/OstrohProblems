@@ -5,13 +5,10 @@ export interface PagedResult<T> {
   pageSize: number
 }
 
-export interface Category {
-  id: string | null
-  name: string
-}
 
 export const ProblemStatusConstants = {
   New: 'Нова',
+  Validated: 'Провалідована',
   InProgress: 'В роботі',
   Completed: 'Виконано',
   Rejected: 'Відхилено',
@@ -71,7 +68,7 @@ export interface Problem {
   comments: Comment[] | null
   images: ProblemImage[] | null
   coordinatorImages: CoordinatorImage[] | null
-  categories: Category[] | null
+  categories: string[] | null
   createdAt: string
   updatedAt: string
 }
@@ -81,7 +78,7 @@ export interface CreateProblem {
   latitude: number
   longitude: number
   description: string
-  problemCategoryIds: string[]
+  categoryNames: string[]
 }
 
 export interface CreateProblemResponse {
@@ -90,7 +87,7 @@ export interface CreateProblemResponse {
   latitude: number
   longitude: number
   description: string
-  problemCategoryIds: string[]
+  categoryNames: string[]
 }
 
 export interface User {
