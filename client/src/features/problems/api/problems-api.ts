@@ -78,10 +78,10 @@ export const problemsApi = {
     return response.data
   },
 
-  reject: async (problemId: string, rejectionReason: string) => {
+  reject: async (problemId: string, coordinatorId: string, rejectionReason: string) => {
     const response = await apiClient.put<Problem>(
       `${BASE_URL}/reject/${problemId}`,
-      rejectionReason
+      { coordinatorId, rejectionReason }
     )
     return response.data
   },

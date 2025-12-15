@@ -1,6 +1,7 @@
 using Application.Common;
 using Application.Common.Interfaces.Repositories;
 using Application.Problems.Exceptions;
+using Application.Services.SignalRService;
 using Domain.Problems;
 using MediatR;
 
@@ -12,7 +13,8 @@ public record RestoreProblemCommand : IRequest<Result<Problem, ProblemException>
 }
 
 public class RestoreProblemCommandHandler(
-    IProblemRepository problemRepository)
+    IProblemRepository problemRepository,
+    ISignalRService signalRService)
     : IRequestHandler<RestoreProblemCommand, Result<Problem, ProblemException>>
 {
     public async Task<Result<Problem, ProblemException>> Handle(
@@ -29,7 +31,12 @@ public class RestoreProblemCommandHandler(
                 {
                     problem.UpdateStatus(ProblemStatus.New);
                     problem.ClearRejection();
-                    return await problemRepository.Update(problem, cancellationToken);
+                    problem.ClearCoordinator();
+                    var result = await problemRepository.Update(problem, cancellationToken);
+
+                    await signalRService.SendRefreshToAll(cancellationToken);
+
+                    return result;
                 }
                 catch (Exception exception)
                 {

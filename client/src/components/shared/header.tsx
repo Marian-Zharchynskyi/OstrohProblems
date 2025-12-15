@@ -108,7 +108,7 @@ export const Header = () => {
                   </Link>
                 )}
 
-                <NotificationsBell />
+                {isUser && <NotificationsBell />}
                 {!isCoordinator && (
                   <Link
                     to="/profile"

@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { problemsApi } from '@/features/problems/api/problems-api'
 import { useProblemsByCoordinator, useProblemsByStatus } from '@/features/problems/hooks/use-problems'
@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Textarea } from '@/components/ui/textarea'
 import { useAuth } from '@/contexts/auth-context'
+import { useSignalR } from '@/contexts/use-signalr'
 import { toast } from '@/lib/toast'
 import { useQueryClient } from '@tanstack/react-query'
 
@@ -24,10 +25,18 @@ const tabConfig: { key: TabType; label: string; status?: string }[] = [
 
 export default function CoordinatorPage() {
   const { user } = useAuth()
+  const { onProblemsUpdated } = useSignalR()
   const queryClient = useQueryClient()
   const navigate = useNavigate()
   
   const [activeTab, setActiveTab] = useState<TabType>('new')
+
+  // Subscribe to SignalR refresh events for auto-refresh
+  useEffect(() => {
+    onProblemsUpdated(() => {
+      queryClient.invalidateQueries({ queryKey: ['problems'] })
+    })
+  }, [onProblemsUpdated, queryClient])
   
   // Get current status for API filtering
   const currentTabConfig = tabConfig.find(t => t.key === activeTab)
@@ -79,8 +88,9 @@ export default function CoordinatorPage() {
       toast.error('Вкажіть причину відхилення')
       return
     }
+    if (!user?.id) return
     try {
-      await problemsApi.reject(problemId, rejectionReason)
+      await problemsApi.reject(problemId, user.id, rejectionReason)
       toast.success('Проблему відхилено')
       setRejectionReason('')
       setDetailProblem(null)
@@ -194,8 +204,10 @@ export default function CoordinatorPage() {
 
   // Get problems to display based on active tab
   const getDisplayProblems = () => {
-    // For 'my' tab, show only problems with status 'В роботі' assigned to this coordinator
-    if (activeTab === 'my') return myProblems.filter((p) => p.status === ProblemStatusConstants.InProgress)
+    // For 'my' tab, show problems with status 'В роботі' or 'Провалідована' assigned to this coordinator
+    if (activeTab === 'my') return myProblems.filter((p) => 
+      p.status === ProblemStatusConstants.InProgress || p.status === ProblemStatusConstants.Validated
+    )
     if (activeTab === 'new') return newProblems
     // For 'completed' and 'rejected' tabs, show only problems assigned to this coordinator
     if (activeTab === 'completed' || activeTab === 'rejected') {
@@ -264,7 +276,10 @@ export default function CoordinatorPage() {
               <div className="space-y-4 pt-4 border-t">
                 <div className="flex gap-2">
                   <Button onClick={() => handleValidate(detailProblem.id!)}>
-                    Провалідувати
+                    Взяти у роботу
+                  </Button>
+                  <Button variant="outline" onClick={() => navigate(`/problems/${detailProblem.id}`)}>
+                    Детальніше
                   </Button>
                   <Button variant="destructive" onClick={() => setActionMode('reject')}>
                     Відхилити

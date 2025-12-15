@@ -1,5 +1,6 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useQueryClient } from '@tanstack/react-query'
 import type { Problem, CreateProblem } from '@/types'
 import { DataTable, type Column } from '@/components/shared/data-table'
 import { PageHeader } from '@/components/shared/page-header'
@@ -11,13 +12,23 @@ import {
   useUpdateProblem,
   useDeleteProblem,
 } from '../hooks/use-problems'
+import { useSignalR } from '@/contexts/use-signalr'
 import { toast } from '@/lib/toast'
 
 export function ProblemsList() {
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
+  const { onProblemsUpdated } = useSignalR()
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [isDeleteOpen, setIsDeleteOpen] = useState(false)
   const [selectedProblem, setSelectedProblem] = useState<Problem | null>(null)
+
+  // Subscribe to SignalR refresh events for auto-refresh
+  useEffect(() => {
+    onProblemsUpdated(() => {
+      queryClient.invalidateQueries({ queryKey: ['problems'] })
+    })
+  }, [onProblemsUpdated, queryClient])
 
   const { data: problems, isLoading } = useProblems()
   const createMutation = useCreateProblem()

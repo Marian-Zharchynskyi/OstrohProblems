@@ -22,10 +22,14 @@ export function NotificationsBell() {
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
-  const handleNotificationClick = (notificationId: string) => {
+  const handleNotificationClick = (notificationId: string, problemId?: string) => {
     markAsRead(notificationId)
     setIsOpen(false)
-    navigate(`/problems`)
+    if (problemId) {
+      navigate(`/problems/${problemId}`)
+    } else {
+      navigate('/my-problems')
+    }
   }
 
   const getNotificationIcon = (type: string) => {
@@ -34,6 +38,10 @@ export function NotificationsBell() {
         return '💬'
       case 'status_change':
         return '🔄'
+      case 'rejected':
+        return '❌'
+      case 'rating':
+        return '⭐'
       case 'reply':
         return '↩️'
       default:
@@ -82,7 +90,7 @@ export function NotificationsBell() {
               {notifications.slice(0, 10).map((notification) => (
                 <button
                   key={notification.id}
-                  onClick={() => handleNotificationClick(notification.id)}
+                  onClick={() => handleNotificationClick(notification.id, notification.problemId)}
                   className={cn(
                     'w-full px-4 py-3 text-left hover:bg-gray-50 transition-colors',
                     !notification.isRead && 'bg-blue-50'

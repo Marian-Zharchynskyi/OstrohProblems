@@ -97,6 +97,13 @@ class SignalRService {
     }
   }
 
+  // Subscribe to refresh events (for Coordinator/Admin)
+  onRefreshProblemList(callback: () => void) {
+    if (this.notificationsConnection) {
+      this.notificationsConnection.on('RefreshProblemList', callback)
+    }
+  }
+
   // Disconnect from hubs
   async disconnect() {
     if (this.commentsConnection) {

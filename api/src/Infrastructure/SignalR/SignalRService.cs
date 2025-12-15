@@ -33,4 +33,10 @@ public class SignalRService : ISignalRService
             .Group($"user_{userId}")
             .SendAsync("ReceiveNotification", notification, cancellationToken);
     }
+
+    public async Task SendRefreshToAll(CancellationToken cancellationToken = default)
+    {
+        await _notificationsHubContext.Clients.All
+            .SendAsync("RefreshProblemList", cancellationToken);
+    }
 }
