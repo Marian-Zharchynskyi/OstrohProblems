@@ -229,13 +229,14 @@ public class ProblemsController(ISender sender, IProblemQueries problemQueries, 
     [HttpPut("reject/{problemId:guid}")]
     public async Task<ActionResult<ProblemDto>> Reject(
         [FromRoute] Guid problemId,
-        [FromBody] string rejectionReason,
+        [FromBody] RejectProblemDto request,
         CancellationToken cancellationToken)
     {
         var input = new RejectProblemCommand
         {
             ProblemId = problemId,
-            RejectionReason = rejectionReason
+            CoordinatorId = request.CoordinatorId,
+            RejectionReason = request.RejectionReason
         };
 
         var result = await sender.Send(input, cancellationToken);

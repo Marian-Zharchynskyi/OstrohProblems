@@ -1,6 +1,8 @@
 using Application.Common;
+using Application.Common.DTOs;
 using Application.Common.Interfaces.Repositories;
 using Application.Problems.Exceptions;
+using Application.Services.SignalRService;
 using Domain.Problems;
 using MediatR;
 
@@ -13,7 +15,8 @@ public record UpdateCurrentStateCommand : IRequest<Result<Problem, ProblemExcept
 }
 
 public class UpdateCurrentStateCommandHandler(
-    IProblemRepository problemRepository)
+    IProblemRepository problemRepository,
+    ISignalRService signalRService)
     : IRequestHandler<UpdateCurrentStateCommand, Result<Problem, ProblemException>>
 {
     public async Task<Result<Problem, ProblemException>> Handle(
@@ -29,7 +32,22 @@ public class UpdateCurrentStateCommandHandler(
                 try
                 {
                     problem.UpdateCurrentState(request.CurrentState);
-                    return await problemRepository.Update(problem, cancellationToken);
+                    var result = await problemRepository.Update(problem, cancellationToken);
+
+                    if (problem.CreatedById != null)
+                    {
+                        await signalRService.SendNotificationToUser(
+                            problem.CreatedById,
+                            NotificationDto.Create("status_change",
+                                $"Оновлено поточний стан вашої проблеми '{problem.Title}': {request.CurrentState}",
+                                problem.Id.Value.ToString(),
+                                problem.Title),
+                            cancellationToken);
+                    }
+
+                    await signalRService.SendRefreshToAll(cancellationToken);
+
+                    return result;
                 }
                 catch (Exception exception)
                 {

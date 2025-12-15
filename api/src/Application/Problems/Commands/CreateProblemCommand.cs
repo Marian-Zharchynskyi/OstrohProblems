@@ -1,6 +1,7 @@
 ﻿using Application.Common;
 using Application.Common.Interfaces.Repositories;
 using Application.Problems.Exceptions;
+using Application.Services.SignalRService;
 using Domain.Identity.Users;
 using Domain.Problems;
 using MediatR;
@@ -21,13 +22,16 @@ public class CreateProblemCommandHandler : IRequestHandler<CreateProblemCommand,
 {
     private readonly IProblemRepository _problemRepository;
     private readonly IHttpContextAccessor _httpContextAccessor;
+    private readonly ISignalRService _signalRService;
 
     public CreateProblemCommandHandler(
         IProblemRepository problemRepository,
-        IHttpContextAccessor httpContextAccessor)
+        IHttpContextAccessor httpContextAccessor,
+        ISignalRService signalRService)
     {
         _problemRepository = problemRepository;
         _httpContextAccessor = httpContextAccessor;
+        _signalRService = signalRService;
     }
 
     public async Task<Result<Problem, ProblemException>> Handle(
@@ -85,7 +89,11 @@ public class CreateProblemCommandHandler : IRequestHandler<CreateProblemCommand,
                 }
             }
 
-            return await _problemRepository.Add(problem, cancellationToken);
+            var result = await _problemRepository.Add(problem, cancellationToken);
+            
+            await _signalRService.SendRefreshToAll(cancellationToken);
+            
+            return result;
         }
         catch (UnsupportedCategoryException ex)
         {

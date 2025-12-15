@@ -37,15 +37,20 @@ public class UpdateProblemStatusCommandHandler(
                     problem.UpdateStatus(newStatus);
                     var result = await problemRepository.Update(problem, cancellationToken);
 
-                    if (oldStatus != newStatus && problem.CreatedById != null)
+                    if (oldStatus != newStatus)
                     {
-                        await signalRService.SendNotificationToUser(
-                            problem.CreatedById,
-                            NotificationDto.Create("status_change",
-                                $"Статус вашої проблеми змінено на: {newStatus.Value}",
-                                problem.Id.Value.ToString(),
-                                problem.Title),
-                            cancellationToken);
+                        if (problem.CreatedById != null)
+                        {
+                            await signalRService.SendNotificationToUser(
+                                problem.CreatedById,
+                                NotificationDto.Create("status_change",
+                                    $"Статус вашої проблеми змінено на: {newStatus.Value}",
+                                    problem.Id.Value.ToString(),
+                                    problem.Title),
+                                cancellationToken);
+                        }
+                        
+                        await signalRService.SendRefreshToAll(cancellationToken);
                     }
 
                     return result;

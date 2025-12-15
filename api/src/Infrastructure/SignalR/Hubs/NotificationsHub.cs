@@ -6,7 +6,7 @@ using Domain.Identity.Roles;
 namespace Infrastructure.SignalR.Hubs;
 
 [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-[Authorize(Roles = $"{RoleNames.Admin}, {RoleNames.User}")]
+[Authorize(Roles = $"{RoleNames.Admin}, {RoleNames.User}, {RoleNames.Coordinator}")]
 public class NotificationsHub : Hub
 {
     public async Task JoinUserGroup(string userId)

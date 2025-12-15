@@ -23,19 +23,20 @@ export function SignalRProvider({ children }: { children: ReactNode }) {
           await signalRService.initializeNotificationsHub(tokens.accessToken)
 
           // Join user group for notifications
-          if (user.id) {
+          if (!isCoordinatorOrAdmin && user.id) {
             await signalRService.joinUserGroup(user.id)
           }
-          // Subscribe to notifications
+          // Subscribe to notifications (only for regular users)
           signalRService.onNotificationReceived((notification) => {
-            if (isCoordinatorOrAdmin) {
-              // For coordinators/admins: trigger auto-refresh instead of showing notification
-              if (problemsUpdatedCallbackRef.current) {
-                problemsUpdatedCallbackRef.current()
-              }
-            } else {
-              // For regular users: show notification
+            if (!isCoordinatorOrAdmin) {
               setNotifications((prev) => [notification, ...prev])
+            }
+          })
+
+          // Subscribe to refresh events (for Coordinator/Admin auto-refresh)
+          signalRService.onRefreshProblemList(() => {
+            if (problemsUpdatedCallbackRef.current) {
+              problemsUpdatedCallbackRef.current()
             }
           })
 
