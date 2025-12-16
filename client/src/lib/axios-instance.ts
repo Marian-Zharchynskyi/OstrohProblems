@@ -3,7 +3,7 @@ import { tokenStorage } from './token-storage'
 import { authService } from '@/services/auth.service'
 import { isTokenExpired } from './jwt-utils'
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000'
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5146'
 
 export const axiosInstance = axios.create({
   baseURL: API_URL,
