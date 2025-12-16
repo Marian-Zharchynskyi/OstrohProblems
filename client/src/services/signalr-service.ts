@@ -1,7 +1,7 @@
 import * as signalR from '@microsoft/signalr'
 import type { Comment, Notification } from '@/types'
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000'
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5146'
 
 class SignalRService {
   private commentsConnection: signalR.HubConnection | null = null
