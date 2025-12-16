@@ -8,7 +8,6 @@ export interface PagedResult<T> {
 
 export const ProblemStatusConstants = {
   New: 'Нова',
-  Validated: 'Провалідована',
   InProgress: 'В роботі',
   Completed: 'Виконано',
   Rejected: 'Відхилено',

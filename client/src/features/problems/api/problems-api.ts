@@ -70,14 +70,6 @@ export const problemsApi = {
     return response.data
   },
 
-  validateProblem: async (problemId: string, coordinatorId: string) => {
-    const response = await apiClient.put<Problem>(
-      `${BASE_URL}/validate/${problemId}`,
-      coordinatorId
-    )
-    return response.data
-  },
-
   reject: async (problemId: string, coordinatorId: string, rejectionReason: string) => {
     const response = await apiClient.put<Problem>(
       `${BASE_URL}/reject/${problemId}`,

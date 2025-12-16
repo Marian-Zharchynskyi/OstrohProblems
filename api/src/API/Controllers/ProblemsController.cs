@@ -206,26 +206,6 @@ public class ProblemsController(ISender sender, IProblemQueries problemQueries, 
     }
 
     [Authorize(Roles = $"{RoleNames.Admin}, {RoleNames.Coordinator}")]
-    [HttpPut("validate/{problemId:guid}")]
-    public async Task<ActionResult<ProblemDto>> ValidateProblem(
-        [FromRoute] Guid problemId,
-        [FromBody] Guid coordinatorId,
-        CancellationToken cancellationToken)
-    {
-        var input = new ValidateProblemCommand
-        {
-            ProblemId = problemId,
-            CoordinatorId = coordinatorId
-        };
-
-        var result = await sender.Send(input, cancellationToken);
-
-        return result.Match<ActionResult<ProblemDto>>(
-            problem => ProblemDto.FromDomainModel(problem, imageService.GetImageUrl),
-            e => e.ToObjectResult());
-    }
-
-    [Authorize(Roles = $"{RoleNames.Admin}, {RoleNames.Coordinator}")]
     [HttpPut("reject/{problemId:guid}")]
     public async Task<ActionResult<ProblemDto>> Reject(
         [FromRoute] Guid problemId,

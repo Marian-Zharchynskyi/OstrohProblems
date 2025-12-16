@@ -358,7 +358,7 @@ namespace Infrastructure.Persistence.Migrations
                             Description = "Велика яма на дорозі біля будинку №15. Потребує термінового ремонту.",
                             Latitude = 50.3294,
                             Longitude = 26.514399999999998,
-                            Status = "Провалідована",
+                            Status = "Нова",
                             Title = "Розбита дорога на вул. Академічна",
                             UpdatedAt = new DateTime(2024, 1, 15, 10, 0, 0, 0, DateTimeKind.Utc)
                         },
@@ -371,7 +371,7 @@ namespace Infrastructure.Persistence.Migrations
                             Description = "Вже тиждень не світять ліхтарі на ділянці від будинку №5 до №15.",
                             Latitude = 50.328499999999998,
                             Longitude = 26.512499999999999,
-                            Status = "Провалідована",
+                            Status = "Нова",
                             Title = "Не працює вуличне освітлення на вул. Семінарська",
                             UpdatedAt = new DateTime(2024, 1, 15, 10, 0, 0, 0, DateTimeKind.Utc)
                         },
@@ -384,7 +384,7 @@ namespace Infrastructure.Persistence.Migrations
                             Description = "Сміттєві контейнери не вивозяться вже 3 дні, сміття розкидане навколо.",
                             Latitude = 50.330100000000002,
                             Longitude = 26.5167,
-                            Status = "Провалідована",
+                            Status = "Нова",
                             Title = "Переповнені сміттєві баки біля ринку",
                             UpdatedAt = new DateTime(2024, 1, 15, 10, 0, 0, 0, DateTimeKind.Utc)
                         },
@@ -423,7 +423,7 @@ namespace Infrastructure.Persistence.Migrations
                             Description = "Великі тріщини на тротуарі, небезпечно для пішоходів та велосипедистів.",
                             Latitude = 50.330500000000001,
                             Longitude = 26.513400000000001,
-                            Status = "Провалідована",
+                            Status = "Нова",
                             Title = "Тріщина на тротуарі вул. Папаніна",
                             UpdatedAt = new DateTime(2024, 1, 15, 10, 0, 0, 0, DateTimeKind.Utc)
                         },

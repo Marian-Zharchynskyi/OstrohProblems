@@ -1,5 +1,4 @@
 using Application.Common;
-using Application.Common.DTOs;
 using Application.Common.Interfaces.Repositories;
 using Application.Problems.Exceptions;
 using Application.Services.SignalRService;
@@ -33,17 +32,6 @@ public class UpdateCurrentStateCommandHandler(
                 {
                     problem.UpdateCurrentState(request.CurrentState);
                     var result = await problemRepository.Update(problem, cancellationToken);
-
-                    if (problem.CreatedById != null)
-                    {
-                        await signalRService.SendNotificationToUser(
-                            problem.CreatedById,
-                            NotificationDto.Create("status_change",
-                                $"Оновлено поточний стан вашої проблеми '{problem.Title}': {request.CurrentState}",
-                                problem.Id.Value.ToString(),
-                                problem.Title),
-                            cancellationToken);
-                    }
 
                     await signalRService.SendRefreshToAll(cancellationToken);
 
