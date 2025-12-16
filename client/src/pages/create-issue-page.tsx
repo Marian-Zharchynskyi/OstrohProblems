@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { FormField } from '@/components/shared/form-field'
+import { LocationPickerMap } from '@/components/location-picker-map'
 import { toast } from '@/lib/toast'
 
 const MAX_IMAGES_COUNT = 6
@@ -29,6 +30,12 @@ export function CreateIssuePage() {
 
   const [files, setFiles] = useState<FileList | null>(null)
   const [descriptionError, setDescriptionError] = useState('')
+  const [streetName, setStreetName] = useState('')
+
+  const handleLocationChange = (lat: number, lng: number, street: string) => {
+    setFormData({ ...formData, latitude: lat, longitude: lng })
+    setStreetName(street)
+  }
 
   const handleCategoryToggle = (categoryName: string) => {
     setFormData((prev) => ({
@@ -124,29 +131,19 @@ export function CreateIssuePage() {
             </div>
           </div>
 
-          <div className="grid gap-4 md:grid-cols-2">
-            <FormField
-              label="Широта (latitude)"
-              name="latitude"
-              type="number"
-              value={formData.latitude}
-              onChange={(value) =>
-                setFormData({ ...formData, latitude: value as number })
-              }
-              required
-              placeholder="Введіть широту"
+          <div className="space-y-2">
+            <Label>Місце проблеми на карті <span className="text-destructive ml-1">*</span></Label>
+            <LocationPickerMap
+              latitude={formData.latitude}
+              longitude={formData.longitude}
+              onLocationChange={handleLocationChange}
+              height="300px"
             />
-            <FormField
-              label="Довгота (longitude)"
-              name="longitude"
-              type="number"
-              value={formData.longitude}
-              onChange={(value) =>
-                setFormData({ ...formData, longitude: value as number })
-              }
-              required
-              placeholder="Введіть довготу"
-            />
+            {streetName && (
+              <p className="text-sm text-muted-foreground">
+                Вибрана вулиця: <span className="font-medium">{streetName}</span>
+              </p>
+            )}
           </div>
         </CardContent>
       </Card>

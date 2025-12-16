@@ -11,7 +11,6 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { ProblemImagesManager } from '@/components/problem-images-manager'
 import { 
-  MapPin, 
   User, 
   Tag, 
   ArrowLeft, 
@@ -19,6 +18,7 @@ import {
   Star,
   Send
 } from 'lucide-react'
+import { LocationPickerMap } from '@/components/location-picker-map'
 import { toast } from '@/lib/toast'
 
 export function ProblemDetailPage() {
@@ -229,15 +229,15 @@ export function ProblemDetailPage() {
           {/* Location */}
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <MapPin className="w-5 h-5" />
-                Координати
-              </CardTitle>
+              <CardTitle>Місце на карті</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-muted-foreground">
-                {problem.latitude.toFixed(6)}, {problem.longitude.toFixed(6)}
-              </p>
+              <LocationPickerMap
+                latitude={problem.latitude}
+                longitude={problem.longitude}
+                readonly={true}
+                height="200px"
+              />
             </CardContent>
           </Card>
 
@@ -252,12 +252,12 @@ export function ProblemDetailPage() {
               </CardHeader>
               <CardContent>
                 <div className="flex flex-wrap gap-2">
-                  {problem.categories.map((category) => (
+                  {problem.categories.map((category, index) => (
                     <span
-                      key={category.id}
+                      key={index}
                       className="inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-sm text-primary"
                     >
-                      {category.name}
+                      {category}
                     </span>
                   ))}
                 </div>

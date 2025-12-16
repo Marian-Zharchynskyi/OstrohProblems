@@ -1,6 +1,8 @@
 using Application.Common;
+using Application.Common.DTOs;
 using Application.Common.Interfaces.Repositories;
 using Application.Problems.Exceptions;
+using Application.Services.SignalRService;
 using Domain.Identity.Users;
 using Domain.Problems;
 using MediatR;
@@ -15,7 +17,8 @@ public record AssignCoordinatorCommand : IRequest<Result<Problem, ProblemExcepti
 
 public class AssignCoordinatorCommandHandler(
     IProblemRepository problemRepository,
-    IUserRepository userRepository)
+    IUserRepository userRepository,
+    ISignalRService signalRService)
     : IRequestHandler<AssignCoordinatorCommand, Result<Problem, ProblemException>>
 {
     public async Task<Result<Problem, ProblemException>> Handle(
@@ -39,7 +42,22 @@ public class AssignCoordinatorCommandHandler(
                         {
                             problem.AssignCoordinator(coordinatorId);
                             problem.UpdateStatus(ProblemStatus.InProgress);
-                            return await problemRepository.Update(problem, cancellationToken);
+                            var result = await problemRepository.Update(problem, cancellationToken);
+
+                            if (problem.CreatedById != null)
+                            {
+                                await signalRService.SendNotificationToUser(
+                                    problem.CreatedById,
+                                    NotificationDto.Create("status_change",
+                                        $"Вашу проблему '{problem.Title}' взято в роботу координатором!",
+                                        problem.Id.Value.ToString(),
+                                        problem.Title),
+                                    cancellationToken);
+                            }
+
+                            await signalRService.SendRefreshToAll(cancellationToken);
+
+                            return result;
                         }
                         catch (Exception exception)
                         {

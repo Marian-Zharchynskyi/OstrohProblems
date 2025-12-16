@@ -39,12 +39,14 @@ public class CompleteProblemCommandHandler(
                     {
                         await signalRService.SendNotificationToUser(
                             problem.CreatedById,
-                            NotificationDto.Create("status_change",
+                            NotificationDto.Create("completed",
                                 $"Вашу проблему '{problem.Title}' виконано!",
                                 problem.Id.Value.ToString(),
                                 problem.Title),
                             cancellationToken);
                     }
+
+                    await signalRService.SendRefreshToAll(cancellationToken);
 
                     return result;
                 }

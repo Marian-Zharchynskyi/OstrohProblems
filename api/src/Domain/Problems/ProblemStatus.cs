@@ -5,7 +5,6 @@ namespace Domain.Problems;
 public class ProblemStatusConstants
 {
     public const string New = "Нова";
-    public const string Validated = "Провалідована";
     public const string InProgress = "В роботі";
     public const string Completed = "Виконано";
     public const string Rejected = "Відхилено";
@@ -33,7 +32,6 @@ public class ProblemStatus : ValueObject
     }
 
     public static ProblemStatus New => new(ProblemStatusConstants.New);
-    public static ProblemStatus Validated => new(ProblemStatusConstants.Validated);
     public static ProblemStatus InProgress => new(ProblemStatusConstants.InProgress);
     public static ProblemStatus Completed => new(ProblemStatusConstants.Completed);
     public static ProblemStatus Rejected => new(ProblemStatusConstants.Rejected);
@@ -63,7 +61,6 @@ public class ProblemStatus : ValueObject
         get
         {
             yield return New;
-            yield return Validated;
             yield return InProgress;
             yield return Completed;
             yield return Rejected;
