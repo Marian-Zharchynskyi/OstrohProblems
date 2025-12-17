@@ -28,9 +28,5 @@ public class ProblemDtoValidator : AbstractValidator<CreateProblemDto>
             .MaximumLength(2000)
             .MinimumLength(10)
             .WithMessage("Description must be between 10 and 2000 characters.");
-
-        RuleFor(x => x.ProblemStatusId)
-            .NotEmpty()
-            .WithMessage("Problem status must be specified.");
     }
 }

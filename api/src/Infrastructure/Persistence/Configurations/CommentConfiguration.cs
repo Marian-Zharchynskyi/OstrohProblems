@@ -1,5 +1,6 @@
 using Domain.Comments;
 using Domain.Problems;
+using Domain.Identity.Users;
 using Infrastructure.Persistence.Converters;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -27,6 +28,10 @@ public class CommentConfiguration : IEntityTypeConfiguration<Comment>
         builder.Property(c => c.UpdatedAt)
             .HasConversion(new DateTimeUtcConverter())
             .HasDefaultValueSql("timezone('utc', now())");
+
+        builder.Property(c => c.UserId)
+            .HasConversion(id => id.Value, value => new UserId(value))
+            .IsRequired();
 
         builder.HasOne(c => c.Problem)
             .WithMany(p => p.Comments)

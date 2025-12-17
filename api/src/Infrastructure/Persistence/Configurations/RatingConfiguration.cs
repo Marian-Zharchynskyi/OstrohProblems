@@ -1,4 +1,5 @@
 using Domain.Ratings;
+using Domain.Identity.Users;
 using Infrastructure.Persistence.Converters;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -18,7 +19,11 @@ public class RatingConfiguration : IEntityTypeConfiguration<Rating>
             .IsRequired();
 
         builder.Property(r => r.UserId)
+            .HasConversion(id => id.Value, value => new UserId(value))
             .IsRequired();
+            
+        builder.HasIndex(r => new { r.UserId, r.ProblemId })
+            .IsUnique();
 
         builder.Property(r => r.Points)
             .IsRequired()

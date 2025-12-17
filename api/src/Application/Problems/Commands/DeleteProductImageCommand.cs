@@ -40,7 +40,7 @@ public class DeleteProblemImageCommandHandler(
             return new ImageNotFoundException(problemImageId);
         }
 
-        var deleteResult = await imageService.DeleteImageAsync(ImagePaths.ProblemImagesPath, problemImage.FilePath);
+        var deleteResult = await imageService.DeleteImageAsync(problemImage.FilePath);
 
         return await deleteResult.Match<Task<Result<Problem, ProblemException>>>(
             async _ =>

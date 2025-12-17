@@ -34,7 +34,7 @@ public class UserRepository(ApplicationDbContext context) : IUserRepository, IUs
     public async Task<IReadOnlyList<User>> GetAll(CancellationToken cancellationToken)
     {
         return await context.Users
-            .Include(x => x.Roles)
+            .Include(x => x.Role)
             .Include(u => u.UserImage)
             .AsNoTracking()
             .AsSplitQuery()
@@ -63,12 +63,14 @@ public class UserRepository(ApplicationDbContext context) : IUserRepository, IUs
         return entity == null ? Option.None<User>() : Option.Some(entity);
     }
 
-    public async Task<User> AddRole(UserId userId, RoleId roleId, CancellationToken cancellationToken)
+    public async Task<User> SetRole(UserId userId, RoleId roleId, CancellationToken cancellationToken)
     {
         var entity = await GetUserAsync(x => x.Id == userId, cancellationToken);
 
-        var role = await context.Roles.FirstOrDefaultAsync(x => x.Id == roleId, cancellationToken);
-        entity.Roles.Add(role);
+        if (entity == null)
+            throw new InvalidOperationException($"User with id {userId} not found");
+
+        entity.SetRole(roleId);
         await context.SaveChangesAsync(cancellationToken);
         return entity;
     }
@@ -79,7 +81,7 @@ public class UserRepository(ApplicationDbContext context) : IUserRepository, IUs
         if (asNoTracking)
         {
             return await context.Users
-                .Include(u => u.Roles)
+                .Include(u => u.Role)
                 .Include(u => u.UserImage)
                 .Include(x => x.Problems)
                 .Include(x => x.Ratings)
@@ -88,7 +90,7 @@ public class UserRepository(ApplicationDbContext context) : IUserRepository, IUs
         }
 
         return await context.Users
-            .Include(u => u.Roles)
+            .Include(u => u.Role)
             .Include(u => u.UserImage)
             .FirstOrDefaultAsync(predicate, cancellationToken);
     }
@@ -97,7 +99,7 @@ public class UserRepository(ApplicationDbContext context) : IUserRepository, IUs
         CancellationToken cancellationToken)
     {
         var query = context.Users
-            .Include(u => u.Roles)
+            .Include(u => u.Role)
             .Include(u => u.UserImage)
             .AsNoTracking();
 
