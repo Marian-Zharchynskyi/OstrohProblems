@@ -1,11 +1,9 @@
 using Application.Common;
 using Application.Common.Interfaces.Repositories;
-using Application.Services;
 using Application.Services.ImageService;
 using Application.Users.Exceptions;
 using Domain.Identity.Users;
 using MediatR;
-using Microsoft.AspNetCore.Hosting;
 
 namespace Application.Users.Commands;
 
@@ -15,7 +13,8 @@ public record DeleteUserCommand : IRequest<Result<User, UserException>>
 }
 
 public class DeleteUserCommandHandler(
-    IUserRepository userRepository, IWebHostEnvironment webHostEnvironment)
+    IUserRepository userRepository,
+    IImageService imageService)
     : IRequestHandler<DeleteUserCommand, Result<User, UserException>>
 {
     public async Task<Result<User, UserException>> Handle(
@@ -40,7 +39,7 @@ public class DeleteUserCommandHandler(
         User user,
         CancellationToken cancellationToken)
     {
-        DeleteImageByUser(user);
+        await DeleteImageByUser(user);
         
         try
         {
@@ -52,16 +51,12 @@ public class DeleteUserCommandHandler(
         }
     }
 
-    private void DeleteImageByUser(User user)
+    private async Task DeleteImageByUser(User user)
     {
         var userImage = user.UserImage?.FilePath;
         if (!string.IsNullOrEmpty(userImage))
         {
-            var fullPath = Path.Combine(webHostEnvironment.ContentRootPath, ImagePaths.UserImagePath, userImage);
-            if (File.Exists(fullPath))
-            {
-                File.Delete(fullPath);
-            }
+            await imageService.DeleteImageAsync(userImage);
         }
     }
 }

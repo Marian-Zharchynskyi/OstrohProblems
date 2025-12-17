@@ -2,7 +2,6 @@ using Application.Common;
 using Application.Common.Interfaces.Repositories;
 using Application.Problems.Exceptions;
 using Domain.Problems;
-using Domain.Statuses;
 using MediatR;
 
 namespace Application.Problems.Commands;
@@ -14,13 +13,11 @@ public record UpdateProblemCommand : IRequest<Result<Problem, ProblemException>>
     public required double Latitude { get; init; }
     public required double Longitude { get; init; }
     public required string Description { get; init; }
-    public required StatusId StatusId { get; init; }
-    public List<Guid>? ProblemCategoryIds { get; init; } 
+    public List<string>? CategoryNames { get; init; } 
 }
 
 public class UpdateProblemCommandHandler(
-    IProblemRepository problemRepository,
-    ICategoryRepository categoryRepository) 
+    IProblemRepository problemRepository) 
     : IRequestHandler<UpdateProblemCommand, Result<Problem, ProblemException>>
 {
     public async Task<Result<Problem, ProblemException>> Handle(
@@ -37,8 +34,7 @@ public class UpdateProblemCommandHandler(
                 request.Latitude,
                 request.Longitude,
                 request.Description,
-                request.StatusId,
-                request.ProblemCategoryIds, 
+                request.CategoryNames, 
                 cancellationToken),
             () => Task.FromResult<Result<Problem, ProblemException>>(
                 new ProblemNotFoundException(problemId))
@@ -51,30 +47,32 @@ public class UpdateProblemCommandHandler(
         double latitude,
         double longitude,
         string description,
-        StatusId statusId,
-        List<Guid>? categoryIds,
+        List<string>? categoryNames,
         CancellationToken cancellationToken)
     {
         try
         {
-            problem.UpdateProblem(title, latitude, longitude, description, statusId);
-
-            if (categoryIds is not null && categoryIds.Any())
+            var existingWithTitle = await problemRepository.SearchByTitle(title, cancellationToken);
+            var titleConflict = existingWithTitle.Match(
+                some => some.Id.Value != problem.Id.Value,
+                () => false);
+            if (titleConflict)
             {
-                var existingCategoryIds = problem.Categories.Select(c => c.Id.Value).ToHashSet();
-                var newCategoryIds = categoryIds.Except(existingCategoryIds).ToList();
+                return new ProblemWithTitleAlreadyExistsException(problem.Id, title);
+            }
 
-                if (newCategoryIds.Any())
-                {
-                    var newCategories = await categoryRepository.GetByIdsAsync(newCategoryIds, cancellationToken);
-                    foreach (var category in newCategories)
-                    {
-                        problem.AddCategory(category);
-                    }
-                }
+            problem.UpdateProblem(title, latitude, longitude, description);
+
+            if (categoryNames is not null && categoryNames.Any())
+            {
+                problem.SetCategories(categoryNames);
             }
 
             return await problemRepository.Update(problem, cancellationToken);
+        }
+        catch (UnsupportedCategoryException ex)
+        {
+            return new ProblemUnknownException(problem.Id, ex);
         }
         catch (Exception exception)
         {

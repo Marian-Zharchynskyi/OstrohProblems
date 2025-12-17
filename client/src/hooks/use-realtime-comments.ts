@@ -1,0 +1,40 @@
+import { useEffect, useState } from 'react'
+import type { Comment } from '@/types'
+import { useSignalR } from '@/contexts/use-signalr'
+
+// initialComments is optional to avoid passing a new [] on every render from the caller
+export function useRealtimeComments(problemId: string | null, initialComments?: Comment[]) {
+  const { joinProblemGroup, leaveProblemGroup, onCommentReceived } = useSignalR()
+  const [comments, setComments] = useState<Comment[]>(initialComments ?? [])
+
+  useEffect(() => {
+    if (!initialComments) return
+    setComments(initialComments)
+  }, [initialComments])
+
+  useEffect(() => {
+    if (!problemId) return
+
+    // Join the problem group to receive real-time comments
+    joinProblemGroup(problemId)
+
+    // Subscribe to new comments
+    onCommentReceived((newComment: Comment) => {
+      if (newComment.problemId === problemId) {
+        setComments((prev) => {
+          // Check if comment already exists to avoid duplicates
+          const exists = prev.some((c) => c.id === newComment.id)
+          if (exists) return prev
+          return [...prev, newComment]
+        })
+      }
+    })
+
+    // Leave the group when component unmounts
+    return () => {
+      leaveProblemGroup(problemId)
+    }
+  }, [problemId, joinProblemGroup, leaveProblemGroup, onCommentReceived])
+
+  return comments
+}

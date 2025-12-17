@@ -1,6 +1,8 @@
-﻿using API.DTOs.Users;
+using API.DTOs.Users;
 using API.Modules.Errors;
+using Application.Common.Interfaces;
 using Application.Common.Interfaces.Queries;
+using Application.Services.ImageService;
 using Application.Users.Commands;
 using Domain.Identity.Roles;
 using Domain.Identity.Users;
@@ -16,9 +18,27 @@ namespace API.Controllers;
 [Route("users")]
 [ApiController]
 [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-[Authorize(Roles = RoleNames.Admin)]
-public class UsersController(ISender sender, IUserQueries userQueries) : ControllerBase
+public class UsersController(ISender sender, IUserQueries userQueries, IIdentityService identityService, IImageService imageService) : ControllerBase
 {
+    [Authorize(Roles = $"{RoleNames.Admin},{RoleNames.User}")]
+    [HttpGet("current")]
+    public async Task<ActionResult<UserDto>> GetCurrentUser(CancellationToken cancellationToken)
+    {
+        var userIdOption = identityService.GetUserId();
+        
+        return await userIdOption.Match(
+            async userId =>
+            {
+                var user = await userQueries.GetById(userId, cancellationToken);
+                return user.Match<ActionResult<UserDto>>(
+                    u => UserDto.FromDomainModel(u, imageService.GetImageUrl),
+                    () => NotFound());
+            },
+            () => Task.FromResult<ActionResult<UserDto>>(Unauthorized())
+        );
+    }
+
+    [Authorize(Roles = RoleNames.Admin)]
     [HttpGet("paged")]
     public async Task<ActionResult<PagedResult<UserDto>>> GetPaged(
         [FromQuery] int page = 1,
@@ -27,7 +47,7 @@ public class UsersController(ISender sender, IUserQueries userQueries) : Control
     {
         var (items, totalCount) = await userQueries.GetPaged(page, pageSize, cancellationToken);
 
-        var dtoItems = items.Select(UserDto.FromDomainModel).ToList();
+        var dtoItems = items.Select(u => UserDto.FromDomainModel(u, imageService.GetImageUrl)).ToList();
 
         return new PagedResult<UserDto>(
             Items: dtoItems,
@@ -37,24 +57,48 @@ public class UsersController(ISender sender, IUserQueries userQueries) : Control
         );
     }
     
+    [Authorize(Roles = RoleNames.Admin)]
     [HttpGet("get-all")]
     public async Task<ActionResult<IReadOnlyList<UserDto>>> GetAll(CancellationToken cancellationToken)
     {
         var entities = await userQueries.GetAll(cancellationToken);
 
-        return entities.Select(UserDto.FromDomainModel).ToList();
+        return entities.Select(u => UserDto.FromDomainModel(u, imageService.GetImageUrl)).ToList();
+    }
+
+    [Authorize(Roles = RoleNames.Admin)]
+    [HttpPost("create")]
+    public async Task<ActionResult<UserDto>> Create(
+        [FromBody] CreateUserDto createUserDto,
+        CancellationToken cancellationToken)
+    {
+        var input = new CreateUserCommand
+        {
+            Email = createUserDto.Email,
+            Password = createUserDto.Password,
+            FullName = createUserDto.FullName,
+            RoleId = createUserDto.RoleId
+        };
+
+        var result = await sender.Send(input, cancellationToken);
+
+        return result.Match<ActionResult<UserDto>>(
+            user => UserDto.FromDomainModel(user, imageService.GetImageUrl),
+            error => error.ToObjectResult());
     }
     
+    [Authorize(Roles = RoleNames.Admin)]
     [HttpGet("get-by-id/{userId:guid}")]
     public async Task<ActionResult<UserDto>> Get([FromRoute] Guid userId, CancellationToken cancellationToken)
     {
         var entity = await userQueries.GetById(new UserId(userId), cancellationToken);
 
         return entity.Match<ActionResult<UserDto>>(
-            p => UserDto.FromDomainModel(p),
+            p => UserDto.FromDomainModel(p, imageService.GetImageUrl),
             () => NotFound());
     }
     
+    [Authorize(Roles = RoleNames.Admin)]
     [HttpDelete("delete/{userId:guid}")]
     public async Task<ActionResult<UserDto>>
         Delete([FromRoute] Guid userId, CancellationToken cancellationToken)
@@ -67,26 +111,27 @@ public class UsersController(ISender sender, IUserQueries userQueries) : Control
         var result = await sender.Send(input, cancellationToken);
 
         return result.Match<ActionResult<UserDto>>(
-            c => UserDto.FromDomainModel(c),
+            c => UserDto.FromDomainModel(c, imageService.GetImageUrl),
             e => e.ToObjectResult());
     }
     
+    [Authorize(Roles = RoleNames.Admin)]
     [HttpPut("update-roles/{userId}")]
     public async Task<ActionResult<UserDto>> UpdateRoles(
         [FromRoute] Guid userId,
-        [FromBody] List<Guid> roleIds,
+        [FromBody] Guid roleId,
         CancellationToken cancellationToken)
     {
-        var input = new ChangeRolesForUserCommand
+        var input = new ChangeRoleForUserCommand
         {
             UserId = userId,
-            RoleIds = roleIds
+            RoleId = roleId
         };
 
         var result = await sender.Send(input, cancellationToken);
 
         return result.Match<ActionResult<UserDto>>(
-            user => UserDto.FromDomainModel(user),
+            user => UserDto.FromDomainModel(user, imageService.GetImageUrl),
             error => error.ToObjectResult());
     }
 
@@ -106,7 +151,25 @@ public class UsersController(ISender sender, IUserQueries userQueries) : Control
         var result = await sender.Send(input, cancellationToken);
 
         return result.Match<ActionResult<UserDto>>(
-            u => UserDto.FromDomainModel(u),
+            u => UserDto.FromDomainModel(u, imageService.GetImageUrl),
+            e => e.ToObjectResult());
+    }
+
+    [Authorize(Roles = $"{RoleNames.Admin},{RoleNames.User}")]
+    [HttpDelete("image/{userId}")]
+    public async Task<ActionResult<UserDto>> DeleteImage(
+        [FromRoute] Guid userId,
+        CancellationToken cancellationToken)
+    {
+        var input = new DeleteUserImageCommand
+        {
+            UserId = userId
+        };
+
+        var result = await sender.Send(input, cancellationToken);
+
+        return result.Match<ActionResult<UserDto>>(
+            u => UserDto.FromDomainModel(u, imageService.GetImageUrl),
             e => e.ToObjectResult());
     }
 
@@ -127,7 +190,7 @@ public class UsersController(ISender sender, IUserQueries userQueries) : Control
         var result = await sender.Send(input, cancellationToken);
 
         return result.Match<ActionResult<UserDto>>(
-            u => UserDto.FromDomainModel(u),
+            u => UserDto.FromDomainModel(u, imageService.GetImageUrl),
             e => e.ToObjectResult());
     }
 }

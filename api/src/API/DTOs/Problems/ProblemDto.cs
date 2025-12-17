@@ -1,6 +1,4 @@
-using API.DTOs.Categories;
 using API.DTOs.Comments;
-using API.DTOs.Statuses;
 using API.DTOs.Users;
 using Domain.Problems;
 
@@ -12,26 +10,40 @@ public record ProblemDto(
     double Latitude,
     double Longitude,
     string Description,
-    StatusDto? ProblemStatus,
-    UserDto? User,
+    string Status,
+    UserDto? CreatedBy,
+    UserDto? Coordinator,
+    string? RejectionReason,
+    string? CoordinatorComment,
+    string? CurrentState,
     List<CommentDto>? Comments,
     List<ProblemImageDto>? Images,
-    List<CategoryDto>? Categories,
+    List<CoordinatorImageDto>? CoordinatorImages,
+    List<string>? Categories,
     DateTime CreatedAt,
     DateTime UpdatedAt)
 {
-    public static ProblemDto FromDomainModel(Problem problem)
+    public static ProblemDto FromDomainModel(Problem problem, Func<string, string>? getImageUrl = null)
         => new(
             problem.Id.Value,
             problem.Title,
             problem.Latitude,
             problem.Longitude,
             problem.Description,
-            problem.ProblemStatus == null ? null : StatusDto.FromDomainModel(problem.ProblemStatus),
-            problem.User == null ? null : UserDto.FromDomainModel(problem.User),
+            problem.Status.Value,
+            problem.CreatedBy == null ? null : UserDto.FromDomainModel(problem.CreatedBy, getImageUrl),
+            problem.Coordinator == null ? null : UserDto.FromDomainModel(problem.Coordinator, getImageUrl),
+            problem.RejectionReason,
+            problem.CoordinatorComment,
+            problem.CurrentState,
             problem.Comments.Count == 0 ? null : problem.Comments.Select(CommentDto.FromDomainModel).ToList(),
-            problem.Images.Select(ProblemImageDto.FromDomainModel).ToList(),
-            problem.Categories.Count == 0 ? null : problem.Categories.Select(CategoryDto.FromDomainModel).ToList(),
+            getImageUrl != null 
+                ? problem.Images.Select(i => ProblemImageDto.FromDomainModel(i, getImageUrl)).ToList() 
+                : new List<ProblemImageDto>(),
+            getImageUrl != null 
+                ? problem.CoordinatorImages.Select(i => CoordinatorImageDto.FromDomainModel(i, getImageUrl)).ToList() 
+                : new List<CoordinatorImageDto>(),
+            problem.Categories.Count == 0 ? null : problem.Categories.Select(c => c.Value).ToList(),
             problem.CreatedAt,
             problem.UpdatedAt
         );

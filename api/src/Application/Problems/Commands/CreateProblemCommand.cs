@@ -1,9 +1,9 @@
 ﻿using Application.Common;
 using Application.Common.Interfaces.Repositories;
 using Application.Problems.Exceptions;
+using Application.Services.SignalRService;
 using Domain.Identity.Users;
 using Domain.Problems;
-using Domain.Statuses;
 using MediatR;
 using Microsoft.AspNetCore.Http;
 
@@ -15,24 +15,23 @@ public record CreateProblemCommand : IRequest<Result<Problem, ProblemException>>
     public required double Latitude { get; init; }
     public required double Longitude { get; init; }
     public required string Description { get; init; }
-    public required StatusId StatusId { get; init; }
-    public required List<Guid> ProblemCategoryIds { get; init; }
+    public required List<string> CategoryNames { get; init; }
 }
 
 public class CreateProblemCommandHandler : IRequestHandler<CreateProblemCommand, Result<Problem, ProblemException>>
 {
     private readonly IProblemRepository _problemRepository;
-    private readonly ICategoryRepository _categoryRepository;
     private readonly IHttpContextAccessor _httpContextAccessor;
+    private readonly ISignalRService _signalRService;
 
     public CreateProblemCommandHandler(
         IProblemRepository problemRepository,
-        ICategoryRepository categoryRepository,
-        IHttpContextAccessor httpContextAccessor)
+        IHttpContextAccessor httpContextAccessor,
+        ISignalRService signalRService)
     {
         _problemRepository = problemRepository;
-        _categoryRepository = categoryRepository;
         _httpContextAccessor = httpContextAccessor;
+        _signalRService = signalRService;
     }
 
     public async Task<Result<Problem, ProblemException>> Handle(
@@ -48,8 +47,7 @@ public class CreateProblemCommandHandler : IRequestHandler<CreateProblemCommand,
                 request.Latitude,
                 request.Longitude,
                 request.Description,
-                request.StatusId,
-                request.ProblemCategoryIds,
+                request.CategoryNames,
                 cancellationToken));
     }
 
@@ -58,16 +56,14 @@ public class CreateProblemCommandHandler : IRequestHandler<CreateProblemCommand,
         double latitude,
         double longitude,
         string description,
-        StatusId statusId,
-        List<Guid> categoryIds,
+        List<string> categoryNames,
         CancellationToken cancellationToken)
     {
         var problemId = ProblemId.New();
 
         try
         {
-            var userIdClaim = _httpContextAccessor.HttpContext?.User?
-                .Claims.FirstOrDefault(c => c.Type == "id");
+            var userIdClaim = _httpContextAccessor.HttpContext?.User.Claims.FirstOrDefault(c => c.Type == "id");
 
             if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userIdGuid))
             {
@@ -82,20 +78,26 @@ public class CreateProblemCommandHandler : IRequestHandler<CreateProblemCommand,
                 latitude,
                 longitude,
                 description,
-                statusId,
                 userId
             );
 
-            if (categoryIds.Any())
+            if (categoryNames.Any())
             {
-                var categories = await _categoryRepository.GetByIdsAsync(categoryIds, cancellationToken);
-                foreach (var category in categories)
+                foreach (var categoryName in categoryNames)
                 {
-                    problem.AddCategory(category);
+                    problem.AddCategory(categoryName);
                 }
             }
 
-            return await _problemRepository.Add(problem, cancellationToken);
+            var result = await _problemRepository.Add(problem, cancellationToken);
+            
+            await _signalRService.SendRefreshToAll(cancellationToken);
+            
+            return result;
+        }
+        catch (UnsupportedCategoryException ex)
+        {
+            return new ProblemUnknownException(problemId, ex);
         }
         catch (Exception ex)
         {

@@ -1,5 +1,7 @@
 using Application.Common.Interfaces.Queries;
 using Application.Common.Interfaces.Repositories;
+using Domain.Identity.Users;
+using Domain.Problems;
 using Domain.Ratings;
 using Microsoft.EntityFrameworkCore;
 using Optional;
@@ -41,6 +43,16 @@ public class RatingRepository(ApplicationDbContext context) : IRatingQueries, IR
             .Include(x => x.User)
             .Include(x => x.Problem)
             .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
+
+        return entity == null ? Option.None<Rating>() : Option.Some(entity);
+    }
+
+    public async Task<Option<Rating>> GetByUserAndProblem(UserId userId, ProblemId problemId, CancellationToken cancellationToken)
+    {
+        var entity = await context.Ratings
+            .Include(x => x.User)
+            .Include(x => x.Problem)
+            .FirstOrDefaultAsync(x => x.UserId == userId && x.ProblemId == problemId, cancellationToken);
 
         return entity == null ? Option.None<Rating>() : Option.Some(entity);
     }

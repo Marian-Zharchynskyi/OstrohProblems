@@ -12,6 +12,7 @@ public class RefreshTokenRepository(ApplicationDbContext context) : IRefreshToke
         CancellationToken cancellationToken)
     {
         var entity = await context.RefreshTokens
+            .AsNoTracking()
             .FirstOrDefaultAsync(t => t.Token == refreshToken, cancellationToken);
 
         return entity == null ? Option.None<RefreshToken>() : Option.Some(entity);
@@ -36,5 +37,16 @@ public class RefreshTokenRepository(ApplicationDbContext context) : IRefreshToke
         await refreshTokens.ForEachAsync(t => { t.IsUsed = true; }, cancellationToken);
 
         await context.SaveChangesAsync(cancellationToken);
+    }
+
+    public async Task MarkAsUsed(Guid refreshTokenId, CancellationToken cancellationToken)
+    {
+        var token = await context.RefreshTokens.FindAsync([refreshTokenId], cancellationToken);
+        
+        if (token != null)
+        {
+            token.IsUsed = true;
+            await context.SaveChangesAsync(cancellationToken);
+        }
     }
 }

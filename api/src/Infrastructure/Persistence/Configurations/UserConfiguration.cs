@@ -1,4 +1,5 @@
-﻿using Domain.Identity.Users;
+﻿using Domain.Identity.Roles;
+using Domain.Identity.Users;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -21,16 +22,21 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
 
         builder.Property(p => p.PasswordHash)
             .IsRequired()
-            .HasMaxLength(255); 
+            .HasMaxLength(255);
 
-        builder.HasMany(x => x.Roles)
-            .WithMany(x => x.Users)
-            .UsingEntity(j => j.ToTable("fk_user_roles"));
+        builder.Property(p => p.RoleId)
+            .HasConversion(id => id.Value, value => new RoleId(value))
+            .IsRequired();
+
+        builder.HasOne(u => u.Role)
+            .WithMany()
+            .HasForeignKey(u => u.RoleId)
+            .OnDelete(DeleteBehavior.Restrict);
         
-        builder.HasMany(p => p.Problems)
-            .WithOne(p => p.User)
-            .HasForeignKey(p => p.UserId)
-            .OnDelete(DeleteBehavior.Cascade);
+        builder.HasMany(u => u.Problems)
+            .WithOne(p => p.CreatedBy)
+            .HasForeignKey(p => p.CreatedById)
+            .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasMany(p => p.Comments)
             .WithOne(p => p.User)

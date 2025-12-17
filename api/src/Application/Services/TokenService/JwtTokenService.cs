@@ -1,4 +1,4 @@
-﻿using System.IdentityModel.Tokens.Jwt;
+using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
@@ -31,19 +31,8 @@ namespace Application.Services.TokenService
                 new Claim("image", user.UserImage?.FilePath ?? "N/A"),
             };
 
-            if (user.Roles.Count > 0)
-            {
-                var roleClaims = user.Roles.Select(ur => new Claim(
-                    "role",
-                    ur.Name
-                )).ToArray();
-
-                claims.AddRange(roleClaims);
-            }
-            else
-            {
-                claims.Add(new Claim("role", RoleNames.User));
-            }
+            var roleName = user.Role?.Name ?? RoleNames.User;
+            claims.Add(new Claim("role", roleName));
             
             var token = new JwtSecurityToken(
                 issuer: issuer,
@@ -67,7 +56,7 @@ namespace Application.Services.TokenService
             }
         }
 
-        private async Task<RefreshToken?> SaveRefreshTokenAsync(User user, string refreshToken, string jwtId, CancellationToken cancellationToken)
+        private async Task<RefreshToken> SaveRefreshTokenAsync(User user, string refreshToken, string jwtId, CancellationToken cancellationToken)
         {
             var token = RefreshToken.New(Guid.NewGuid(),
                 refreshToken,
@@ -75,16 +64,7 @@ namespace Application.Services.TokenService
                 DateTime.UtcNow.AddDays(7),
                 user.Id);
 
-            try
-            {
-                await refreshTokenRepository.Create(token, cancellationToken);
-                
-                return token;
-            }
-            catch (Exception e)
-            {
-                return null;
-            }
+            return await refreshTokenRepository.Create(token, cancellationToken);
         }
         
         public ClaimsPrincipal GetPrincipals(string accessToken)

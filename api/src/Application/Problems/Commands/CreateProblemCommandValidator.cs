@@ -28,12 +28,8 @@ public class CreateProblemCommandValidator: AbstractValidator<CreateProblemComma
             .MaximumLength(2000)
             .WithMessage("Description must be between 3 and 2000 characters.");
 
-        RuleFor(x => x.StatusId)
+        RuleFor(x => x.CategoryNames)
             .NotNull()
-            .WithMessage("Problem status is required.");
-        
-        RuleFor(x => x.ProblemCategoryIds)
-            .NotNull()
-            .WithMessage("Problem category list should not be null.");
+            .WithMessage("Category names list should not be null.");
     }
 }

@@ -1,12 +1,9 @@
-﻿using Domain.Identity.Users;
-
-namespace Domain.Identity.Roles;
+﻿namespace Domain.Identity.Roles;
 
 public class Role
 {
     public RoleId Id { get; }
     public string Name { get; set; }
-    public ICollection<User> Users { get; set; } = new List<User>();
     
     private Role(RoleId id, string name)
     {

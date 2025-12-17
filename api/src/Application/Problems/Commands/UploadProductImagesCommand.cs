@@ -1,7 +1,6 @@
 using Application.Common;
 using Application.Common.Interfaces.Repositories;
 using Application.Problems.Exceptions;
-using Application.Services;
 using Application.Services.ImageService;
 using Domain.Problems;
 using MediatR;
@@ -12,6 +11,8 @@ namespace Application.Problems.Commands;
 
 public record UploadProblemImagesCommand : IRequest<Result<Problem, ProblemException>>
 {
+    public const int MaxImagesCount = 6;
+    
     public Guid ProblemId { get; init; }
     public IFormFileCollection ImagesFiles { get; init; }
 }
@@ -37,7 +38,15 @@ public class UploadProblemImagesCommandHandler(
         IFormFileCollection imagesFiles,
         CancellationToken cancellationToken)
     {
-        var imageSaveResult = await imageService.SaveImagesFromFilesAsync(ImagePaths.ProblemImagesPath, imagesFiles);
+        var currentImagesCount = problem.Images.Count;
+        var newImagesCount = imagesFiles.Count;
+        
+        if (currentImagesCount + newImagesCount > UploadProblemImagesCommand.MaxImagesCount)
+        {
+            return new MaxImagesExceededException(problem.Id, UploadProblemImagesCommand.MaxImagesCount);
+        }
+        
+        var imageSaveResult = await imageService.SaveImagesFromFilesAsync(ImagePaths.ProblemImages, imagesFiles);
 
         return await imageSaveResult.Match<Task<Result<Problem, ProblemException>>>(
             async imagesNames =>
