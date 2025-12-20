@@ -2,9 +2,6 @@ import { Routes, Route } from 'react-router-dom'
 import { Layout } from '@/components/shared/layout'
 import { ProtectedRoute } from '@/components/auth/protected-route'
 import { PublicRoute } from '@/components/auth/public-route'
-import { PublicHomePage } from '@/pages/public-home-page'
-import { AboutPage } from '@/pages/about-page'
-import { ContactPage } from '@/pages/contact-page'
 import { ErrorPage } from '@/pages/error-page'
 import { HomePage } from '@/pages/home-page'
 import { LoginPage } from '@/pages/login-page'
@@ -23,31 +20,7 @@ import CoordinatorPage from '@/pages/coordinator-page'
 export function AppRoutes() {
   return (
     <Routes>
-      {/* Public routes with layout */}
-      <Route
-        path="/"
-        element={
-          <Layout>
-            <PublicHomePage />
-          </Layout>
-        }
-      />
-      <Route
-        path="/about"
-        element={
-          <Layout>
-            <AboutPage />
-          </Layout>
-        }
-      />
-      <Route
-        path="/contact"
-        element={
-          <Layout>
-            <ContactPage />
-          </Layout>
-        }
-      />
+      {/* Public routes - landing pages moved to Next.js landing project */}
       <Route
         path="/login"
         element={
