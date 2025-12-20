@@ -1,3 +1,5 @@
+"use client"
+
 import { useState } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Target, Users, Heart, Lightbulb } from 'lucide-react'
@@ -25,7 +27,7 @@ const values = [
   },
 ]
 
-export function AboutPage() {
+export default function AboutPage() {
   const [activeGoal, setActiveGoal] = useState<string | null>(null)
   const [activeAdvice, setActiveAdvice] = useState<string | null>(null)
 
@@ -35,7 +37,7 @@ export function AboutPage() {
       <section className="text-center">
         <h1 className="font-heading text-4xl font-bold mb-4">Про нас</h1>
         <p className="text-lg text-muted-foreground">
-          Дізнайтеся більше про платформу "Острог разом"
+          Дізнайтеся більше про платформу &quot;Острог разом&quot;
         </p>
       </section>
 
@@ -47,7 +49,7 @@ export function AboutPage() {
           </CardHeader>
           <CardContent className="space-y-4 text-muted-foreground">
             <p>
-              "Острог разом" — це громадська платформа, створена для покращення
+              &quot;Острог разом&quot; — це громадська платформа, створена для покращення
               комунікації між мешканцями міста Острог та місцевою владою.
             </p>
             <p>
@@ -62,7 +64,7 @@ export function AboutPage() {
         </Card>
       </section>
 
-      {/* Goals & Tasks (from old OurGoals) */}
+      {/* Goals & Tasks */}
       <section className="grid gap-8 md:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] items-start">
         <div className="space-y-2">
           <h2 className="font-heading text-4xl font-bold text-muted-foreground">Цілі</h2>
@@ -206,7 +208,7 @@ export function AboutPage() {
         </Card>
       </section>
 
-      {/* Tips for reporting problems (from old ProblemAdvices) */}
+      {/* Tips for reporting problems */}
       <section className="space-y-4">
         <div>
           <h2 className="font-heading text-2xl font-bold text-slate-900">
@@ -233,9 +235,6 @@ export function AboutPage() {
                 Дізнайтесь, які деталі важливо врахувати для ефективного вирішення
                 проблем, щоб покращити якість міського простору.
               </p>
-              <button className="inline-flex items-center rounded-md bg-primary px-3 py-1 text-xs font-medium text-primary-foreground hover:bg-primary/90">
-                Більше
-              </button>
             </div>
           )}
 
@@ -254,9 +253,6 @@ export function AboutPage() {
                 триває, які наслідки має для мешканців. Це допомагає швидше знайти
                 ефективне рішення.
               </p>
-              <button className="inline-flex items-center rounded-md bg-primary px-3 py-1 text-xs font-medium text-primary-foreground hover:bg-primary/90">
-                Більше
-              </button>
             </div>
           )}
 
@@ -274,9 +270,6 @@ export function AboutPage() {
                 Збирайте фото, точні координати та іншу важливу інформацію до подання
                 проблеми — це значно пришвидшить її розгляд.
               </p>
-              <button className="inline-flex items-center rounded-md bg-primary px-3 py-1 text-xs font-medium text-primary-foreground hover:bg-primary/90">
-                Більше
-              </button>
             </div>
           )}
 
@@ -294,9 +287,6 @@ export function AboutPage() {
                 Робіть фото з різних ракурсів, додавайте загальний план і деталі —
                 так простіше оцінити масштаб та пріоритет проблеми.
               </p>
-              <button className="inline-flex items-center rounded-md bg-primary px-3 py-1 text-xs font-medium text-primary-foreground hover:bg-primary/90">
-                Більше
-              </button>
             </div>
           )}
         </div>

@@ -1,8 +1,10 @@
+"use client"
+
 import { useState } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { MapPin } from 'lucide-react'
 
-export function ContactPage() {
+export default function ContactPage() {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -20,7 +22,6 @@ export function ContactPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    // Імітація відправки, без реального бекенду
     alert("Дякуємо за вашу заявку! Ми зв'яжемося з вами найближчим часом.")
     setFormData({ name: '', email: '', subject: '', phone: '', message: '' })
   }
@@ -36,15 +37,16 @@ export function ContactPage() {
       <section className="text-center">
         <h1 className="font-heading text-4xl font-bold mb-4">Контакти</h1>
         <p className="text-lg text-muted-foreground">
-          Зв'яжіться з нами, якщо у вас є питання або пропозиції
+          Зв&apos;яжіться з нами, якщо у вас є питання або пропозиції
         </p>
       </section>
 
-      {/* Contact Info (old ContactInfo layout) */}
+      {/* Contact Info */}
       <section>
         <Card className="overflow-hidden border border-muted bg-background">
           <div className="flex flex-col md:flex-row">
             <div className="md:w-1/2">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src="https://img.freepik.com/free-vector/hand-drawn-compliment-illustration_52683-107992.jpg?t=st=1740341293~exp=1740344893~hmac=4a1a610d6a546ae274b0c3a2dfadbd21b2739787c7f9f847b27a08e2a1dfb0da&w=900"
                 alt="Happy person giving thumbs up"
@@ -73,7 +75,7 @@ export function ContactPage() {
         </Card>
       </section>
 
-      {/* Feedback Form (old FeedbackForm layout) */}
+      {/* Feedback Form */}
       <section>
         <Card className="border border-muted bg-background">
           <CardContent className="p-6">
@@ -84,7 +86,7 @@ export function ContactPage() {
               <div className="grid gap-6 md:grid-cols-2">
                 <div className="space-y-2">
                   <label className="block text-sm font-medium text-slate-800">
-                    Ваше ім'я <span className="text-rose-600">*</span>
+                    Ваше ім&apos;я <span className="text-rose-600">*</span>
                   </label>
                   <input
                     type="text"
