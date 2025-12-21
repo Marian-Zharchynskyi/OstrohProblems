@@ -14,10 +14,10 @@ export const Footer = () => {
   }
 
   return (
-    <footer className="mt-auto py-8">
-      <div className="container mx-auto px-4">
-        <div 
-          className="rounded-[30px] px-8 py-12"
+    <footer className="mt-auto">
+      <div className="w-full">
+        <div
+          className="px-8 py-12"
           style={{ backgroundColor: designSystem.colors.footer.background }}
         >
           <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
@@ -75,8 +75,8 @@ export const Footer = () => {
               </h3>
               <ul className="space-y-4">
                 <li className="flex items-start gap-3">
-                  <MapPin 
-                    className="w-5 h-5 mt-0.5 flex-shrink-0" 
+                  <MapPin
+                    className="w-5 h-5 mt-0.5 flex-shrink-0"
                     style={{ color: designSystem.colors.footer.accent }}
                   />
                   <span className="text-sm font-heading font-regular text-white">
@@ -84,8 +84,8 @@ export const Footer = () => {
                   </span>
                 </li>
                 <li className="flex items-start gap-3">
-                  <Phone 
-                    className="w-5 h-5 mt-0.5 flex-shrink-0" 
+                  <Phone
+                    className="w-5 h-5 mt-0.5 flex-shrink-0"
                     style={{ color: designSystem.colors.footer.accent }}
                   />
                   <span className="text-sm font-heading font-regular text-white">
@@ -93,8 +93,8 @@ export const Footer = () => {
                   </span>
                 </li>
                 <li className="flex items-start gap-3">
-                  <Mail 
-                    className="w-5 h-5 mt-0.5 flex-shrink-0" 
+                  <Mail
+                    className="w-5 h-5 mt-0.5 flex-shrink-0"
                     style={{ color: designSystem.colors.footer.accent }}
                   />
                   <span className="text-sm font-heading font-regular text-white">

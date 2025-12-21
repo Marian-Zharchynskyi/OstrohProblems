@@ -13,7 +13,7 @@ const sora = Sora({
 const mulish = Mulish({
   variable: "--font-mulish",
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
+  weight: ["400", "500", "600", "700", "800"],
 });
 
 export const metadata: Metadata = {
@@ -31,7 +31,7 @@ export default function RootLayout({
       <body className={`${sora.variable} ${mulish.variable} antialiased`}>
         <div className="min-h-screen bg-background flex flex-col">
           <Header />
-          <main className="container mx-auto px-4 py-8 flex-1 flex flex-col">
+          <main className="container mx-auto px-4 py-8 flex-1">
             {children}
           </main>
           <Footer />
