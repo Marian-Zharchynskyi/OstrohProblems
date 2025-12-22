@@ -19,19 +19,19 @@ export const Header = () => {
   return (
     <header className="py-4">
       <div className="container mx-auto px-4">
-        <nav 
+        <nav
           className="flex items-center justify-between px-6 py-4 rounded-[30px] shadow-[0_4px_12px_rgba(0,0,0,0.25)]"
-          style={{ 
+          style={{
             backgroundColor: designSystem.colors.header.background,
           }}
         >
-          <Link 
-            href="/" 
+          <Link
+            href="/home"
             className="text-xl font-heading font-semibold text-black"
           >
             OstrohBetter
           </Link>
-          
+
           <ul className="flex gap-8">
             {navItems.map((item) => (
               <li key={item.path}>
