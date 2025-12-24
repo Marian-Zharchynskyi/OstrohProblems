@@ -1,0 +1,79 @@
+export const designSystem = {
+    colors: {
+        header: {
+            background: '#F7F9FD',
+            text: '#000000',
+            shadow: 'rgba(0, 0, 0, 0.25)',
+        },
+        footer: {
+            background: '#1F2732',
+            text: '#FFFFFF',
+            textSecondary: '#9CA3AF',
+            accent: '#D81B60',
+            elementBackground: '#3A3F47',
+        },
+        hero: {
+            background: '#FAFBFD',
+            backgroundGradient: 'linear-gradient(135deg, #FFFFFF 0%, #F0F4F8 50%, #E8F0F7 100%)',
+            headingText: 'rgba(26, 26, 26, 0.8)', // fill 80%
+            bodyText: 'rgba(74, 85, 104, 0.8)', // fill 80%
+            ctaButton: 'rgba(228, 37, 86, 0.8)', // #E42556 with 80% opacity
+            ctaButtonHover: 'rgba(228, 37, 86, 0.9)', // slightly more opaque on hover
+            ctaButtonText: '#EAEAEA',
+            ctaButtonShadow: '0 4px 8px rgba(228, 37, 86, 0.3)', // Y:4, blur:8
+        },
+        partnerships: {
+            sectionTitle: '#1F2732',
+            cardBackground: '#FFFFFF',
+            cardTitle: '#000000',
+            cardDescription: '#000000',
+            iconColor: '#1F2732',
+            buttonBackground: '#1F2732',
+            buttonText: '#FFFFFF',
+        },
+        services: {
+            eyebrowText: '#D44374', // Насичений рожевий
+            headingText: '#1F2732', // Темно-сірий
+            cardBackground: '#F0F1F2', // Світло-сірий
+            cardTitle: '#1F2732', // Темно-сірий
+            linkText: '#596872', // Приглушений сіро-блакитний
+            linkIcon: '#596872', // Приглушений сіро-блакитний
+        },
+    },
+
+    borderRadius: {
+        floating: '30px',
+        card: '30px',
+        button: '20px',
+    },
+
+    shadows: {
+        floating: '0 4px 12px rgba(0, 0, 0, 0.25)',
+        button: '0 4px 8px rgba(228, 37, 86, 0.3)',
+        buttonHover: '0 4px 8px rgba(228, 37, 86, 0.5)',
+        card: '0 4px 10px 3px rgba(0, 0, 0, 0.08)', // Y:4, blur:10, spread:3
+    },
+
+    typography: {
+        fontFamily: {
+            heading: 'var(--font-heading)',
+            body: 'var(--font-sans)',
+        },
+        weights: {
+            regular: '400',
+            medium: '500',
+            semibold: '600',
+            bold: '700',
+            extrabold: '800',
+        },
+    },
+
+    spacing: {
+        container: {
+            padding: '1rem',
+            maxWidth: '1280px',
+        },
+    },
+} as const
+
+export type DesignSystem = typeof designSystem
