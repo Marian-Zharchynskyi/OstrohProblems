@@ -78,6 +78,7 @@ export interface CreateProblem {
   longitude: number
   description: string
   categoryNames: string[]
+  priority?: string
 }
 
 export interface CreateProblemResponse {
