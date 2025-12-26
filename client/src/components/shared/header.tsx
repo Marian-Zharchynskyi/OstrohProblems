@@ -14,7 +14,6 @@ const adminNavItems = [
   { path: '/dashboard', label: 'Головна' },
   { path: '/map', label: 'Карта' },
   { path: '/problems', label: 'Проблеми' },
-  { path: '/categories', label: 'Категорії' },
   { path: '/comments', label: 'Коментарі' },
   { path: '/ratings', label: 'Рейтинги' },
 ]

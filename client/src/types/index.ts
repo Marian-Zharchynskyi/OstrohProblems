@@ -15,6 +15,15 @@ export const ProblemStatusConstants = {
 
 export type ProblemStatusType = (typeof ProblemStatusConstants)[keyof typeof ProblemStatusConstants]
 
+export const PriorityConstants = {
+  Low: 'Низький',
+  Medium: 'Середній',
+  High: 'Високий',
+  Critical: 'Критичний',
+} as const
+
+export type PriorityType = (typeof PriorityConstants)[keyof typeof PriorityConstants]
+
 export interface Comment {
   id: string | null
   content: string
@@ -59,6 +68,7 @@ export interface Problem {
   longitude: number
   description: string
   status: string
+  priority: string
   createdBy: User | null
   coordinator: User | null
   rejectionReason: string | null
@@ -93,8 +103,8 @@ export interface CreateProblemResponse {
 export interface User {
   id: string | null
   email: string
-  firstName: string
-  lastName: string
+  name: string
+  surname: string
   userImage: UserImage | null
 }
 

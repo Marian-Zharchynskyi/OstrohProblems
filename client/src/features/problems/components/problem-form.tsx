@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import type { Problem, CreateProblem } from '@/types'
+import { PriorityConstants } from '@/types'
 import { FormField } from '@/components/shared/form-field'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
@@ -10,7 +11,15 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+import { Info } from 'lucide-react'
 import { CATEGORIES } from '@/constants/categories'
+
+const PRIORITIES = [
+  { value: PriorityConstants.Low, label: 'Низький' },
+  { value: PriorityConstants.Medium, label: 'Середній' },
+  { value: PriorityConstants.High, label: 'Високий' },
+  { value: PriorityConstants.Critical, label: 'Критичний' },
+]
 
 interface ProblemFormProps {
   open: boolean
@@ -33,6 +42,7 @@ export function ProblemForm({
     longitude: 0,
     description: '',
     categoryNames: [],
+    priority: PriorityConstants.Medium,
   })
 
   useEffect(() => {
@@ -43,6 +53,7 @@ export function ProblemForm({
         longitude: initialData.longitude,
         description: initialData.description,
         categoryNames: initialData.categories || [],
+        priority: initialData.priority || PriorityConstants.Medium,
       })
     } else {
       setFormData({
@@ -51,6 +62,7 @@ export function ProblemForm({
         longitude: 0,
         description: '',
         categoryNames: [],
+        priority: PriorityConstants.Medium,
       })
     }
   }, [initialData, open])
@@ -126,6 +138,29 @@ export function ProblemForm({
                 required
                 placeholder="Enter longitude"
               />
+            </div>
+
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <Label>Пріоритет</Label>
+                <span
+                  title="Пріоритет може бути змінений координатором під час валідації проблеми"
+                  className="cursor-help"
+                >
+                  <Info className="h-4 w-4 text-gray-400" />
+                </span>
+              </div>
+              <select
+                value={formData.priority || PriorityConstants.Medium}
+                onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
+                className="w-full border rounded-md p-2 bg-white"
+              >
+                {PRIORITIES.map((priority) => (
+                  <option key={priority.value} value={priority.value}>
+                    {priority.label}
+                  </option>
+                ))}
+              </select>
             </div>
 
             <div className="space-y-2">

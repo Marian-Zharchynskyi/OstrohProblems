@@ -1,6 +1,6 @@
 import axios from 'axios'
 import type { PagedResult } from '@/types'
-import type { UserDto, UpdateUserDto, CreateUserDto } from '@/types/user'
+import type { UserDto, UpdateUserDto, CreateUserDto, ChangePasswordDto } from '@/types/user'
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5146'
 
@@ -135,6 +135,23 @@ export const userService = {
   async createUser(data: CreateUserDto, token: string): Promise<UserDto> {
     const response = await axios.post<UserDto>(
       `${API_URL}/users/create`,
+      data,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    )
+    return response.data
+  },
+
+  async changePassword(
+    userId: string,
+    data: ChangePasswordDto,
+    token: string
+  ): Promise<UserDto> {
+    const response = await axios.put<UserDto>(
+      `${API_URL}/users/change-password/${userId}`,
       data,
       {
         headers: {

@@ -38,7 +38,8 @@ export function AdminUsersPage() {
   const [createForm, setCreateForm] = useState<CreateUserDto>({
     email: '',
     password: '',
-    fullName: '',
+    name: '',
+    surname: '',
     roleId: '',
   })
 
@@ -49,6 +50,7 @@ export function AdminUsersPage() {
   const [editForm, setEditForm] = useState({
     email: '',
     userName: '',
+    userSurname: '',
     roleId: '',
   })
 
@@ -102,7 +104,7 @@ export function AdminUsersPage() {
       const newUser = await userService.createUser(createForm, tokens.accessToken)
       setUsers([...users, newUser])
       setIsCreateDialogOpen(false)
-      setCreateForm({ email: '', password: '', fullName: '', roleId: '' })
+      setCreateForm({ email: '', password: '', name: '', surname: '', roleId: '' })
     } catch (error) {
       console.error('Failed to create user:', error)
       alert('Не вдалося створити користувача')
@@ -115,7 +117,8 @@ export function AdminUsersPage() {
     setEditingUser(user)
     setEditForm({
       email: user.email,
-      userName: user.fullName || '',
+      userName: user.name || '',
+      userSurname: user.surname || '',
       roleId: user.role?.id || '',
     })
     setIsEditDialogOpen(true)
@@ -130,7 +133,7 @@ export function AdminUsersPage() {
       // Update user info
       await userService.updateUser(
         editingUser.id,
-        { email: editForm.email, userName: editForm.userName },
+        { email: editForm.email, name: editForm.userName, surname: editForm.userSurname },
         tokens.accessToken
       )
 
@@ -215,7 +218,7 @@ export function AdminUsersPage() {
                 <TableHeader>
                   <TableRow>
                     <TableHead>Email</TableHead>
-                    <TableHead>Повне ім'я</TableHead>
+                    <TableHead>Ім'я та Прізвище</TableHead>
                     <TableHead>Ролі</TableHead>
                     <TableHead>Зображення</TableHead>
                     <TableHead className="text-right">Дії</TableHead>
@@ -228,7 +231,11 @@ export function AdminUsersPage() {
                         {user.email}
                       </TableCell>
                       <TableCell>
-                        {user.fullName || (
+                        {user.name && user.surname ? (
+                          `${user.name} ${user.surname}`
+                        ) : user.name || user.surname ? (
+                          `${user.name || ''}${user.surname || ''}`
+                        ) : (
                           <span className="text-muted-foreground italic">
                             Не вказано
                           </span>
@@ -254,7 +261,7 @@ export function AdminUsersPage() {
                         {user.image?.url ? (
                           <img
                             src={user.image.url}
-                            alt={user.fullName || user.email}
+                            alt={`${user.name || ''} ${user.surname || ''}`.trim() || user.email}
                             className="w-10 h-10 rounded-full object-cover"
                           />
                         ) : (
@@ -328,13 +335,24 @@ export function AdminUsersPage() {
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="fullName">Повне ім'я</Label>
+              <Label htmlFor="name">Ім'я</Label>
               <Input
-                id="fullName"
-                placeholder="Іван Петренко"
-                value={createForm.fullName}
+                id="name"
+                placeholder="Іван"
+                value={createForm.name}
                 onChange={(e) =>
-                  setCreateForm((prev) => ({ ...prev, fullName: e.target.value }))
+                  setCreateForm((prev) => ({ ...prev, name: e.target.value }))
+                }
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="surname">Прізвище</Label>
+              <Input
+                id="surname"
+                placeholder="Петренко"
+                value={createForm.surname}
+                onChange={(e) =>
+                  setCreateForm((prev) => ({ ...prev, surname: e.target.value }))
                 }
               />
             </div>
@@ -396,12 +414,22 @@ export function AdminUsersPage() {
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="edit-userName">Повне ім'я</Label>
+              <Label htmlFor="edit-userName">Ім'я</Label>
               <Input
                 id="edit-userName"
                 value={editForm.userName}
                 onChange={(e) =>
                   setEditForm((prev) => ({ ...prev, userName: e.target.value }))
+                }
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="edit-userSurname">Прізвище</Label>
+              <Input
+                id="edit-userSurname"
+                value={editForm.userSurname}
+                onChange={(e) =>
+                  setEditForm((prev) => ({ ...prev, userSurname: e.target.value }))
                 }
               />
             </div>

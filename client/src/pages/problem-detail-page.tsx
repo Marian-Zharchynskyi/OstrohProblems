@@ -214,6 +214,24 @@ export function ProblemDetailPage() {
             </CardContent>
           </Card>
 
+          {/* Priority */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Пріоритет</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <span className={`inline-flex items-center rounded-full px-3 py-1 text-sm font-medium ${
+                problem.priority === 'Критичний' ? 'bg-red-50 text-red-700' :
+                problem.priority === 'Високий' ? 'bg-orange-50 text-orange-700' :
+                problem.priority === 'Середній' ? 'bg-yellow-50 text-yellow-700' :
+                problem.priority === 'Низький' ? 'bg-green-50 text-green-700' :
+                'bg-gray-50 text-gray-700'
+              }`}>
+                {problem.priority || 'Невідомо'}
+              </span>
+            </CardContent>
+          </Card>
+
           {/* Current State */}
           {problem.currentState && (
             <Card>

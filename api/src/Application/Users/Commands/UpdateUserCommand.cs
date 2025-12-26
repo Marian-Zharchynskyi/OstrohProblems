@@ -13,7 +13,9 @@ public record UpdateUserCommand : IRequest<Result<User, UserException>>
 {
     public required Guid UserId { get; init; }
     public required string Email { get; init; }
-    public required string UserName { get; init; }
+    public string? Name { get; init; }
+    public string? Surname { get; init; }
+    public string? PhoneNumber { get; init; }
 }
 
 public class UpdateUserCommandHandle(IUserRepository userRepository)
@@ -34,7 +36,7 @@ public class UpdateUserCommandHandle(IUserRepository userRepository)
                 return await existingEmail.Match(
                     e => Task.FromResult<Result<User, UserException>>(
                         new UserByThisEmailAlreadyExistsException(userId)),
-                    async () => await UpdateEntity(u, request.Email, request.UserName, cancellationToken));
+                    async () => await UpdateEntity(u, request.Email, request.Name, request.Surname, request.PhoneNumber, cancellationToken));
             },
             () => Task.FromResult<Result<User, UserException>>(
                 new UserNotFoundException(userId)));
@@ -43,12 +45,15 @@ public class UpdateUserCommandHandle(IUserRepository userRepository)
     private async Task<Result<User, UserException>> UpdateEntity(
         User user,
         string email,
-        string userName,
+        string? name,
+        string? surname,
+        string? phoneNumber,
         CancellationToken cancellationToken)
     {
         try
         {
-            user.UpdateUser(email, userName);
+            user.UpdateUser(email, name, surname, phoneNumber);
+
             var updatedUser = await userRepository.Update(user, cancellationToken);
             return updatedUser;
         }

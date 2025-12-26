@@ -8,7 +8,8 @@ public record CreateProblemDto(
     double Latitude,
     double Longitude,
     string Description,
-    List<string> CategoryNames
+    List<string> CategoryNames,
+    string? Priority = null
 )
 {
     public static CreateProblemDto FromDomainModel(Problem problem)
@@ -18,6 +19,7 @@ public record CreateProblemDto(
             problem.Latitude,
             problem.Longitude,
             problem.Description,
-            problem.Categories.Select(c => c.Value).ToList()
+            problem.Categories.Select(c => c.Value).ToList(),
+            problem.Priority.Value
         );
 }

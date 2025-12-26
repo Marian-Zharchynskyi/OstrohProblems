@@ -13,6 +13,7 @@ public record AssignCoordinatorCommand : IRequest<Result<Problem, ProblemExcepti
 {
     public required Guid ProblemId { get; init; }
     public required Guid CoordinatorId { get; init; }
+    public string? Priority { get; init; }
 }
 
 public class AssignCoordinatorCommandHandler(
@@ -42,6 +43,10 @@ public class AssignCoordinatorCommandHandler(
                         {
                             problem.AssignCoordinator(coordinatorId);
                             problem.UpdateStatus(ProblemStatus.InProgress);
+                            if (!string.IsNullOrEmpty(request.Priority))
+                            {
+                                problem.UpdatePriority(Priority.From(request.Priority));
+                            }
                             var result = await problemRepository.Update(problem, cancellationToken);
 
                             if (problem.CreatedById != null)

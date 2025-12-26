@@ -49,4 +49,10 @@ public class IdentityService : IIdentityService
             ? Option<string[]>.None
             : Option<string[]>.Some(roles);
     }
+
+    public bool IsUserInRole(string role)
+    {
+        return GetUserRoles()
+            .Match(roles => roles.Contains(role), () => false);
+    }
 }

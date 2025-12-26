@@ -69,7 +69,7 @@ public class CreateCommentCommandHandler : IRequestHandler<CreateCommentCommand,
                 if (p is not null && p.CreatedById is not null && p.CreatedById.Value != userIdGuid)
                 {
                     var commenterName = comment.User != null
-                        ? $"{comment.User.FullName}"
+                        ? $"{comment.User.Name}"
                         : "Хтось";
                     
                     var notification = NotificationDto.Create(

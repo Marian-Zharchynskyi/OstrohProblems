@@ -2,8 +2,8 @@ using Domain.Identity.Users;
 
 namespace API.DTOs.Identity;
 
-public record SignUpDto(string Email, string Password, string? Name)
+public record SignUpDto(string Email, string Password, string? Name, string? Surname)
 {
     public static SignUpDto FromDomainModel(User user)
-        => new(user.Email, user.PasswordHash, user.FullName);
+        => new(user.Email, user.PasswordHash, user.Name, user.Surname);
 }

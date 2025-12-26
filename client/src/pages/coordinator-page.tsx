@@ -3,15 +3,17 @@ import { useNavigate } from 'react-router-dom'
 import { problemsApi } from '@/features/problems/api/problems-api'
 import { useProblemsByCoordinator, useProblemsByStatus } from '@/features/problems/hooks/use-problems'
 import type { Problem } from '@/types'
-import { ProblemStatusConstants } from '@/types'
+import { ProblemStatusConstants, PriorityConstants } from '@/types'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Textarea } from '@/components/ui/textarea'
+import { Label } from '@/components/ui/label'
 import { useAuth } from '@/contexts/auth-context'
 import { useSignalR } from '@/contexts/use-signalr'
 import { toast } from '@/lib/toast'
 import { useQueryClient } from '@tanstack/react-query'
 import { LocationPickerMap } from '@/components/location-picker-map'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 
 const MAX_COORDINATOR_IMAGES = 6
 
@@ -50,8 +52,9 @@ export default function CoordinatorPage() {
   const [rejectionReason, setRejectionReason] = useState('')
   const [currentStateInput, setCurrentStateInput] = useState('')
   const [detailProblem, setDetailProblem] = useState<Problem | null>(null)
-  const [actionMode, setActionMode] = useState<'reject' | 'currentState' | 'complete' | null>(null)
+  const [actionMode, setActionMode] = useState<'reject' | 'currentState' | 'complete' | 'assign' | null>(null)
   const [coordinatorFiles, setCoordinatorFiles] = useState<FileList | null>(null)
+  const [selectedPriority, setSelectedPriority] = useState<string>('')
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const loading = loadingStatus || loadingMy
@@ -63,9 +66,12 @@ export default function CoordinatorPage() {
   const handleAssignToMe = async (problemId: string) => {
     if (!user?.id) return
     try {
-      await problemsApi.assignCoordinator(problemId, user.id)
+      const priorityToUse = selectedPriority || detailProblem?.priority
+      await problemsApi.assignCoordinator(problemId, user.id, priorityToUse)
       toast.success('Проблему взято в роботу')
       setDetailProblem(null)
+      setSelectedPriority('')
+      setActionMode(null)
       invalidateQueries()
     } catch {
       toast.error('Помилка призначення')
@@ -104,6 +110,11 @@ export default function CoordinatorPage() {
     }
     
     try {
+      // Update priority if changed
+      if (selectedPriority && selectedPriority !== detailProblem?.priority) {
+        await problemsApi.assignCoordinator(problemId, user?.id || '', selectedPriority)
+      }
+      
       await problemsApi.updateCurrentState(problemId, currentStateInput)
       
       if (coordinatorFiles && coordinatorFiles.length > 0) {
@@ -113,6 +124,7 @@ export default function CoordinatorPage() {
       toast.success('Поточний стан оновлено')
       setCurrentStateInput('')
       setCoordinatorFiles(null)
+      setSelectedPriority('')
       setActionMode(null)
       invalidateQueries()
     } catch {
@@ -179,6 +191,7 @@ export default function CoordinatorPage() {
     setCoordinatorFiles(null)
     setCurrentStateInput('')
     setRejectionReason('')
+    setSelectedPriority('')
     if (fileInputRef.current) fileInputRef.current.value = ''
   }
 
@@ -271,7 +284,7 @@ export default function CoordinatorPage() {
             {!isMyProblem && detailProblem.status === ProblemStatusConstants.New && (
               <div className="space-y-4 pt-4 border-t">
                 <div className="flex gap-2">
-                  <Button onClick={() => handleAssignToMe(detailProblem.id!)}>
+                  <Button onClick={() => setActionMode('assign')}>
                     Взяти в роботу
                   </Button>
                   <Button variant="outline" onClick={() => navigate(`/problems/${detailProblem.id}`)}>
@@ -281,6 +294,37 @@ export default function CoordinatorPage() {
                     Відхилити
                   </Button>
                 </div>
+                
+                {actionMode === 'assign' && (
+                  <div className="space-y-3">
+                    <div className="space-y-2">
+                      <Label>Пріоритет проблеми</Label>
+                      <Select
+                        value={selectedPriority || detailProblem.priority || ''}
+                        onValueChange={setSelectedPriority}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Оберіть пріоритет" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value={PriorityConstants.Low}>{PriorityConstants.Low}</SelectItem>
+                          <SelectItem value={PriorityConstants.Medium}>{PriorityConstants.Medium}</SelectItem>
+                          <SelectItem value={PriorityConstants.High}>{PriorityConstants.High}</SelectItem>
+                          <SelectItem value={PriorityConstants.Critical}>{PriorityConstants.Critical}</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button onClick={() => handleAssignToMe(detailProblem.id!)}>
+                        Підтвердити призначення
+                      </Button>
+                      <Button variant="outline" onClick={resetActionMode}>
+                        Скасувати
+                      </Button>
+                    </div>
+                  </div>
+                )}
+                
                 {actionMode === 'reject' && (
                   <div className="space-y-2">
                     <Textarea
@@ -322,6 +366,23 @@ export default function CoordinatorPage() {
                       value={currentStateInput}
                       onChange={(e) => setCurrentStateInput(e.target.value)}
                     />
+                    <div className="space-y-2">
+                      <Label>Пріоритет проблеми (можна змінити)</Label>
+                      <Select
+                        value={selectedPriority || detailProblem.priority || ''}
+                        onValueChange={setSelectedPriority}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Оберіть пріоритет" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value={PriorityConstants.Low}>{PriorityConstants.Low}</SelectItem>
+                          <SelectItem value={PriorityConstants.Medium}>{PriorityConstants.Medium}</SelectItem>
+                          <SelectItem value={PriorityConstants.High}>{PriorityConstants.High}</SelectItem>
+                          <SelectItem value={PriorityConstants.Critical}>{PriorityConstants.Critical}</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
                     <div className="space-y-2">
                       <p className="text-sm text-muted-foreground">
                         Додати фото (завантажено {detailProblem.coordinatorImages?.length || 0} з {MAX_COORDINATOR_IMAGES}, можна ще {MAX_COORDINATOR_IMAGES - (detailProblem.coordinatorImages?.length || 0)})

@@ -13,7 +13,8 @@ public record CreateUserCommand : IRequest<Result<User, UserException>>
 {
     public required string Email { get; init; }
     public required string Password { get; init; }
-    public string? FullName { get; init; }
+    public string? Name { get; init; }
+    public string? Surname { get; init; }
     public required Guid RoleId { get; init; }
 }
 
@@ -49,7 +50,7 @@ public class CreateUserCommandHandler(
                 {
                     var passwordHash = hashPasswordService.HashPassword(request.Password);
                     var userId = UserId.New();
-                    var user = User.New(userId, request.Email, request.FullName, passwordHash, role.Id);
+                    var user = User.New(userId, request.Email, request.Name, request.Surname, null, passwordHash, role.Id);
 
                     var createdUser = await userRepository.Create(user, cancellationToken);
                     return createdUser;
