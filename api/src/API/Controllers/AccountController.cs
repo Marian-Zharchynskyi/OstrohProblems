@@ -21,6 +21,7 @@ public class AccountController(ISender sender) : ControllerBase
             Email = request.Email,
             Password = request.Password,
             Name = request.Name,
+            Surname = request.Surname,
         };
 
         var result = await sender.Send(input, cancellationToken);

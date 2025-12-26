@@ -60,8 +60,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
     return decodedUser
   }
 
-  const signUp = async (email: string, password: string, name?: string) => {
-    const newTokens = await authService.signUp({ email, password, name })
+  const signUp = async (email: string, password: string, name?: string, surname?: string) => {
+    const newTokens = await authService.signUp({ email, password, name, surname })
     tokenStorage.setTokens(newTokens)
     setTokens(newTokens)
 

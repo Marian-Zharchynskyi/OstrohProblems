@@ -168,7 +168,7 @@ export function MyProblemsPage() {
                   {/* Координатор */}
                   {problem.coordinator && (
                     <div className="mt-4 text-sm text-gray-600">
-                      <span className="font-medium">Координатор:</span> {problem.coordinator.firstName} {problem.coordinator.lastName}
+                      <span className="font-medium">Координатор:</span> {problem.coordinator.name} {problem.coordinator.surname}
                     </div>
                   )}
                 </div>

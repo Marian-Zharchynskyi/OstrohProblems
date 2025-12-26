@@ -24,11 +24,12 @@ namespace Application.Services.TokenService
 
             var claims = new List<Claim>
             {
-                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                new Claim("id", user.Id.Value.ToString()),
-                new Claim("email", user.Email!),
-                new Claim("name", user.FullName ?? "N/A"),
-                new Claim("image", user.UserImage?.FilePath ?? "N/A"),
+                new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                new("id", user.Id.Value.ToString()),
+                new("email", user.Email),
+                new("name", user.Name ?? "N/A"),
+                new("name", user.Surname ?? "N/A"),
+                new("image", user.UserImage?.FilePath ?? "N/A"),
             };
 
             var roleName = user.Role?.Name ?? RoleNames.User;

@@ -82,6 +82,25 @@ export function ProblemDetailPopup({ problem, onClose }: ProblemDetailPopupProps
             </div>
           )}
 
+          {/* Priority */}
+          {problem.priority && (
+            <div className="flex items-start gap-2">
+              <div className="h-5 w-5 mt-0.5">
+                <div className={`h-3 w-3 rounded-full ${
+                  problem.priority === 'Критичний' ? 'bg-red-500' :
+                  problem.priority === 'Високий' ? 'bg-orange-500' :
+                  problem.priority === 'Середній' ? 'bg-yellow-500' :
+                  problem.priority === 'Низький' ? 'bg-green-500' :
+                  'bg-gray-500'
+                }`} />
+              </div>
+              <div>
+                <h3 className="text-sm font-medium text-gray-700">Пріоритет</h3>
+                <p className="text-sm text-gray-600">{problem.priority}</p>
+              </div>
+            </div>
+          )}
+
           {/* Categories */}
           {problem.categories && problem.categories.length > 0 && (
             <div className="flex items-start gap-2">
@@ -109,7 +128,7 @@ export function ProblemDetailPopup({ problem, onClose }: ProblemDetailPopupProps
               <div>
                 <h3 className="text-sm font-medium text-gray-700">Автор</h3>
                 <p className="text-sm text-gray-600">
-                  {problem.createdBy.firstName} {problem.createdBy.lastName}
+                  {problem.createdBy.name} {problem.createdBy.surname}
                 </p>
               </div>
             </div>
@@ -143,7 +162,7 @@ export function ProblemDetailPopup({ problem, onClose }: ProblemDetailPopupProps
                   <div key={comment.id} className="rounded-lg bg-gray-50 p-3">
                     <div className="mb-1 flex items-center justify-between">
                       <span className="text-sm font-medium text-gray-900">
-                        {comment.user?.firstName} {comment.user?.lastName}
+                        {comment.user?.name} {comment.user?.surname}
                       </span>
                       <span className="text-xs text-gray-500">
                         {new Date(comment.createdAt).toLocaleDateString('uk-UA')}

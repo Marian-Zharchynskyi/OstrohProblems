@@ -62,10 +62,10 @@ export const problemsApi = {
     return response.data
   },
 
-  assignCoordinator: async (problemId: string, coordinatorId: string) => {
+  assignCoordinator: async (problemId: string, coordinatorId: string, priority?: string) => {
     const response = await apiClient.put<Problem>(
       `${BASE_URL}/assign-coordinator/${problemId}`,
-      coordinatorId
+      { coordinatorId, priority }
     )
     return response.data
   },

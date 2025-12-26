@@ -49,7 +49,8 @@ public static class DataSeed
             {
                 Id = new UserId(adminUserId),
                 Email = "admin@ostroh.edu.ua",
-                FullName = "Адміністратор Острога",
+                Name = "Адміністратор",
+                Surname = "Острога",
                 PasswordHash = "31jGqnyNWeEpqqSOGrrFYA==:pt36JXYoIE3w8xtI8rEJU/h50muKgFwRs0p/h4am3A0=",
                 RoleId = new RoleId(adminRoleId)
             },
@@ -58,7 +59,8 @@ public static class DataSeed
             {
                 Id = new UserId(regularUserId),
                 Email = "user@ostroh.edu.ua",
-                FullName = "Звичайний Користувач",
+                Name = "Звичайний",
+                Surname = "Користувач",
                 PasswordHash = "OeuuWFIVglEfvDvcH349ow==:OXOk32vZFxUcodlJVPaLj/qOApIGP9SSVu9RBy+O4Sc=",
                 RoleId = new RoleId(userRoleId)
             },
@@ -67,7 +69,8 @@ public static class DataSeed
             {
                 Id = new UserId(coordinatorUserId),
                 Email = "coordinator@ostroh.edu.ua",
-                FullName = "Координатор Острога",
+                Name = "Координатор",
+                Surname = "Острога",
                 PasswordHash = "DXIF+E53jMJS34YZkf0Jkw==:ccAPZCJbWy/stpuqDGYoAeNnHM5rABefB+bMZL+EaZY=",
                 RoleId = new RoleId(coordinatorRoleId)
             }
@@ -83,16 +86,16 @@ public static class DataSeed
 
         var problemsData = new[]
         {
-            new { Id = Guid.Parse("00000000-0000-0000-0001-000000000001"), Title = "Розбита дорога на вул. Академічна", Lat = 50.3294, Lon = 26.5144, Desc = "Велика яма на дорозі біля будинку №15. Потребує термінового ремонту.", Status = ProblemStatus.New, Categories = new List<Category> { Category.Roads } },
-            new { Id = Guid.Parse("00000000-0000-0000-0001-000000000002"), Title = "Не працює вуличне освітлення на вул. Семінарська", Lat = 50.3285, Lon = 26.5125, Desc = "Вже тиждень не світять ліхтарі на ділянці від будинку №5 до №15.", Status = ProblemStatus.New, Categories = new List<Category> { Category.Lighting } },
-            new { Id = Guid.Parse("00000000-0000-0000-0001-000000000003"), Title = "Переповнені сміттєві баки біля ринку", Lat = 50.3301, Lon = 26.5167, Desc = "Сміттєві контейнери не вивозяться вже 3 дні, сміття розкидане навколо.", Status = ProblemStatus.New, Categories = new List<Category> { Category.Garbage } },
-            new { Id = Guid.Parse("00000000-0000-0000-0001-000000000004"), Title = "Аварійне дерево на вул. Луцька", Lat = 50.3312, Lon = 26.5098, Desc = "Старе дерево нахилилося і може впасти на дорогу. Небезпечно для пішоходів.", Status = ProblemStatus.InProgress, Categories = new List<Category> { Category.Safety, Category.Parks } },
-            new { Id = Guid.Parse("00000000-0000-0000-0001-000000000005"), Title = "Відсутня розмітка на пішохідному переході", Lat = 50.3289, Lon = 26.5156, Desc = "Пішохідний перехід біля школи №2 без розмітки, небезпечно для дітей.", Status = ProblemStatus.InProgress, Categories = new List<Category> { Category.Roads, Category.Safety } },
-            new { Id = Guid.Parse("00000000-0000-0000-0001-000000000006"), Title = "Тріщина на тротуарі вул. Папаніна", Lat = 50.3305, Lon = 26.5134, Desc = "Великі тріщини на тротуарі, небезпечно для пішоходів та велосипедистів.", Status = ProblemStatus.New, Categories = new List<Category> { Category.Roads } },
-            new { Id = Guid.Parse("00000000-0000-0000-0001-000000000007"), Title = "Потребує ремонту дитячий майданчик", Lat = 50.3282, Lon = 26.5142, Desc = "Гойдалки та гірка на дитячому майданчику в аварійному стані.", Status = ProblemStatus.InProgress, Categories = new List<Category> { Category.Safety, Category.Parks } },
-            new { Id = Guid.Parse("00000000-0000-0000-0001-000000000008"), Title = "Прорив водопроводу на вул. Замкова", Lat = 50.3291, Lon = 26.5171, Desc = "Витік води з водопровідної труби, вода заливає дорогу.", Status = ProblemStatus.New, Categories = new List<Category> { Category.Water } },
-            new { Id = Guid.Parse("00000000-0000-0000-0001-000000000009"), Title = "Зарослі бур'яном клумби в центрі", Lat = 50.3296, Lon = 26.5149, Desc = "Клумби біля центральної площі не доглядаються, заросли бур'яном.", Status = ProblemStatus.New, Categories = new List<Category> { Category.Parks } },
-            new { Id = Guid.Parse("00000000-0000-0000-0001-000000000010"), Title = "Не працює світлофор на вул. Луцька", Lat = 50.3315, Lon = 26.5102, Desc = "Світлофор на перехресті не працює вже другий день, створює аварійну ситуацію.", Status = ProblemStatus.Rejected, Categories = new List<Category> { Category.Safety, Category.Roads } },
+            new { Id = Guid.Parse("00000000-0000-0000-0001-000000000001"), Title = "Розбита дорога на вул. Академічна", Lat = 50.3294, Lon = 26.5144, Desc = "Велика яма на дорозі біля будинку №15. Потребує термінового ремонту.", Status = ProblemStatus.New, Priority = Priority.High, Categories = new List<Category> { Category.Roads } },
+            new { Id = Guid.Parse("00000000-0000-0000-0001-000000000002"), Title = "Не працює вуличне освітлення на вул. Семінарська", Lat = 50.3285, Lon = 26.5125, Desc = "Вже тиждень не світять ліхтарі на ділянці від будинку №5 до №15.", Status = ProblemStatus.New, Priority = Priority.Medium, Categories = new List<Category> { Category.Lighting } },
+            new { Id = Guid.Parse("00000000-0000-0000-0001-000000000003"), Title = "Переповнені сміттєві баки біля ринку", Lat = 50.3301, Lon = 26.5167, Desc = "Сміттєві контейнери не вивозяться вже 3 дні, сміття розкидане навколо.", Status = ProblemStatus.New, Priority = Priority.High, Categories = new List<Category> { Category.Garbage } },
+            new { Id = Guid.Parse("00000000-0000-0000-0001-000000000004"), Title = "Аварійне дерево на вул. Луцька", Lat = 50.3312, Lon = 26.5098, Desc = "Старе дерево нахилилося і може впасти на дорогу. Небезпечно для пішоходів.", Status = ProblemStatus.InProgress, Priority = Priority.Critical, Categories = new List<Category> { Category.Safety, Category.Parks } },
+            new { Id = Guid.Parse("00000000-0000-0000-0001-000000000005"), Title = "Відсутня розмітка на пішохідному переході", Lat = 50.3289, Lon = 26.5156, Desc = "Пішохідний перехід біля школи №2 без розмітки, небезпечно для дітей.", Status = ProblemStatus.InProgress, Priority = Priority.High, Categories = new List<Category> { Category.Roads, Category.Safety } },
+            new { Id = Guid.Parse("00000000-0000-0000-0001-000000000006"), Title = "Тріщина на тротуарі вул. Папаніна", Lat = 50.3305, Lon = 26.5134, Desc = "Великі тріщини на тротуарі, небезпечно для пішоходів та велосипедистів.", Status = ProblemStatus.New, Priority = Priority.Medium, Categories = new List<Category> { Category.Roads } },
+            new { Id = Guid.Parse("00000000-0000-0000-0001-000000000007"), Title = "Потребує ремонту дитячий майданчик", Lat = 50.3282, Lon = 26.5142, Desc = "Гойдалки та гірка на дитячому майданчику в аварійному стані.", Status = ProblemStatus.InProgress, Priority = Priority.High, Categories = new List<Category> { Category.Safety, Category.Parks } },
+            new { Id = Guid.Parse("00000000-0000-0000-0001-000000000008"), Title = "Прорив водопроводу на вул. Замкова", Lat = 50.3291, Lon = 26.5171, Desc = "Витік води з водопровідної труби, вода заливає дорогу.", Status = ProblemStatus.New, Priority = Priority.Critical, Categories = new List<Category> { Category.Water } },
+            new { Id = Guid.Parse("00000000-0000-0000-0001-000000000009"), Title = "Зарослі бур'яном клумби в центрі", Lat = 50.3296, Lon = 26.5149, Desc = "Клумби біля центральної площі не доглядаються, заросли бур'яном.", Status = ProblemStatus.New, Priority = Priority.Low, Categories = new List<Category> { Category.Parks } },
+            new { Id = Guid.Parse("00000000-0000-0000-0001-000000000010"), Title = "Не працює світлофор на вул. Луцька", Lat = 50.3315, Lon = 26.5102, Desc = "Світлофор на перехресті не працює вже другий день, створює аварійну ситуацію.", Status = ProblemStatus.Rejected, Priority = Priority.Critical, Categories = new List<Category> { Category.Safety, Category.Roads } },
         };
 
         var problemIds = new List<Guid>();
@@ -108,6 +111,7 @@ public static class DataSeed
                 Longitude = p.Lon,
                 Description = p.Desc,
                 Status = p.Status,
+                Priority = p.Priority,
                 CreatedAt = baseDate,
                 UpdatedAt = baseDate,
                 CreatedById = new UserId(regularUserId),

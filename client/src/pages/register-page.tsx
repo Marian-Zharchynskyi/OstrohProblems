@@ -6,6 +6,7 @@ export function RegisterPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [name, setName] = useState('')
+  const [surname, setSurname] = useState('')
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
 
@@ -24,7 +25,7 @@ export function RegisterPage() {
     setIsLoading(true)
 
     try {
-      await signUp(email, password, name || undefined)
+      await signUp(email, password, name || undefined, surname || undefined)
       navigate('/')
     } catch (err) {
       setError('Registration failed. Email may already be in use.')
@@ -142,7 +143,7 @@ export function RegisterPage() {
 
               <div className="space-y-2">
                 <label htmlFor="name" className="block text-sm font-['Mulish'] font-bold text-gray-700">
-                  Прізвище Ім'я
+                  Ім'я
                 </label>
                 <input
                   id="name"
@@ -150,7 +151,21 @@ export function RegisterPage() {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   className="w-full px-4 py-3 border border-gray-200 rounded-[8px] text-[#464646] font-['Mulish'] font-medium placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all hover:border-gray-300"
-                  placeholder="Петро Бурчак"
+                  placeholder="Петро"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label htmlFor="surname" className="block text-sm font-['Mulish'] font-bold text-gray-700">
+                  Прізвище
+                </label>
+                <input
+                  id="surname"
+                  type="text"
+                  value={surname}
+                  onChange={(e) => setSurname(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-200 rounded-[8px] text-[#464646] font-['Mulish'] font-medium placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all hover:border-gray-300"
+                  placeholder="Бурчак"
                 />
               </div>
 

@@ -24,3 +24,6 @@ public class RoleNotFoundException(Guid role)
 
 public class UserUnknownException(UserId id, Exception innerException)
     : UserException(id, $"Unknown exception for the user under id: {id}", innerException);
+
+public class InvalidPasswordException(UserId id)
+    : UserException(id, "Current password is incorrect!");

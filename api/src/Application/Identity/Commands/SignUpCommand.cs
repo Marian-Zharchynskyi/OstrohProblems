@@ -16,7 +16,8 @@ public class SignUpCommand : IRequest<Result<JwtVm, IdentityException>>
 {
     public required string Email { get; init; }
     public required string Password { get; init; }
-    public required string? Name { get; init; }
+    public string? Name { get; init; }
+    public string? Surname { get; init; }
 }
 
 public class CreateUserCommandHandler(
@@ -35,13 +36,14 @@ public class CreateUserCommandHandler(
         return await existingUser.Match(
             u => Task.FromResult<Result<JwtVm, IdentityException>>(
                 new UserByThisEmailAlreadyExistsException(u.Id)),
-            async () => await SignUp(request.Email, request.Password, request.Name, cancellationToken));
+            async () => await SignUp(request.Email, request.Password, request.Name, request.Surname, cancellationToken));
     }
 
     private async Task<Result<JwtVm, IdentityException>> SignUp(
         string email,
         string password,
         string? name,
+        string? surname,
         CancellationToken cancellationToken)
     {
         try
@@ -56,7 +58,7 @@ public class CreateUserCommandHandler(
 
             var role = roleResult.ValueOrFailure();
             var userId = UserId.New();
-            var user = User.New(userId, email, name, hashPasswordService.HashPassword(password), role.Id);
+            var user = User.New(userId, email, name, surname, null, hashPasswordService.HashPassword(password), role.Id);
 
             await userRepository.Create(user, cancellationToken);
 

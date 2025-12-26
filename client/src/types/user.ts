@@ -11,19 +11,29 @@ export interface Role {
 export interface UserDto {
   id: string
   email: string
-  fullName?: string
+  name?: string
+  surname?: string
+  phoneNumber?: string
   image?: UserImage
   role?: Role
 }
 
 export interface UpdateUserDto {
-  userName?: string
   email: string
+  name?: string
+  surname?: string
+  phoneNumber?: string
 }
 
 export interface CreateUserDto {
   email: string
   password: string
-  fullName?: string
+  name?: string
+  surname?: string
   roleId: string
+}
+
+export interface ChangePasswordDto {
+  currentPassword: string
+  newPassword: string
 }

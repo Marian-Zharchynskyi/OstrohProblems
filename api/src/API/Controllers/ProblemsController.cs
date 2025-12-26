@@ -97,7 +97,8 @@ public class ProblemsController(ISender sender, IProblemQueries problemQueries, 
             Latitude = request.Latitude,
             Longitude = request.Longitude,
             Description = request.Description,
-            CategoryNames = request.CategoryNames
+            CategoryNames = request.CategoryNames,
+            Priority = request.Priority
         };
 
         var result = await sender.Send(input, cancellationToken);
@@ -189,13 +190,14 @@ public class ProblemsController(ISender sender, IProblemQueries problemQueries, 
     [HttpPut("assign-coordinator/{problemId:guid}")]
     public async Task<ActionResult<ProblemDto>> AssignCoordinator(
         [FromRoute] Guid problemId,
-        [FromBody] Guid coordinatorId,
+        [FromBody] AssignCoordinatorDto request,
         CancellationToken cancellationToken)
     {
         var input = new AssignCoordinatorCommand
         {
             ProblemId = problemId,
-            CoordinatorId = coordinatorId
+            CoordinatorId = request.CoordinatorId,
+            Priority = request.Priority
         };
 
         var result = await sender.Send(input, cancellationToken);

@@ -39,6 +39,14 @@ export const designSystem = {
             linkText: '#596872', // Приглушений сіро-блакитний
             linkIcon: '#596872', // Приглушений сіро-блакитний
         },
+        profile: {
+            headerBackground: '#F7F9FA', // Світло-сірий фон для верхньої панелі
+            headingText: '#1F2732', // Темно-сірий для заголовків
+            accentPink: '#E42556', // Рожевий акцент
+            inputBackground: '#F0F1F2', // Світло-сірий фон для полів вводу
+            cardBackground: '#FFFFFF', // Білий фон для карток
+            warningRed: '#DC2626', // Яскраво-червоний для небезпечних дій
+        },
     },
 
     borderRadius: {

@@ -14,6 +14,7 @@ public class Problem
     public DateTime CreatedAt { get; private set; }
     public DateTime UpdatedAt { get; private set; }
     public ProblemStatus Status { get; private set; }
+    public Priority Priority { get; private set; }
     public UserId CreatedById { get; private set; }
     public User? CreatedBy { get; set; }
     public UserId? CoordinatorId { get; private set; }
@@ -28,7 +29,7 @@ public class Problem
     public List<CoordinatorImage> CoordinatorImages { get; private set; } = new();
 
     private Problem(ProblemId id, string title, double latitude, double longitude, string description,
-        ProblemStatus status, DateTime createdAt, DateTime updatedAt, UserId createdById)
+        ProblemStatus status, Priority priority, DateTime createdAt, DateTime updatedAt, UserId createdById)
     {
         Id = id;
         Title = title;
@@ -36,16 +37,23 @@ public class Problem
         Longitude = longitude;
         Description = description;
         Status = status;
+        Priority = priority;
         CreatedAt = createdAt;
         UpdatedAt = updatedAt;
         CreatedById = createdById;
     }
 
     public static Problem New(ProblemId id, string title, double latitude, double longitude, string description,
-        UserId createdById)
+        UserId createdById, Priority? priority = null)
     {
-        return new Problem(id, title, latitude, longitude, description, ProblemStatus.New, DateTime.UtcNow,
-            DateTime.UtcNow, createdById);
+        return new Problem(id, title, latitude, longitude, description, ProblemStatus.New, 
+            priority ?? Priority.Medium, DateTime.UtcNow, DateTime.UtcNow, createdById);
+    }
+
+    public void UpdatePriority(Priority priority)
+    {
+        Priority = priority;
+        UpdatedAt = DateTime.UtcNow;
     }
 
     public void UpdateProblem(string title, double latitude, double longitude, string description)
