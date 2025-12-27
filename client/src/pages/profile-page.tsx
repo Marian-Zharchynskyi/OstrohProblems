@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useState, useEffect, type CSSProperties } from 'react'
+import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '@/contexts/auth-context'
 import { userService } from '@/services/user.service'
 import type { UserDto, UpdateUserDto } from '@/types/user'
@@ -7,7 +7,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { User, FileText } from 'lucide-react'
+import { User, FileText, Plus, MapPin, Calendar, Eye } from 'lucide-react'
+import { useProblems } from '@/features/problems/hooks/use-problems'
+import { Badge } from '@/components/ui/badge'
+import { ProblemStatusConstants } from '@/types'
+import { designSystem } from '@/lib/design-system'
 
 export function ProfilePage() {
   const { tokens, signOut } = useAuth()
@@ -31,6 +35,9 @@ export function ProfilePage() {
   const [passwordSuccess, setPasswordSuccess] = useState('')
   const [isBasicInfoEditing, setIsBasicInfoEditing] = useState(false)
   const [isSecurityEditing, setIsSecurityEditing] = useState(false)
+  const [filter, setFilter] = useState<string>('all')
+  const { data: problems } = useProblems()
+  const { user } = useAuth()
 
   useEffect(() => {
     const loadUserDetails = async () => {
@@ -159,48 +166,82 @@ export function ProfilePage() {
     )
   }
 
+  const myProblems = problems?.filter(p => p.createdBy?.id === user?.id) || []
+  const filteredProblems = filter === 'all' 
+    ? myProblems 
+    : myProblems.filter(p => p.status === filter)
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case ProblemStatusConstants.New:
+        return 'bg-blue-100 text-blue-800'
+      case ProblemStatusConstants.InProgress:
+        return 'bg-yellow-100 text-yellow-800'
+      case ProblemStatusConstants.Completed:
+        return 'bg-green-100 text-green-800'
+      case ProblemStatusConstants.Rejected:
+        return 'bg-red-100 text-red-800'
+      default:
+        return 'bg-gray-100 text-gray-800'
+    }
+  }
+
+  const getTabStyles = (isActive: boolean): CSSProperties => ({
+    backgroundColor: isActive
+      ? designSystem.colors.profile.tabs.activeBackground
+      : designSystem.colors.profile.tabs.background,
+    color: isActive
+      ? designSystem.colors.profile.tabs.text
+      : designSystem.colors.profile.tabs.inactiveText,
+    borderColor: isActive
+      ? designSystem.colors.profile.tabs.activeBorder
+      : designSystem.colors.profile.tabs.border,
+    boxShadow: 'none',
+  })
+
   return (
-    <div className="min-h-screen bg-white">
+    <div>
       {/* Верхня панель та Навігація */}
-      <div className="bg-[#F7F9FA] py-6">
-        <div className="max-w-6xl mx-auto px-6">
-          <h1 className="text-3xl font-semibold text-[#1F2732] font-['Sora'] mb-6">
+      <div
+        className="py-8 px-6"
+        style={{ backgroundColor: designSystem.colors.profile.headerBackground}}
+      >
+        <div className="max-w-6xl mx-auto">
+          <h1 className="text-3xl font-semibold text-[#1F2732] font-['Sora'] mb-8">
             Налаштування профілю
           </h1>
           
           {/* Вкладки навігації */}
-          <div className="flex justify-center gap-8">
+          <div className="flex flex-wrap justify-center gap-4">
             <button
               onClick={() => setActiveTab('profile')}
-              className={`flex items-center gap-3 pb-3 border-b-4 transition-colors ${
-                activeTab === 'profile'
-                  ? 'border-[#E42556] text-[#1F2732]'
-                  : 'border-transparent text-gray-500 hover:text-gray-700'
-              }`}
+              className="flex items-center gap-2 px-6 py-3 rounded-full border-2 font-bold text-base transition-all duration-200"
+              style={getTabStyles(activeTab === 'profile')}
             >
-              <User className="w-6 h-6" />
-              <span className="font-medium">Профіль</span>
+              <User className="w-5 h-5" strokeWidth={2.5} />
+              <span className="font-['Mulish']">Мій профіль</span>
             </button>
             <button
               onClick={() => setActiveTab('problems')}
-              className={`flex items-center gap-3 pb-3 border-b-4 transition-colors ${
-                activeTab === 'problems'
-                  ? 'border-[#E42556] text-[#1F2732]'
-                  : 'border-transparent text-gray-500 hover:text-gray-700'
-              }`}
+              className="flex items-center gap-2 px-6 py-3 rounded-full border-2 font-bold text-base transition-all duration-200"
+              style={getTabStyles(activeTab === 'problems')}
             >
-              <FileText className="w-6 h-6" />
-              <span className="font-medium">Подані проблеми</span>
+              <FileText className="w-5 h-5" strokeWidth={2.5} />
+              <span className="font-['Mulish']">Подані проблеми</span>
             </button>
           </div>
         </div>
+        <div
+          className="mt-6 h-px w-screen relative left-1/2 -translate-x-1/2"
+          style={{ backgroundColor: designSystem.colors.profile.tabs.border }}
+        />
       </div>
 
       {activeTab === 'profile' && (
         <div className="max-w-6xl mx-auto px-6 py-8">
           {/* Секція Аватара */}
-          <div className="bg-white p-6 mb-6 rounded-[10px]">
-            <div className="flex flex-col md:flex-row items-center justify-center gap-8 text-center md:text-left">
+          <div className="mb-6">
+            <div className="flex flex-col md:flex-row items-center justify-center gap-6 text-center md:text-left md:items-center">
               <div className="relative">
                 <div className="w-24 h-24 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
                   {userDetails.image?.url ? (
@@ -224,8 +265,8 @@ export function ProfilePage() {
                   />
                 </label>
               </div>
-              <div className="flex-1 md:max-w-2xl">
-                <h2 className="text-xl font-bold text-[#1F2732] font-['Mulish'] mb-2 md:mb-3">
+              <div className="flex flex-col items-center md:items-start">
+                <h2 className="text-xl font-bold text-[#1F2732] font-['Mulish'] mb-2">
                   Редагування профілю
                 </h2>
                 <p className="text-[#464646] font-['Mulish']">
@@ -457,11 +498,144 @@ export function ProfilePage() {
 
       {activeTab === 'problems' && (
         <div className="max-w-6xl mx-auto px-6 py-8">
-          <div className="text-center py-12">
-            <FileText className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-gray-600 mb-2">Подані проблеми</h3>
-            <p className="text-gray-500">Тут будуть відображатися ваші подані проблеми</p>
+          <div className="flex justify-between items-center mb-8">
+            <div>
+              <p className="text-gray-600 mt-2">Перегляд та відстеження ваших звернень</p>
+            </div>
+            <Link to="/problems/create">
+              <Button className="flex items-center gap-2 bg-[#E42556] hover:bg-[#E42556]/90">
+                <Plus className="h-4 w-4" />
+                Нове звернення
+              </Button>
+            </Link>
           </div>
+
+          {/* Фільтри */}
+          <div className="flex gap-2 mb-6 flex-wrap">
+            <Button
+              variant={filter === 'all' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setFilter('all')}
+              className={filter === 'all' ? 'bg-[#E42556] hover:bg-[#E42556]/90' : ''}
+            >
+              Всі ({myProblems.length})
+            </Button>
+            <Button
+              variant={filter === ProblemStatusConstants.New ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setFilter(ProblemStatusConstants.New)}
+              className={filter === ProblemStatusConstants.New ? 'bg-[#E42556] hover:bg-[#E42556]/90' : ''}
+            >
+              Нові ({myProblems.filter(p => p.status === ProblemStatusConstants.New).length})
+            </Button>
+            <Button
+              variant={filter === ProblemStatusConstants.InProgress ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setFilter(ProblemStatusConstants.InProgress)}
+              className={filter === ProblemStatusConstants.InProgress ? 'bg-[#E42556] hover:bg-[#E42556]/90' : ''}
+            >
+              В роботі ({myProblems.filter(p => p.status === ProblemStatusConstants.InProgress).length})
+            </Button>
+            <Button
+              variant={filter === ProblemStatusConstants.Completed ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setFilter(ProblemStatusConstants.Completed)}
+              className={filter === ProblemStatusConstants.Completed ? 'bg-[#E42556] hover:bg-[#E42556]/90' : ''}
+            >
+              Виконано ({myProblems.filter(p => p.status === ProblemStatusConstants.Completed).length})
+            </Button>
+            <Button
+              variant={filter === ProblemStatusConstants.Rejected ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setFilter(ProblemStatusConstants.Rejected)}
+              className={filter === ProblemStatusConstants.Rejected ? 'bg-[#E42556] hover:bg-[#E42556]/90' : ''}
+            >
+              Відхилено ({myProblems.filter(p => p.status === ProblemStatusConstants.Rejected).length})
+            </Button>
+          </div>
+
+          {/* Список проблем */}
+          {filteredProblems.length === 0 ? (
+            <div className="text-center py-12 bg-gray-50 rounded-lg">
+              <p className="text-gray-500 text-lg">
+                {filter === 'all' 
+                  ? 'У вас ще немає звернень. Створіть перше!'
+                  : 'Немає звернень з таким статусом'}
+              </p>
+              {filter === 'all' && (
+                <Link to="/problems/create">
+                  <Button className="mt-4 bg-[#E42556] hover:bg-[#E42556]/90">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Створити звернення
+                  </Button>
+                </Link>
+              )}
+            </div>
+          ) : (
+            <div className="grid gap-4">
+              {filteredProblems.map((problem) => (
+                <div
+                  key={problem.id}
+                  className="bg-white border rounded-lg p-6 hover:shadow-md transition-shadow cursor-pointer"
+                  onClick={() => problem.id && navigate(`/problems/${problem.id}`)}
+                >
+                  <div className="flex justify-between items-start">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-2">
+                        <h3 className="text-lg font-semibold text-gray-900">
+                          {problem.title}
+                        </h3>
+                        <Badge className={getStatusColor(problem.status)}>
+                          {problem.status}
+                        </Badge>
+                      </div>
+                      <p className="text-gray-600 mb-4 line-clamp-2">
+                        {problem.description}
+                      </p>
+                      <div className="flex items-center gap-4 text-sm text-gray-500">
+                        <span className="flex items-center gap-1">
+                          <MapPin className="h-4 w-4" />
+                          {problem.latitude.toFixed(4)}, {problem.longitude.toFixed(4)}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <Calendar className="h-4 w-4" />
+                          {new Date(problem.createdAt).toLocaleDateString('uk-UA')}
+                        </span>
+                      </div>
+                      
+                      {problem.currentState && (
+                        <div className="mt-4 p-3 bg-blue-50 rounded-md">
+                          <p className="text-sm font-medium text-blue-800">Поточний стан:</p>
+                          <p className="text-sm text-blue-700">{problem.currentState}</p>
+                        </div>
+                      )}
+
+                      {problem.rejectionReason && (
+                        <div className="mt-4 p-3 bg-red-50 rounded-md">
+                          <p className="text-sm font-medium text-red-800">Причина відхилення:</p>
+                          <p className="text-sm text-red-700">{problem.rejectionReason}</p>
+                        </div>
+                      )}
+
+                      {problem.coordinator && (
+                        <div className="mt-4 text-sm text-gray-600">
+                          <span className="font-medium">Координатор:</span> {problem.coordinator.name} {problem.coordinator.surname}
+                        </div>
+                      )}
+                    </div>
+                    <div onClick={(e) => e.stopPropagation()}>
+                      <Link to={`/problems/${problem.id}`}>
+                        <Button variant="outline" size="sm" className="flex items-center gap-2">
+                          <Eye className="h-4 w-4" />
+                          Детальніше
+                        </Button>
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
     </div>

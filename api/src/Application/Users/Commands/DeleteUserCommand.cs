@@ -4,6 +4,7 @@ using Application.Services.ImageService;
 using Application.Users.Exceptions;
 using Domain.Identity.Users;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 
 namespace Application.Users.Commands;
 
@@ -14,6 +15,9 @@ public record DeleteUserCommand : IRequest<Result<User, UserException>>
 
 public class DeleteUserCommandHandler(
     IUserRepository userRepository,
+    IProblemRepository problemRepository,
+    ICommentRepository commentRepository,
+    IRatingRepository ratingRepository,
     IImageService imageService)
     : IRequestHandler<DeleteUserCommand, Result<User, UserException>>
 {
@@ -43,11 +47,51 @@ public class DeleteUserCommandHandler(
         
         try
         {
+            await DeleteUserProblems(user.Id, cancellationToken);
+            await DeleteUserComments(user.Id, cancellationToken);
+            await DeleteUserRatings(user.Id, cancellationToken);
+            
             return await userRepository.Delete(user, cancellationToken);
+        }
+        catch (DbUpdateException dbEx)
+        {
+            return new UserUnknownException(user.Id, new Exception(
+                "Не вдалося видалити користувача через зв'язки з іншими сутностями. " +
+                "Можливо, користувач призначений координатором до проблем.", dbEx));
         }
         catch (Exception exception)
         {
             return new UserUnknownException(user.Id, exception);
+        }
+    }
+
+    private async Task DeleteUserProblems(UserId userId, CancellationToken cancellationToken)
+    {
+        var userProblems = await problemRepository.GetByCreatedBy(userId, cancellationToken);
+        
+        foreach (var problem in userProblems)
+        {
+            await problemRepository.Delete(problem, cancellationToken);
+        }
+    }
+
+    private async Task DeleteUserComments(UserId userId, CancellationToken cancellationToken)
+    {
+        var userComments = await commentRepository.GetByCreatedBy(userId, cancellationToken);
+        
+        foreach (var comment in userComments)
+        {
+            await commentRepository.Delete(comment, cancellationToken);
+        }
+    }
+
+    private async Task DeleteUserRatings(UserId userId, CancellationToken cancellationToken)
+    {
+        var userRatings = await ratingRepository.GetByCreatedBy(userId, cancellationToken);
+        
+        foreach (var rating in userRatings)
+        {
+            await ratingRepository.Delete(rating, cancellationToken);
         }
     }
 

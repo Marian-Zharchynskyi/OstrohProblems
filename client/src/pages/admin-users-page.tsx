@@ -31,6 +31,8 @@ export function AdminUsersPage() {
   const [roles, setRoles] = useState<Role[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [deletingUserId, setDeletingUserId] = useState<string | null>(null)
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [userToDelete, setUserToDelete] = useState<UserDto | null>(null)
 
   // Create user dialog state
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
@@ -76,17 +78,24 @@ export function AdminUsersPage() {
     loadData()
   }, [tokens?.accessToken])
 
-  const handleDeleteUser = async (userId: string) => {
-    if (!tokens?.accessToken) return
-    if (!confirm('Ви впевнені, що хочете видалити цього користувача?')) return
+  const handleOpenDeleteDialog = (user: UserDto) => {
+    setUserToDelete(user)
+    setDeleteDialogOpen(true)
+  }
+
+  const handleDeleteUser = async () => {
+    if (!tokens?.accessToken || !userToDelete) return
 
     try {
-      setDeletingUserId(userId)
-      await userService.deleteUser(userId, tokens.accessToken)
-      setUsers(users.filter((u) => u.id !== userId))
+      setDeletingUserId(userToDelete.id)
+      await userService.deleteUser(userToDelete.id, tokens.accessToken)
+      setUsers(users.filter((u) => u.id !== userToDelete.id))
+      setDeleteDialogOpen(false)
+      setUserToDelete(null)
     } catch (error) {
       console.error('Failed to delete user:', error)
-      alert('Не вдалося видалити користувача')
+      const errorMessage = error instanceof Error ? error.message : 'Не вдалося видалити користувача'
+      alert(errorMessage)
     } finally {
       setDeletingUserId(null)
     }
@@ -283,7 +292,7 @@ export function AdminUsersPage() {
                           <Button
                             variant="destructive"
                             size="sm"
-                            onClick={() => handleDeleteUser(user.id)}
+                            onClick={() => handleOpenDeleteDialog(user)}
                             disabled={deletingUserId === user.id}
                           >
                             <Trash2 className="w-4 h-4 mr-1" />
@@ -464,6 +473,61 @@ export function AdminUsersPage() {
             </Button>
             <Button onClick={handleEditUser} disabled={isEditing}>
               {isEditing ? 'Збереження...' : 'Зберегти'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Підтвердження видалення</DialogTitle>
+            <DialogDescription>
+              Ви впевнені, що хочете видалити цього користувача?
+            </DialogDescription>
+          </DialogHeader>
+          {userToDelete && (
+            <div className="py-4">
+              <div className="space-y-2">
+                <p className="text-sm">
+                  <span className="font-semibold">Email:</span> {userToDelete.email}
+                </p>
+                {(userToDelete.name || userToDelete.surname) && (
+                  <p className="text-sm">
+                    <span className="font-semibold">Ім'я:</span> {userToDelete.name} {userToDelete.surname}
+                  </p>
+                )}
+                {userToDelete.role && (
+                  <p className="text-sm">
+                    <span className="font-semibold">Роль:</span> {userToDelete.role.name}
+                  </p>
+                )}
+              </div>
+              <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                <p className="text-sm text-yellow-800">
+                  <strong>Увага:</strong> Всі проблеми, коментарі та рейтинги створені цим користувачем будуть видалені.
+                </p>
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setDeleteDialogOpen(false)
+                setUserToDelete(null)
+              }}
+              disabled={deletingUserId !== null}
+            >
+              Скасувати
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleDeleteUser}
+              disabled={deletingUserId !== null}
+            >
+              {deletingUserId ? 'Видалення...' : 'Так, видалити'}
             </Button>
           </DialogFooter>
         </DialogContent>

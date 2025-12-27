@@ -106,6 +106,16 @@ public class ProblemRepository(ApplicationDbContext context) : IProblemQueries, 
             .ToListAsync(cancellationToken);
     }
 
+    public async Task<IReadOnlyList<Problem>> GetByCreatedBy(UserId userId, CancellationToken cancellationToken)
+    {
+        return await context.Problems
+            .Include(x => x.Comments)
+            .Include(x => x.Images)
+            .Include(x => x.CoordinatorImages)
+            .Where(x => x.CreatedById == userId)
+            .ToListAsync(cancellationToken);
+    }
+
     public async Task<IReadOnlyList<Problem>> GetByCoordinatorId(UserId coordinatorId, CancellationToken cancellationToken)
     {
         return await context.Problems
