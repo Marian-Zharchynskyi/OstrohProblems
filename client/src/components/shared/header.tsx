@@ -97,18 +97,6 @@ export const Header = () => {
                       Почати
                     </Link>
 
-                    <Link
-                      to="/my-problems"
-                      className={cn(
-                        'hidden sm:block text-sm font-heading font-semibold transition-colors hover:text-primary',
-                        location.pathname === '/my-problems'
-                          ? 'text-black'
-                          : 'text-black/80'
-                      )}
-                    >
-                      Мої проблеми
-                    </Link>
-
                     <NotificationsBell />
                   </>
                 )}

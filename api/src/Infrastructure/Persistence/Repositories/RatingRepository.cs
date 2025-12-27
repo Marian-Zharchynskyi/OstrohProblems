@@ -77,4 +77,11 @@ public class RatingRepository(ApplicationDbContext context) : IRatingQueries, IR
         await context.SaveChangesAsync(cancellationToken);
         return rating;
     }
+
+    public async Task<IReadOnlyList<Rating>> GetByCreatedBy(UserId userId, CancellationToken cancellationToken)
+    {
+        return await context.Ratings
+            .Where(x => x.UserId == userId)
+            .ToListAsync(cancellationToken);
+    }
 }

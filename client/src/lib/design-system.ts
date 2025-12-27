@@ -1,5 +1,8 @@
 export const designSystem = {
     colors: {
+        page: {
+            background: '#FFFFFF',
+        },
         header: {
             background: '#F7F9FD',
             text: '#000000',
@@ -46,6 +49,14 @@ export const designSystem = {
             inputBackground: '#F0F1F2', // Світло-сірий фон для полів вводу
             cardBackground: '#FFFFFF', // Білий фон для карток
             warningRed: '#DC2626', // Яскраво-червоний для небезпечних дій
+            tabs: {
+                background: '#F8F9FB',
+                activeBackground: '#FFFFFF',
+                border: '#D9DEE5',
+                activeBorder: '#C4C9D1',
+                text: '#1F2732',
+                inactiveText: '#596872',
+            },
         },
     },
 

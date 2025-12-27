@@ -41,9 +41,16 @@ public class IdentityService : IIdentityService
 
     public Option<string[]> GetUserRoles()
     {
-        var roles = _httpContext?.User.FindAll("role")
+        var roles = _httpContext?.User.FindAll(ClaimTypes.Role)
             .Select(c => c.Value)
             .ToArray();
+
+        if (roles == null || roles.Length == 0)
+        {
+            roles = _httpContext?.User.FindAll("role")
+                .Select(c => c.Value)
+                .ToArray();
+        }
         
         return roles == null || roles.Length == 0
             ? Option<string[]>.None
