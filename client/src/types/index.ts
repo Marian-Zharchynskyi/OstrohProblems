@@ -24,6 +24,21 @@ export const PriorityConstants = {
 
 export type PriorityType = (typeof PriorityConstants)[keyof typeof PriorityConstants]
 
+export const CategoryConstants = {
+  Roads: 'Дороги',
+  Lighting: 'Освітлення',
+  Garbage: 'Сміття',
+  Water: 'Водопостачання',
+  PublicTransport: 'Громадський транспорт',
+  Parks: 'Парки та зелені зони',
+  Safety: 'Безпека',
+  Noise: 'Шум',
+  Animals: 'Тварини',
+  Other: 'Інше',
+} as const
+
+export type CategoryType = (typeof CategoryConstants)[keyof typeof CategoryConstants]
+
 export interface Comment {
   id: string | null
   content: string

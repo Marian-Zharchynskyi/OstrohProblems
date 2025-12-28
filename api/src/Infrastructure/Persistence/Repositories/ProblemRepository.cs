@@ -164,4 +164,77 @@ public class ProblemRepository(ApplicationDbContext context) : IProblemQueries, 
             .OrderByDescending(x => x.CreatedAt)
             .ToListAsync(cancellationToken);
     }
+
+    public async Task<IReadOnlyList<Problem>> GetByUserIdFiltered(
+        UserId userId,
+        string? searchTerm,
+        string? status,
+        string? category,
+        string? priority,
+        string? sortBy,
+        bool sortDescending,
+        string? dateFilter,
+        CancellationToken cancellationToken)
+    {
+        var query = context.Problems
+            .Include(x => x.Comments)
+            .Include(x => x.Images)
+            .Include(x => x.CoordinatorImages)
+            .Include(x => x.CreatedBy)
+            .Include(x => x.Coordinator)
+            .Include(x => x.Ratings)
+            .AsSplitQuery()
+            .AsNoTracking()
+            .Where(x => x.CreatedById == userId);
+
+        if (!string.IsNullOrWhiteSpace(searchTerm))
+        {
+            var lowerSearchTerm = searchTerm.ToLower();
+            query = query.Where(x => x.Title.ToLower().Contains(lowerSearchTerm) 
+                                  || x.Description.ToLower().Contains(lowerSearchTerm));
+        }
+
+        if (!string.IsNullOrWhiteSpace(status))
+        {
+            var problemStatus = ProblemStatus.From(status);
+            query = query.Where(x => x.Status == problemStatus);
+        }
+
+        if (!string.IsNullOrWhiteSpace(category))
+        {
+            var categoryValue = Category.From(category).Value;
+            query = query.Where(x =>
+                EF.Functions.JsonContains(
+                    EF.Property<string>(x, nameof(Problem.Categories)),
+                    $"[\"{categoryValue}\"]"));
+        }
+
+        if (!string.IsNullOrWhiteSpace(priority))
+        {
+            var problemPriority = Priority.From(priority);
+            query = query.Where(x => x.Priority == problemPriority);
+        }
+
+        if (!string.IsNullOrWhiteSpace(dateFilter))
+        {
+            var now = DateTime.UtcNow;
+            query = dateFilter.ToLower() switch
+            {
+                "week" => query.Where(x => x.CreatedAt >= now.AddDays(-7)),
+                "month" => query.Where(x => x.CreatedAt >= now.AddMonths(-1)),
+                "year" => query.Where(x => x.CreatedAt >= now.AddYears(-1)),
+                _ => query
+            };
+        }
+
+        query = sortBy?.ToLower() switch
+        {
+            "title" => sortDescending ? query.OrderByDescending(x => x.Title) : query.OrderBy(x => x.Title),
+            "priority" => sortDescending ? query.OrderByDescending(x => x.Priority.Value) : query.OrderBy(x => x.Priority.Value),
+            "updatedat" => sortDescending ? query.OrderByDescending(x => x.UpdatedAt) : query.OrderBy(x => x.UpdatedAt),
+            _ => sortDescending ? query.OrderByDescending(x => x.CreatedAt) : query.OrderBy(x => x.CreatedAt)
+        };
+
+        return await query.ToListAsync(cancellationToken);
+    }
 }

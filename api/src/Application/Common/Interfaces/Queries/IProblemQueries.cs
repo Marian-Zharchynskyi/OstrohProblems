@@ -30,4 +30,18 @@ public interface IProblemQueries
     /// Get problems for map display (excludes New, Completed, Rejected statuses)
     /// </summary>
     Task<IReadOnlyList<Problem>> GetForMap(CancellationToken cancellationToken);
+    
+    /// <summary>
+    /// Get filtered problems by user with search, category, priority and sorting
+    /// </summary>
+    Task<IReadOnlyList<Problem>> GetByUserIdFiltered(
+        UserId userId,
+        string? searchTerm,
+        string? status,
+        string? category,
+        string? priority,
+        string? sortBy,
+        bool sortDescending,
+        string? dateFilter,
+        CancellationToken cancellationToken);
 }
