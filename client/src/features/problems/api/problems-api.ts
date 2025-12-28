@@ -121,6 +121,33 @@ export const problemsApi = {
     return response.data
   },
 
+  getByUserFiltered: async (
+    userId: string,
+    filter: {
+      searchTerm?: string
+      status?: string
+      category?: string
+      priority?: string
+      sortBy?: string
+      sortDescending?: boolean
+      dateFilter?: string
+    }
+  ): Promise<Problem[]> => {
+    const params = new URLSearchParams()
+    if (filter.searchTerm) params.append('searchTerm', filter.searchTerm)
+    if (filter.status) params.append('status', filter.status)
+    if (filter.category) params.append('category', filter.category)
+    if (filter.priority) params.append('priority', filter.priority)
+    if (filter.sortBy) params.append('sortBy', filter.sortBy)
+    if (filter.sortDescending !== undefined) params.append('sortDescending', filter.sortDescending.toString())
+    if (filter.dateFilter) params.append('dateFilter', filter.dateFilter)
+
+    const queryString = params.toString()
+    const url = `${BASE_URL}/by-user-filtered/${userId}${queryString ? `?${queryString}` : ''}`
+    const response = await apiClient.get<Problem[]>(url)
+    return response.data
+  },
+
   uploadCoordinatorImages: async (id: string, files: FileList) => {
     const formData = new FormData()
     Array.from(files).forEach((file) => {

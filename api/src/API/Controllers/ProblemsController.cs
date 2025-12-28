@@ -63,6 +63,26 @@ public class ProblemsController(ISender sender, IProblemQueries problemQueries, 
         return entities.Select(p => ProblemDto.FromDomainModel(p, imageService.GetImageUrl)).ToList();
     }
 
+    [Authorize(Roles = $"{RoleNames.Admin}, {RoleNames.User}")]
+    [HttpGet("by-user-filtered/{userId:guid}")]
+    public async Task<ActionResult<IReadOnlyList<ProblemDto>>> GetByUserFiltered(
+        [FromRoute] Guid userId,
+        [FromQuery] UserProblemsFilterDto filter,
+        CancellationToken cancellationToken)
+    {
+        var entities = await problemQueries.GetByUserIdFiltered(
+            new UserId(userId),
+            filter.SearchTerm,
+            filter.Status,
+            filter.Category,
+            filter.Priority,
+            filter.SortBy,
+            filter.SortDescending,
+            filter.DateFilter,
+            cancellationToken);
+        return entities.Select(p => ProblemDto.FromDomainModel(p, imageService.GetImageUrl)).ToList();
+    }
+
     [Authorize(Roles = $"{RoleNames.Admin}, {RoleNames.Coordinator}")]
     [HttpGet("by-coordinator/{coordinatorId:guid}")]
     public async Task<ActionResult<IReadOnlyList<ProblemDto>>> GetByCoordinator(
