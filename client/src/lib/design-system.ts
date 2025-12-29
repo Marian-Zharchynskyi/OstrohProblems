@@ -56,6 +56,13 @@ export const designSystem = {
                 activeBorder: '#C4C9D1',
                 text: '#1F2732',
                 inactiveText: '#596872',
+                indicator: '#E42556',
+                hoverText: '#1F2732',
+            },
+            links: {
+                text: '#596872',
+                hover: '#1F2732',
+                disabled: '#B9C1CC',
             },
         },
     },
