@@ -65,6 +65,34 @@ public class Problem
         UpdatedAt = DateTime.UtcNow;
     }
 
+    public void UpdateDescription(string description)
+    {
+        Description = description;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    public void UpdateTitleAndCategories(string title, IEnumerable<string>? categoryNames)
+    {
+        Title = title;
+        if (categoryNames != null)
+        {
+            Categories.Clear();
+            foreach (var name in categoryNames)
+            {
+                var category = Category.From(name);
+                Categories.Add(category);
+            }
+        }
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    public void UpdateLocation(double latitude, double longitude)
+    {
+        Latitude = latitude;
+        Longitude = longitude;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
     public void UpdateStatus(ProblemStatus status)
     {
         Status = status;
