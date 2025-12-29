@@ -1,17 +1,22 @@
 import { useState, useMemo } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet'
 import { Icon } from 'leaflet'
 import type { LatLngBoundsExpression } from 'leaflet'
 import { useAuth } from '@/contexts/auth-context'
 import { useProblemsByUserFiltered, type UserProblemsFilter } from '../hooks/use-problems'
 import { useRealtimeComments } from '@/hooks/use-realtime-comments'
+import { problemsApi } from '../api/problems-api'
 import type { Problem, Comment } from '@/types'
 import { ProblemStatusConstants, PriorityConstants, CategoryConstants } from '@/types'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { toast } from '@/lib/toast'
+import { useQueryClient } from '@tanstack/react-query'
 import { 
   Search, 
   MapPin, 
@@ -21,7 +26,9 @@ import {
   Pencil,
   MessageSquare,
   Image as ImageIcon,
-  Loader2
+  Loader2,
+  X,
+  Check
 } from 'lucide-react'
 import 'leaflet/dist/leaflet.css'
 
@@ -116,42 +123,104 @@ function CommentsBlock({ comments, problemId }: CommentsBlockProps) {
 
 interface DescriptionBlockProps {
   problem: Problem
+  onUpdate: () => void
 }
 
-function DescriptionBlock({ problem }: DescriptionBlockProps) {
+function DescriptionBlock({ problem, onUpdate }: DescriptionBlockProps) {
   const [expanded, setExpanded] = useState(false)
+  const [isEditing, setIsEditing] = useState(false)
+  const [editDescription, setEditDescription] = useState(problem.description)
+  const [isSaving, setIsSaving] = useState(false)
   const isLongDescription = problem.description.length > 200
+
+  const handleSave = async () => {
+    if (!problem.id || !editDescription.trim()) return
+    try {
+      setIsSaving(true)
+      await problemsApi.updateDescription(problem.id, editDescription)
+      toast.success('Опис оновлено')
+      setIsEditing(false)
+      onUpdate()
+    } catch {
+      toast.error('Не вдалося оновити опис')
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
+  const handleCancel = () => {
+    setEditDescription(problem.description)
+    setIsEditing(false)
+  }
 
   return (
     <Card className="bg-white border border-gray-200 rounded-[10px]">
       <CardHeader className="pb-4 flex flex-row items-center justify-between">
         <CardTitle className="text-lg font-bold text-[#1F2732] font-['Mulish'] flex items-center gap-2">
           Опис
-          <button className="p-1 hover:bg-gray-100 rounded transition-colors">
-            <Pencil className="w-4 h-4 text-[#596872]" />
-          </button>
+          {!isEditing && (
+            <button 
+              className="p-1 hover:bg-gray-100 rounded transition-colors"
+              onClick={() => setIsEditing(true)}
+            >
+              <Pencil className="w-4 h-4 text-[#596872]" />
+            </button>
+          )}
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <p className={`text-gray-600 whitespace-pre-wrap break-words ${!expanded && isLongDescription ? 'line-clamp-3' : ''}`}>
-          {problem.description}
-        </p>
-        
-        {isLongDescription && (
-          <button
-            onClick={() => setExpanded(!expanded)}
-            className="mt-2 flex items-center gap-1 text-sm text-[#E42556] hover:underline"
-          >
-            {expanded ? (
-              <>
-                Згорнути <ChevronUp className="w-4 h-4" />
-              </>
-            ) : (
-              <>
-                Читати повністю <ChevronDown className="w-4 h-4" />
-              </>
+        {isEditing ? (
+          <div className="space-y-3">
+            <Textarea
+              value={editDescription}
+              onChange={(e) => setEditDescription(e.target.value)}
+              className="min-h-[100px] bg-[#F0F1F2] border-none rounded-lg"
+              placeholder="Введіть опис проблеми..."
+            />
+            <div className="flex gap-2 justify-end">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleCancel}
+                disabled={isSaving}
+              >
+                <X className="w-4 h-4 mr-1" />
+                Скасувати
+              </Button>
+              <Button
+                size="sm"
+                onClick={handleSave}
+                disabled={isSaving || !editDescription.trim()}
+                className="bg-[#E42556] hover:bg-[#E42556]/90"
+              >
+                <Check className="w-4 h-4 mr-1" />
+                {isSaving ? 'Збереження...' : 'Зберегти'}
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <>
+            <p className={`text-gray-600 whitespace-pre-wrap break-words ${!expanded && isLongDescription ? 'line-clamp-3' : ''}`}>
+              {problem.description}
+            </p>
+            
+            {isLongDescription && (
+              <button
+                onClick={() => setExpanded(!expanded)}
+                className="mt-2 flex items-center gap-1 text-sm text-[#E42556] hover:underline"
+              >
+                {expanded ? (
+                  <>
+                    Згорнути <ChevronUp className="w-4 h-4" />
+                  </>
+                ) : (
+                  <>
+                    Читати повністю <ChevronDown className="w-4 h-4" />
+                  </>
+                )}
+              </button>
             )}
-          </button>
+          </>
         )}
       </CardContent>
     </Card>
@@ -160,11 +229,50 @@ function DescriptionBlock({ problem }: DescriptionBlockProps) {
 
 interface ProblemDetailsCardProps {
   problem: Problem
+  onUpdate: () => void
+  onViewAllComments: () => void
 }
 
-function ProblemDetailsCard({ problem }: ProblemDetailsCardProps) {
+function ProblemDetailsCard({ problem, onUpdate, onViewAllComments }: ProblemDetailsCardProps) {
+  const navigate = useNavigate()
   const [showImages, setShowImages] = useState(false)
   const [showCoordinatorImages, setShowCoordinatorImages] = useState(false)
+  const [isEditing, setIsEditing] = useState(false)
+  const [editTitle, setEditTitle] = useState(problem.title)
+  const [editCategories, setEditCategories] = useState<string[]>(problem.categories || [])
+  const [isSaving, setIsSaving] = useState(false)
+
+  const hasUserImages = problem.images && problem.images.length > 0
+  const hasCoordinatorImages = problem.coordinatorImages && problem.coordinatorImages.length > 0
+
+  const handleSave = async () => {
+    if (!problem.id || !editTitle.trim()) return
+    try {
+      setIsSaving(true)
+      await problemsApi.updateTitleAndCategories(problem.id, editTitle, editCategories.length > 0 ? editCategories : undefined)
+      toast.success('Дані оновлено')
+      setIsEditing(false)
+      onUpdate()
+    } catch {
+      toast.error('Не вдалося оновити дані')
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
+  const handleCancel = () => {
+    setEditTitle(problem.title)
+    setEditCategories(problem.categories || [])
+    setIsEditing(false)
+  }
+
+  const toggleCategory = (category: string) => {
+    setEditCategories(prev => 
+      prev.includes(category) 
+        ? prev.filter(c => c !== category)
+        : [...prev, category]
+    )
+  }
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -201,30 +309,92 @@ function ProblemDetailsCard({ problem }: ProblemDetailsCardProps) {
       <CardHeader className="pb-4">
         <div className="flex items-start justify-between">
           <div className="flex-1">
-            <CardTitle className="text-lg font-bold text-[#1F2732] font-['Mulish'] flex items-center gap-2">
-              {problem.title}
-              <button className="p-1 hover:bg-gray-100 rounded transition-colors">
-                <Pencil className="w-4 h-4 text-[#596872]" />
-              </button>
-            </CardTitle>
-            <div className="flex items-center gap-2 mt-2 text-sm text-gray-600">
-              <MapPin className="w-4 h-4" />
-              <span>Координати: {problem.latitude.toFixed(4)}, {problem.longitude.toFixed(4)}</span>
-            </div>
+            {isEditing ? (
+              <div className="space-y-3">
+                <div>
+                  <label className="text-sm text-gray-500 mb-1 block">Назва</label>
+                  <Input
+                    value={editTitle}
+                    onChange={(e) => setEditTitle(e.target.value)}
+                    className="bg-[#F0F1F2] border-none rounded-lg"
+                    placeholder="Введіть назву..."
+                  />
+                </div>
+                <div>
+                  <label className="text-sm text-gray-500 mb-2 block">Категорії</label>
+                  <div className="flex flex-wrap gap-2">
+                    {Object.values(CategoryConstants).map((cat) => (
+                      <button
+                        key={cat}
+                        type="button"
+                        onClick={() => toggleCategory(cat)}
+                        className={`px-3 py-1 text-xs rounded-full border transition-colors ${
+                          editCategories.includes(cat)
+                            ? 'bg-[#E42556] text-white border-[#E42556]'
+                            : 'bg-white text-gray-600 border-gray-300 hover:border-[#E42556]'
+                        }`}
+                      >
+                        {cat}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div className="flex gap-2 justify-end">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleCancel}
+                    disabled={isSaving}
+                  >
+                    <X className="w-4 h-4 mr-1" />
+                    Скасувати
+                  </Button>
+                  <Button
+                    size="sm"
+                    onClick={handleSave}
+                    disabled={isSaving || !editTitle.trim()}
+                    className="bg-[#E42556] hover:bg-[#E42556]/90"
+                  >
+                    <Check className="w-4 h-4 mr-1" />
+                    {isSaving ? 'Збереження...' : 'Зберегти'}
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <>
+                <CardTitle className="text-lg font-bold text-[#1F2732] font-['Mulish'] flex items-center gap-2">
+                  {problem.title}
+                  <button 
+                    className="p-1 hover:bg-gray-100 rounded transition-colors"
+                    onClick={() => setIsEditing(true)}
+                  >
+                    <Pencil className="w-4 h-4 text-[#596872]" />
+                  </button>
+                </CardTitle>
+                <div className="flex items-center gap-2 mt-2 text-sm text-gray-600">
+                  <MapPin className="w-4 h-4" />
+                  <span>Координати: {problem.latitude.toFixed(4)}, {problem.longitude.toFixed(4)}</span>
+                </div>
+              </>
+            )}
           </div>
-          <Badge className={getStatusColor(problem.status)}>
-            {problem.status}
-          </Badge>
+          {!isEditing && (
+            <Badge className={getStatusColor(problem.status)}>
+              {problem.status}
+            </Badge>
+          )}
         </div>
         
-        <div className="flex items-center gap-1 mt-3">
-          {[1, 2, 3, 4, 5].map((star) => (
-            <Star
-              key={star}
-              className={`w-5 h-5 ${star <= 4 ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'}`}
-            />
-          ))}
-        </div>
+        {!isEditing && (
+          <div className="flex items-center gap-1 mt-3">
+            {[1, 2, 3, 4, 5].map((star) => (
+              <Star
+                key={star}
+                className={`w-5 h-5 ${star <= 4 ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'}`}
+              />
+            ))}
+          </div>
+        )}
       </CardHeader>
       <CardContent>
         <div className="space-y-3 text-sm">
@@ -275,55 +445,82 @@ function ProblemDetailsCard({ problem }: ProblemDetailsCardProps) {
         </div>
 
         <div className="mt-6 space-y-2">
-          {problem.images && problem.images.length > 0 && (
-            <div>
-              <button
-                onClick={() => setShowImages(!showImages)}
-                className="flex items-center gap-2 text-sm text-[#E42556] hover:underline"
-              >
-                <ImageIcon className="w-4 h-4" />
-                Відкрити подані зображення ({problem.images.length})
-                {showImages ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-              </button>
-              {showImages && (
-                <div className="mt-3 grid grid-cols-2 gap-2">
-                  {problem.images.map((image) => (
-                    <img
-                      key={image.id}
-                      src={image.url}
-                      alt="Зображення проблеми"
-                      className="w-full h-32 object-cover rounded-lg"
-                    />
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
+          <div>
+            <button
+              onClick={() => hasUserImages && setShowImages(!showImages)}
+              disabled={!hasUserImages}
+              className={`flex items-center gap-2 text-sm ${
+                hasUserImages 
+                  ? 'text-[#E42556] hover:underline cursor-pointer' 
+                  : 'text-gray-400 cursor-not-allowed'
+              }`}
+              title={!hasUserImages ? 'Немає поданих зображень' : undefined}
+            >
+              <ImageIcon className="w-4 h-4" />
+              Відкрити подані зображення {hasUserImages ? `(${problem.images!.length})` : '(0)'}
+              {hasUserImages && (showImages ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />)}
+            </button>
+            {showImages && hasUserImages && (
+              <div className="mt-3 grid grid-cols-2 gap-2">
+                {problem.images!.map((image) => (
+                  <img
+                    key={image.id}
+                    src={image.url}
+                    alt="Зображення проблеми"
+                    className="w-full h-32 object-cover rounded-lg cursor-pointer hover:opacity-90"
+                    onClick={() => window.open(image.url, '_blank')}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
           
-          {problem.coordinatorImages && problem.coordinatorImages.length > 0 && (
-            <div>
-              <button
-                onClick={() => setShowCoordinatorImages(!showCoordinatorImages)}
-                className="flex items-center gap-2 text-sm text-[#E42556] hover:underline"
-              >
-                <ImageIcon className="w-4 h-4" />
-                Відкрити зображення від координатора ({problem.coordinatorImages.length})
-                {showCoordinatorImages ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-              </button>
-              {showCoordinatorImages && (
-                <div className="mt-3 grid grid-cols-2 gap-2">
-                  {problem.coordinatorImages.map((image) => (
-                    <img
-                      key={image.id}
-                      src={image.url}
-                      alt="Зображення від координатора"
-                      className="w-full h-32 object-cover rounded-lg"
-                    />
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
+          <div>
+            <button
+              onClick={() => hasCoordinatorImages && setShowCoordinatorImages(!showCoordinatorImages)}
+              disabled={!hasCoordinatorImages}
+              className={`flex items-center gap-2 text-sm ${
+                hasCoordinatorImages 
+                  ? 'text-[#E42556] hover:underline cursor-pointer' 
+                  : 'text-gray-400 cursor-not-allowed'
+              }`}
+              title={!hasCoordinatorImages ? 'Немає зображень від координатора' : undefined}
+            >
+              <ImageIcon className="w-4 h-4" />
+              Відкрити зображення від координатора {hasCoordinatorImages ? `(${problem.coordinatorImages!.length})` : '(0)'}
+              {hasCoordinatorImages && (showCoordinatorImages ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />)}
+            </button>
+            {showCoordinatorImages && hasCoordinatorImages && (
+              <div className="mt-3 grid grid-cols-2 gap-2">
+                {problem.coordinatorImages!.map((image) => (
+                  <img
+                    key={image.id}
+                    src={image.url}
+                    alt="Зображення від координатора"
+                    className="w-full h-32 object-cover rounded-lg cursor-pointer hover:opacity-90"
+                    onClick={() => window.open(image.url, '_blank')}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div className="mt-6 pt-4 border-t space-y-2">
+          <button
+            onClick={onViewAllComments}
+            className="text-sm text-[#E42556] hover:underline"
+          >
+            Дивитися усі коментарі до проблеми
+          </button>
+          <div>
+            <button
+              onClick={() => navigate(`/problems/${problem.id}`)}
+              className="text-sm text-[#E42556] hover:underline"
+            >
+              Перейти на сторінку проблеми
+            </button>
+          </div>
         </div>
       </CardContent>
     </Card>
@@ -346,6 +543,8 @@ function EmptyProblemState() {
 
 export function UserProblemsTab() {
   const { user } = useAuth()
+  const navigate = useNavigate()
+  const queryClient = useQueryClient()
   const [selectedProblem, setSelectedProblem] = useState<Problem | null>(null)
   const [showDetails, setShowDetails] = useState(false)
   const [statusFilter, setStatusFilter] = useState<string>('all')
@@ -364,7 +563,25 @@ export function UserProblemsTab() {
     dateFilter: dateFilter || undefined,
   }), [searchTerm, statusFilter, categoryFilter, priorityFilter, dateFilter])
 
-  const { data: problems, isLoading } = useProblemsByUserFiltered(user?.id || '', filter)
+  const { data: problems, isLoading, refetch } = useProblemsByUserFiltered(user?.id || '', filter)
+
+  const handleProblemUpdate = async () => {
+    await refetch()
+    queryClient.invalidateQueries({ queryKey: ['problems'] })
+    if (selectedProblem?.id) {
+      const updatedProblems = await problemsApi.getByUserFiltered(user?.id || '', filter)
+      const updated = updatedProblems.find(p => p.id === selectedProblem.id)
+      if (updated) {
+        setSelectedProblem(updated)
+      }
+    }
+  }
+
+  const handleViewAllComments = () => {
+    if (selectedProblem?.id) {
+      navigate(`/problems/${selectedProblem.id}/comments`)
+    }
+  }
 
   const statusTabs = [
     { key: 'all', label: 'Всі' },
@@ -405,7 +622,7 @@ export function UserProblemsTab() {
             <button
               key={tab.key}
               onClick={() => setStatusFilter(tab.key)}
-              className="px-4 py-3 text-sm font-medium font-['Mulish'] text-[#464646] hover:text-[#1F2732] transition-colors relative pb-4"
+              className="px-4 py-3 text-sm font-medium font-['Mulish'] text-[#464646] hover:text-[#1F2732] transition-colors relative pb-4 outline-none focus:outline-none focus:ring-0"
             >
               {tab.label}
               {statusFilter === tab.key && (
@@ -468,85 +685,107 @@ export function UserProblemsTab() {
         </Select>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="h-[500px] rounded-lg overflow-hidden shadow-lg">
-          <MapContainer
-            center={OSTROH_CENTER}
-            zoom={14}
-            style={{ height: '100%', width: '100%' }}
-            className="z-0"
-            maxBounds={MAP_BOUNDS}
-            maxBoundsViscosity={1.0}
-            minZoom={12}
-          >
-            <TileLayer
-              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            />
-
-            {problems && problems.length > 0 && problems.map((problem) => (
-              <Marker
-                key={problem.id}
-                position={[problem.latitude, problem.longitude]}
-                icon={selectedProblem?.id === problem.id ? redMarkerIcon : blueMarkerIcon}
-                eventHandlers={{
-                  click: () => handleMarkerClick(problem),
-                }}
+      {(!problems || problems.length === 0) ? (
+        <Card className="bg-white border border-gray-200 rounded-[10px] h-[500px] flex items-center justify-center">
+          <div className="text-center p-8">
+            <p className="text-gray-500 text-lg">
+              {statusFilter === 'all' 
+                ? 'У вас ще немає звернень'
+                : 'Немає звернень з таким статусом'}
+            </p>
+          </div>
+        </Card>
+      ) : (
+        <div className="space-y-6">
+          {/* Верхній рядок: Карта зліва + Коментарі справа */}
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+            {/* Карта - займає ~60% ширини (3 з 5 колонок) */}
+            <div className="lg:col-span-3 h-[500px] rounded-lg overflow-hidden shadow-lg">
+              <MapContainer
+                center={OSTROH_CENTER}
+                zoom={14}
+                style={{ height: '100%', width: '100%' }}
+                className="z-0"
+                maxBounds={MAP_BOUNDS}
+                maxBoundsViscosity={1.0}
+                minZoom={12}
               >
-                <Popup>
-                  <div className="min-w-[200px]">
-                    <h3 className="font-semibold text-gray-900 mb-1">{problem.title}</h3>
-                    <p className="text-sm text-gray-600 mb-2 line-clamp-2">
-                      {problem.description}
-                    </p>
-                    <Badge className={`mb-2 ${
-                      problem.status === ProblemStatusConstants.New ? 'bg-blue-100 text-blue-800' :
-                      problem.status === ProblemStatusConstants.InProgress ? 'bg-yellow-100 text-yellow-800' :
-                      problem.status === ProblemStatusConstants.Completed ? 'bg-green-100 text-green-800' :
-                      'bg-red-100 text-red-800'
-                    }`}>
-                      {problem.status}
-                    </Badge>
-                    <button
-                      onClick={handleDetailsClick}
-                      className="mt-2 w-full rounded-md bg-[#E42556] px-3 py-1.5 text-sm font-medium text-white hover:bg-[#E42556]/90 transition-colors"
-                    >
-                      Детальніше
-                    </button>
-                  </div>
-                </Popup>
-              </Marker>
-            ))}
-          </MapContainer>
-        </div>
+                <TileLayer
+                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                />
 
-        <div className="space-y-4">
-          {(!problems || problems.length === 0) ? (
-            <Card className="bg-white border border-gray-200 rounded-[10px] h-[500px] flex items-center justify-center">
-              <div className="text-center p-8">
-                <p className="text-gray-500 text-lg">
-                  {statusFilter === 'all' 
-                    ? 'У вас ще немає звернень'
-                    : 'Немає звернень з таким статусом'}
-                </p>
+                {problems && problems.length > 0 && problems.map((problem) => (
+                  <Marker
+                    key={problem.id}
+                    position={[problem.latitude, problem.longitude]}
+                    icon={selectedProblem?.id === problem.id ? redMarkerIcon : blueMarkerIcon}
+                    eventHandlers={{
+                      click: () => handleMarkerClick(problem),
+                    }}
+                  >
+                    <Popup>
+                      <div className="min-w-[200px]">
+                        <h3 className="font-semibold text-gray-900 mb-1">{problem.title}</h3>
+                        <p className="text-sm text-gray-600 mb-2 line-clamp-2">
+                          {problem.description}
+                        </p>
+                        <Badge className={`mb-2 ${
+                          problem.status === ProblemStatusConstants.New ? 'bg-blue-100 text-blue-800' :
+                          problem.status === ProblemStatusConstants.InProgress ? 'bg-yellow-100 text-yellow-800' :
+                          problem.status === ProblemStatusConstants.Completed ? 'bg-green-100 text-green-800' :
+                          'bg-red-100 text-red-800'
+                        }`}>
+                          {problem.status}
+                        </Badge>
+                        <button
+                          onClick={handleDetailsClick}
+                          className="mt-2 w-full rounded-md bg-[#E42556] px-3 py-1.5 text-sm font-medium text-white hover:bg-[#E42556]/90 transition-colors"
+                        >
+                          Детальніше
+                        </button>
+                      </div>
+                    </Popup>
+                  </Marker>
+                ))}
+              </MapContainer>
+            </div>
+
+            {/* Коментарі - займає ~40% ширини (2 з 5 колонок) */}
+            <div className="lg:col-span-2 h-[500px]">
+              {selectedProblem && showDetails ? (
+                <CommentsBlock 
+                  comments={selectedProblem.comments || []} 
+                  problemId={selectedProblem.id}
+                />
+              ) : (
+                <Card className="bg-white border border-gray-200 rounded-[10px] h-full">
+                  <EmptyProblemState />
+                </Card>
+              )}
+            </div>
+          </div>
+
+          {/* Нижній рядок: Опис зліва + Деталі справа */}
+          {selectedProblem && showDetails && (
+            <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+              {/* Опис - під картою (3 з 5 колонок) */}
+              <div className="lg:col-span-2">
+                <DescriptionBlock problem={selectedProblem} onUpdate={handleProblemUpdate} />
               </div>
-            </Card>
-          ) : selectedProblem && showDetails ? (
-            <>
-              <CommentsBlock 
-                comments={selectedProblem.comments || []} 
-                problemId={selectedProblem.id}
-              />
-              <DescriptionBlock problem={selectedProblem} />
-              <ProblemDetailsCard problem={selectedProblem} />
-            </>
-          ) : (
-            <Card className="bg-white border border-gray-200 rounded-[10px] h-[500px]">
-              <EmptyProblemState />
-            </Card>
+              
+              {/* Деталі проблеми - займає більше місця справа (3 з 5 колонок) */}
+              <div className="lg:col-span-3">
+                <ProblemDetailsCard 
+                  problem={selectedProblem} 
+                  onUpdate={handleProblemUpdate}
+                  onViewAllComments={handleViewAllComments}
+                />
+              </div>
+            </div>
           )}
         </div>
-      </div>
+      )}
     </div>
   )
 }

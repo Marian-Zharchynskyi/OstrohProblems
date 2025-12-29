@@ -39,18 +39,18 @@ public class ProblemsController(ISender sender, IProblemQueries problemQueries, 
 
     [Authorize(Roles = $"{RoleNames.Admin}, {RoleNames.User}, {RoleNames.Coordinator}")]
     [HttpGet("get-all")]
-    public async Task<ActionResult<IReadOnlyList<ProblemDto>>> GetAll(CancellationToken cancellationToken)
+    public async Task<ActionResult<IReadOnlyList<ProblemSummaryDto>>> GetAll(CancellationToken cancellationToken)
     {
         var entities = await problemQueries.GetAll(cancellationToken);
-        return entities.Select(p => ProblemDto.FromDomainModel(p, imageService.GetImageUrl)).ToList();
+        return entities.Select(ProblemSummaryDto.FromDomainModel).ToList();
     }
 
     [AllowAnonymous]
     [HttpGet("for-map")]
-    public async Task<ActionResult<IReadOnlyList<ProblemDto>>> GetForMap(CancellationToken cancellationToken)
+    public async Task<ActionResult<IReadOnlyList<ProblemSummaryDto>>> GetForMap(CancellationToken cancellationToken)
     {
         var entities = await problemQueries.GetForMap(cancellationToken);
-        return entities.Select(p => ProblemDto.FromDomainModel(p, imageService.GetImageUrl)).ToList();
+        return entities.Select(ProblemSummaryDto.FromDomainModel).ToList();
     }
 
     [Authorize(Roles = $"{RoleNames.Admin}, {RoleNames.User}")]
@@ -414,6 +414,68 @@ public class ProblemsController(ISender sender, IProblemQueries problemQueries, 
 
         return result.Match<ActionResult<ProblemDto>>(
             r => ProblemDto.FromDomainModel(r, imageService.GetImageUrl),
+            e => e.ToObjectResult());
+    }
+
+    [Authorize(Roles = $"{RoleNames.Admin}, {RoleNames.User}")]
+    [HttpPut("update-description/{problemId:guid}")]
+    public async Task<ActionResult<ProblemDto>> UpdateDescription(
+        [FromRoute] Guid problemId,
+        [FromBody] UpdateProblemDescriptionDto request,
+        CancellationToken cancellationToken)
+    {
+        var input = new UpdateProblemDescriptionCommand
+        {
+            ProblemId = problemId,
+            Description = request.Description
+        };
+
+        var result = await sender.Send(input, cancellationToken);
+
+        return result.Match<ActionResult<ProblemDto>>(
+            problem => ProblemDto.FromDomainModel(problem, imageService.GetImageUrl),
+            e => e.ToObjectResult());
+    }
+
+    [Authorize(Roles = $"{RoleNames.Admin}, {RoleNames.User}")]
+    [HttpPut("update-title-and-categories/{problemId:guid}")]
+    public async Task<ActionResult<ProblemDto>> UpdateTitleAndCategories(
+        [FromRoute] Guid problemId,
+        [FromBody] UpdateProblemTitleAndCategoriesDto request,
+        CancellationToken cancellationToken)
+    {
+        var input = new UpdateProblemTitleAndCategoriesCommand
+        {
+            ProblemId = problemId,
+            Title = request.Title,
+            CategoryNames = request.CategoryNames
+        };
+
+        var result = await sender.Send(input, cancellationToken);
+
+        return result.Match<ActionResult<ProblemDto>>(
+            problem => ProblemDto.FromDomainModel(problem, imageService.GetImageUrl),
+            e => e.ToObjectResult());
+    }
+
+    [Authorize(Roles = $"{RoleNames.Admin}, {RoleNames.Coordinator}")]
+    [HttpPut("update-location/{problemId:guid}")]
+    public async Task<ActionResult<ProblemDto>> UpdateLocation(
+        [FromRoute] Guid problemId,
+        [FromBody] UpdateProblemLocationDto request,
+        CancellationToken cancellationToken)
+    {
+        var input = new UpdateProblemLocationCommand
+        {
+            ProblemId = problemId,
+            Latitude = request.Latitude,
+            Longitude = request.Longitude
+        };
+
+        var result = await sender.Send(input, cancellationToken);
+
+        return result.Match<ActionResult<ProblemDto>>(
+            problem => ProblemDto.FromDomainModel(problem, imageService.GetImageUrl),
             e => e.ToObjectResult());
     }
 }

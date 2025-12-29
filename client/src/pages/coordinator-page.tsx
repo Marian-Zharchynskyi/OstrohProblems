@@ -52,9 +52,10 @@ export default function CoordinatorPage() {
   const [rejectionReason, setRejectionReason] = useState('')
   const [currentStateInput, setCurrentStateInput] = useState('')
   const [detailProblem, setDetailProblem] = useState<Problem | null>(null)
-  const [actionMode, setActionMode] = useState<'reject' | 'currentState' | 'complete' | 'assign' | null>(null)
+  const [actionMode, setActionMode] = useState<'reject' | 'currentState' | 'complete' | 'assign' | 'changeLocation' | null>(null)
   const [coordinatorFiles, setCoordinatorFiles] = useState<FileList | null>(null)
   const [selectedPriority, setSelectedPriority] = useState<string>('')
+  const [newLocation, setNewLocation] = useState<{ lat: number; lng: number } | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const loading = loadingStatus || loadingMy
@@ -143,6 +144,22 @@ export default function CoordinatorPage() {
     }
   }
 
+  const handleUpdateLocation = async (problemId: string) => {
+    if (!newLocation) {
+      toast.error('Оберіть нову локацію на карті')
+      return
+    }
+    try {
+      await problemsApi.updateLocation(problemId, newLocation.lat, newLocation.lng)
+      toast.success('Адресу оновлено')
+      setNewLocation(null)
+      setActionMode(null)
+      invalidateQueries()
+    } catch {
+      toast.error('Помилка оновлення адреси')
+    }
+  }
+
   const handleCompleteProblem = async (problemId: string) => {
     if (!currentStateInput.trim()) {
       toast.error('Опишіть що було зроблено')
@@ -192,6 +209,7 @@ export default function CoordinatorPage() {
     setCurrentStateInput('')
     setRejectionReason('')
     setSelectedPriority('')
+    setNewLocation(null)
     if (fileInputRef.current) fileInputRef.current.value = ''
   }
 
@@ -344,10 +362,16 @@ export default function CoordinatorPage() {
             {isMyProblem && detailProblem.status === ProblemStatusConstants.InProgress && (
               <div className="space-y-4 pt-4 border-t">
                 <div className="flex gap-2 flex-wrap">
-                  {actionMode !== 'reject' && actionMode !== 'complete' && actionMode !== 'currentState' && (
+                  {actionMode !== 'reject' && actionMode !== 'complete' && actionMode !== 'currentState' && actionMode !== 'changeLocation' && (
                     <>
                       <Button variant="outline" onClick={() => setActionMode('currentState')}>
                         Оновити поточний стан
+                      </Button>
+                      <Button variant="outline" onClick={() => {
+                        setActionMode('changeLocation')
+                        setNewLocation({ lat: detailProblem.latitude, lng: detailProblem.longitude })
+                      }}>
+                        Змінити адресу
                       </Button>
                       <Button className="bg-green-600 hover:bg-green-700" onClick={() => setActionMode('complete')}>
                         Завершити
@@ -358,6 +382,32 @@ export default function CoordinatorPage() {
                     </>
                   )}
                 </div>
+
+                {actionMode === 'changeLocation' && (
+                  <div className="space-y-3">
+                    <Label>Оберіть нову локацію на карті</Label>
+                    <div className="h-[300px]">
+                      <LocationPickerMap
+                        latitude={newLocation?.lat || detailProblem.latitude}
+                        longitude={newLocation?.lng || detailProblem.longitude}
+                        readonly={false}
+                        height="300px"
+                        onLocationChange={(lat, lng) => setNewLocation({ lat, lng })}
+                      />
+                    </div>
+                    {newLocation && (
+                      <p className="text-sm text-muted-foreground">
+                        Нові координати: {newLocation.lat.toFixed(6)}, {newLocation.lng.toFixed(6)}
+                      </p>
+                    )}
+                    <div className="flex gap-2">
+                      <Button onClick={() => handleUpdateLocation(detailProblem.id!)}>
+                        Зберегти нову адресу
+                      </Button>
+                      <Button variant="outline" onClick={resetActionMode}>Скасувати</Button>
+                    </div>
+                  </div>
+                )}
 
                 {actionMode === 'currentState' && (
                   <div className="space-y-3">

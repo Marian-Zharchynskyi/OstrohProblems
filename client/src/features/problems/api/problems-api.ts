@@ -1,16 +1,16 @@
 import { apiClient } from '@/lib/api-client'
-import type { CreateProblem, CreateProblemResponse, Problem, PagedResult } from '@/types'
+import type { CreateProblem, CreateProblemResponse, Problem, ProblemSummary, PagedResult } from '@/types'
 
 const BASE_URL = '/problems'
 
 export const problemsApi = {
   getAll: async () => {
-    const response = await apiClient.get<Problem[]>(`${BASE_URL}/get-all`)
+    const response = await apiClient.get<ProblemSummary[]>(`${BASE_URL}/get-all`)
     return response.data
   },
 
   getForMap: async () => {
-    const response = await apiClient.get<Problem[]>(`${BASE_URL}/for-map`)
+    const response = await apiClient.get<ProblemSummary[]>(`${BASE_URL}/for-map`)
     return response.data
   },
 
@@ -164,6 +164,30 @@ export const problemsApi = {
     const response = await apiClient.put<Problem>(
       `${BASE_URL}/delete-coordinator-image/${problemId}`,
       { coordinatorImageId: imageId }
+    )
+    return response.data
+  },
+
+  updateDescription: async (problemId: string, description: string) => {
+    const response = await apiClient.put<Problem>(
+      `${BASE_URL}/update-description/${problemId}`,
+      { description }
+    )
+    return response.data
+  },
+
+  updateTitleAndCategories: async (problemId: string, title: string, categoryNames?: string[]) => {
+    const response = await apiClient.put<Problem>(
+      `${BASE_URL}/update-title-and-categories/${problemId}`,
+      { title, categoryNames }
+    )
+    return response.data
+  },
+
+  updateLocation: async (problemId: string, latitude: number, longitude: number) => {
+    const response = await apiClient.put<Problem>(
+      `${BASE_URL}/update-location/${problemId}`,
+      { latitude, longitude }
     )
     return response.data
   },

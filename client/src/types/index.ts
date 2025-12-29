@@ -76,6 +76,19 @@ export interface CoordinatorImage {
   url: string
 }
 
+export interface ProblemSummary {
+  id: string | null
+  title: string
+  latitude: number
+  longitude: number
+  description: string
+  status: string
+  priority: string
+  categories: string[] | null
+  createdAt: string
+  updatedAt: string
+}
+
 export interface Problem {
   id: string | null
   title: string
