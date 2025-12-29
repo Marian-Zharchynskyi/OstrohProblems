@@ -178,10 +178,10 @@ export function ProfilePage() {
     <div>
       {/* Верхня панель та Навігація */}
       <div
-        className="py-8 px-6"
+        className="py-8"
         style={{ backgroundColor: designSystem.colors.profile.headerBackground}}
       >
-        <div className="max-w-6xl mx-auto">
+        <div className="max-w-6xl mx-auto px-6">
           
           {/* Вкладки навігації */}
           <div className="flex flex-wrap justify-center gap-4">
@@ -203,10 +203,16 @@ export function ProfilePage() {
             </button>
           </div>
         </div>
-        <div
-          className="mt-6 h-px w-full relative left-1/2 -translate-x-1/2"
-          style={{ backgroundColor: designSystem.colors.profile.tabs.border }}
-        />
+        <div className="mt-6 h-px w-full relative">
+          <div
+            className="absolute inset-0"
+            style={{
+              backgroundColor: designSystem.colors.profile.tabs.border,
+              boxShadow: `0 0 0 100vmax ${designSystem.colors.profile.tabs.border}`,
+              clipPath: 'inset(0 -100vmax)',
+            }}
+          />
+        </div>
       </div>
 
       {activeTab === 'profile' && (

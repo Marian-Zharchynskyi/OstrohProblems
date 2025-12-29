@@ -1,8 +1,8 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useRef, useEffect, type CSSProperties } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet'
+import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet'
 import { Icon } from 'leaflet'
-import type { LatLngBoundsExpression } from 'leaflet'
+import type { LatLngBoundsExpression, Map as LeafletMap, Marker as LeafletMarker } from 'leaflet'
 import { useAuth } from '@/contexts/auth-context'
 import { useProblemsByUserFiltered, type UserProblemsFilter } from '../hooks/use-problems'
 import { useRealtimeComments } from '@/hooks/use-realtime-comments'
@@ -23,7 +23,6 @@ import {
   Star, 
   ChevronDown, 
   ChevronUp,
-  Pencil,
   MessageSquare,
   Image as ImageIcon,
   Loader2,
@@ -31,6 +30,7 @@ import {
   Check
 } from 'lucide-react'
 import 'leaflet/dist/leaflet.css'
+import { designSystem } from '@/lib/design-system'
 
 const OSTROH_CENTER: [number, number] = [50.3292, 26.5143]
 
@@ -160,10 +160,11 @@ function DescriptionBlock({ problem, onUpdate }: DescriptionBlockProps) {
           Опис
           {!isEditing && (
             <button 
-              className="p-1 hover:bg-gray-100 rounded transition-colors"
+              type="button"
+              className="p-0 !bg-transparent border-none shadow-none transition-opacity opacity-100 hover:opacity-80 outline-none focus:outline-none focus:ring-0"
               onClick={() => setIsEditing(true)}
             >
-              <Pencil className="w-4 h-4 text-[#596872]" />
+              <img src="/icons/pen.png" alt="Edit" className="w-3.5 h-3.5 cursor-pointer transform -translate-y-[6px]" />
             </button>
           )}
         </CardTitle>
@@ -233,8 +234,7 @@ interface ProblemDetailsCardProps {
   onViewAllComments: () => void
 }
 
-function ProblemDetailsCard({ problem, onUpdate, onViewAllComments }: ProblemDetailsCardProps) {
-  const navigate = useNavigate()
+function ProblemDetailsCard({ problem, onUpdate }: ProblemDetailsCardProps) {
   const [showImages, setShowImages] = useState(false)
   const [showCoordinatorImages, setShowCoordinatorImages] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
@@ -365,16 +365,14 @@ function ProblemDetailsCard({ problem, onUpdate, onViewAllComments }: ProblemDet
                 <CardTitle className="text-lg font-bold text-[#1F2732] font-['Mulish'] flex items-center gap-2">
                   {problem.title}
                   <button 
-                    className="p-1 hover:bg-gray-100 rounded transition-colors"
+                    type="button"
+                    className="p-0 !bg-transparent border-none shadow-none transition-opacity opacity-100 hover:opacity-80 outline-none focus:outline-none focus:ring-0"
                     onClick={() => setIsEditing(true)}
                   >
-                    <Pencil className="w-4 h-4 text-[#596872]" />
+                    <img src="/icons/pen.png" alt="Edit" className="w-3.5 h-3.5 cursor-pointer transform -translate-y-[6px]" />
                   </button>
                 </CardTitle>
-                <div className="flex items-center gap-2 mt-2 text-sm text-gray-600">
-                  <MapPin className="w-4 h-4" />
-                  <span>Координати: {problem.latitude.toFixed(4)}, {problem.longitude.toFixed(4)}</span>
-                </div>
+                
               </>
             )}
           </div>
@@ -447,17 +445,27 @@ function ProblemDetailsCard({ problem, onUpdate, onViewAllComments }: ProblemDet
         <div className="mt-6 space-y-2">
           <div>
             <button
+              type="button"
               onClick={() => hasUserImages && setShowImages(!showImages)}
               disabled={!hasUserImages}
-              className={`flex items-center gap-2 text-sm ${
-                hasUserImages 
-                  ? 'text-[#E42556] hover:underline cursor-pointer' 
-                  : 'text-gray-400 cursor-not-allowed'
+              className={`group flex items-center gap-2 text-sm transition-colors focus-visible:outline-none ${
+                hasUserImages ? 'hover:text-[#1F2732]' : ''
               }`}
+              style={{
+                color: hasUserImages
+                  ? designSystem.colors.profile.links.text
+                  : designSystem.colors.profile.links.disabled,
+                backgroundColor: 'transparent',
+                border: 'none',
+                padding: 0,
+                cursor: hasUserImages ? 'pointer' : 'not-allowed',
+              }}
               title={!hasUserImages ? 'Немає поданих зображень' : undefined}
             >
               <ImageIcon className="w-4 h-4" />
-              Відкрити подані зображення {hasUserImages ? `(${problem.images!.length})` : '(0)'}
+              <span className="group-hover:underline" style={{ color: 'inherit' }}>
+                Відкрити подані зображення {hasUserImages ? `(${problem.images!.length})` : '(0)'}
+              </span>
               {hasUserImages && (showImages ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />)}
             </button>
             {showImages && hasUserImages && (
@@ -477,17 +485,27 @@ function ProblemDetailsCard({ problem, onUpdate, onViewAllComments }: ProblemDet
           
           <div>
             <button
+              type="button"
               onClick={() => hasCoordinatorImages && setShowCoordinatorImages(!showCoordinatorImages)}
               disabled={!hasCoordinatorImages}
-              className={`flex items-center gap-2 text-sm ${
-                hasCoordinatorImages 
-                  ? 'text-[#E42556] hover:underline cursor-pointer' 
-                  : 'text-gray-400 cursor-not-allowed'
+              className={`group flex items-center gap-2 text-sm transition-colors focus-visible:outline-none ${
+                hasCoordinatorImages ? 'hover:text-[#1F2732]' : ''
               }`}
+              style={{
+                color: hasCoordinatorImages
+                  ? designSystem.colors.profile.links.text
+                  : designSystem.colors.profile.links.disabled,
+                backgroundColor: 'transparent',
+                border: 'none',
+                padding: 0,
+                cursor: hasCoordinatorImages ? 'pointer' : 'not-allowed',
+              }}
               title={!hasCoordinatorImages ? 'Немає зображень від координатора' : undefined}
             >
               <ImageIcon className="w-4 h-4" />
-              Відкрити зображення від координатора {hasCoordinatorImages ? `(${problem.coordinatorImages!.length})` : '(0)'}
+              <span className="group-hover:underline" style={{ color: 'inherit' }}>
+                Відкрити зображення від координатора {hasCoordinatorImages ? `(${problem.coordinatorImages!.length})` : '(0)'}
+              </span>
               {hasCoordinatorImages && (showCoordinatorImages ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />)}
             </button>
             {showCoordinatorImages && hasCoordinatorImages && (
@@ -505,26 +523,19 @@ function ProblemDetailsCard({ problem, onUpdate, onViewAllComments }: ProblemDet
             )}
           </div>
         </div>
-
-        <div className="mt-6 pt-4 border-t space-y-2">
-          <button
-            onClick={onViewAllComments}
-            className="text-sm text-[#E42556] hover:underline"
-          >
-            Дивитися усі коментарі до проблеми
-          </button>
-          <div>
-            <button
-              onClick={() => navigate(`/problems/${problem.id}`)}
-              className="text-sm text-[#E42556] hover:underline"
-            >
-              Перейти на сторінку проблеми
-            </button>
-          </div>
-        </div>
       </CardContent>
     </Card>
   )
+}
+
+function MapRefUpdater({ onReady }: { onReady: (map: LeafletMap) => void }) {
+  const map = useMap()
+  
+  useEffect(() => {
+    onReady(map)
+  }, [map, onReady])
+
+  return null
 }
 
 function EmptyProblemState() {
@@ -545,6 +556,7 @@ export function UserProblemsTab() {
   const { user } = useAuth()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
+  const mapRef = useRef<LeafletMap | null>(null)
   const [selectedProblem, setSelectedProblem] = useState<Problem | null>(null)
   const [showDetails, setShowDetails] = useState(false)
   const [statusFilter, setStatusFilter] = useState<string>('all')
@@ -598,12 +610,30 @@ export function UserProblemsTab() {
     { value: 'year', label: 'Цього року' },
   ] as const
 
-  const handleMarkerClick = (problem: Problem) => {
+  const statusTabColors = designSystem.colors.profile.tabs
+type StatusTabStyle = CSSProperties & { '--tab-hover-color'?: string }
+  const getStatusTabStyle = (isActive: boolean): StatusTabStyle => ({
+    color: isActive ? statusTabColors.text : statusTabColors.inactiveText,
+    backgroundColor: 'transparent',
+    border: 'none',
+    borderRadius: 0,
+    '--tab-hover-color': statusTabColors.hoverText,
+  })
+
+  const handleMarkerClick = (problem: Problem, marker?: LeafletMarker) => {
+    if (mapRef.current) {
+      mapRef.current.closePopup()
+    }
+    marker?.openPopup()
     setSelectedProblem(problem)
   }
 
-  const handleDetailsClick = () => {
+  const handleDetailsClick = (problem?: Problem) => {
+    if (problem) {
+      setSelectedProblem(problem)
+    }
     setShowDetails(true)
+    mapRef.current?.closePopup()
   }
 
   if (isLoading) {
@@ -616,17 +646,21 @@ export function UserProblemsTab() {
 
   return (
     <div className="max-w-7xl mx-auto px-6 py-8">
-      <div className="border-b border-gray-200 mb-6">
+      <div className="border-b border-gray-200 mb-6 w-fit">
         <div className="flex gap-2">
           {statusTabs.map((tab) => (
             <button
               key={tab.key}
               onClick={() => setStatusFilter(tab.key)}
-              className="px-4 py-3 text-sm font-medium font-['Mulish'] text-[#464646] hover:text-[#1F2732] transition-colors relative pb-4 outline-none focus:outline-none focus:ring-0"
+              className="px-4 py-3 text-sm font-medium font-['Mulish'] transition-colors relative pb-4 outline-none focus-visible:outline-none focus-visible:ring-0 hover:text-[var(--tab-hover-color)]"
+              style={getStatusTabStyle(statusFilter === tab.key)}
             >
               {tab.label}
               {statusFilter === tab.key && (
-                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#E42556]" />
+                <div
+                  className="absolute bottom-0 left-0 right-0 h-0.5"
+                  style={{ backgroundColor: statusTabColors.indicator }}
+                />
               )}
             </button>
           ))}
@@ -640,12 +674,12 @@ export function UserProblemsTab() {
             placeholder="Шукати за назвою..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10 bg-white border border-[#464646] rounded-[10px] text-[#464646]"
+            className="pl-10 bg-white border border-[#464646] rounded-[10px] text-[#464646] focus-visible:ring-0 focus-visible:border-[2px]"
           />
         </div>
         
         <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-          <SelectTrigger className="w-[180px] bg-white border border-[#464646] rounded-[10px] text-[#464646]">
+          <SelectTrigger className="w-[180px] bg-white border border-[#464646] rounded-[10px] text-[#464646] focus:ring-0 focus:ring-offset-0 focus:border-[2px]">
             <SelectValue placeholder="Категорія" />
           </SelectTrigger>
           <SelectContent>
@@ -657,7 +691,7 @@ export function UserProblemsTab() {
         </Select>
 
         <Select value={priorityFilter} onValueChange={setPriorityFilter}>
-          <SelectTrigger className="w-[180px] bg-white border border-[#464646] rounded-[10px] text-[#464646]">
+          <SelectTrigger className="w-[180px] bg-white border border-[#464646] rounded-[10px] text-[#464646] focus:ring-0 focus:ring-offset-0 focus:border-[2px]">
             <SelectValue placeholder="Пріоритетність" />
           </SelectTrigger>
           <SelectContent>
@@ -669,7 +703,7 @@ export function UserProblemsTab() {
         </Select>
 
         <Select value={dateFilter} onValueChange={setDateFilter}>
-          <SelectTrigger className="w-[180px] bg-white border border-[#464646] rounded-[10px] text-[#464646]">
+          <SelectTrigger className="w-[180px] bg-white border border-[#464646] rounded-[10px] text-[#464646] focus:ring-0 focus:ring-offset-0 focus:border-[2px]">
             <SelectValue
               placeholder="Створено"
               value={dateFilterOptions.find((option) => option.value === dateFilter)?.label}
@@ -710,6 +744,7 @@ export function UserProblemsTab() {
                 maxBoundsViscosity={1.0}
                 minZoom={12}
               >
+                <MapRefUpdater onReady={(map) => (mapRef.current = map)} />
                 <TileLayer
                   attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                   url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -721,26 +756,19 @@ export function UserProblemsTab() {
                     position={[problem.latitude, problem.longitude]}
                     icon={selectedProblem?.id === problem.id ? redMarkerIcon : blueMarkerIcon}
                     eventHandlers={{
-                      click: () => handleMarkerClick(problem),
+                      click: (event) => handleMarkerClick(problem, event.target as LeafletMarker),
                     }}
                   >
                     <Popup>
                       <div className="min-w-[200px]">
                         <h3 className="font-semibold text-gray-900 mb-1">{problem.title}</h3>
-                        <p className="text-sm text-gray-600 mb-2 line-clamp-2">
+                        <p className="text-sm text-gray-600 mb-2 line-clamp-2 overflow-hidden text-ellipsis break-words">
                           {problem.description}
                         </p>
-                        <Badge className={`mb-2 ${
-                          problem.status === ProblemStatusConstants.New ? 'bg-blue-100 text-blue-800' :
-                          problem.status === ProblemStatusConstants.InProgress ? 'bg-yellow-100 text-yellow-800' :
-                          problem.status === ProblemStatusConstants.Completed ? 'bg-green-100 text-green-800' :
-                          'bg-red-100 text-red-800'
-                        }`}>
-                          {problem.status}
-                        </Badge>
                         <button
-                          onClick={handleDetailsClick}
-                          className="mt-2 w-full rounded-md bg-[#E42556] px-3 py-1.5 text-sm font-medium text-white hover:bg-[#E42556]/90 transition-colors"
+                          type="button"
+                          onClick={() => handleDetailsClick(problem)}
+                          className="mt-2 w-1/2 min-w-[100px] rounded-md border border-[#1E40AF] text-[#1E40AF] px-3 py-1.5 text-sm font-semibold bg-transparent hover:bg-[#1E40AF] hover:text-white transition-colors focus:outline-none focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 mx-auto block"
                         >
                           Детальніше
                         </button>
