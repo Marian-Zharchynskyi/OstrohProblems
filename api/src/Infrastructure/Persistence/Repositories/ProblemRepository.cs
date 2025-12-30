@@ -13,7 +13,7 @@ public class ProblemRepository(ApplicationDbContext context) : IProblemQueries, 
         CancellationToken cancellationToken)
     {
         var query = context.Problems
-            .Include(x => x.Comments)
+            .Include(x => x.Comments).ThenInclude(c => c.User)
             .Include(x => x.Images)
             .Include(x => x.CoordinatorImages)
             .Include(x => x.CreatedBy)
@@ -49,7 +49,7 @@ public class ProblemRepository(ApplicationDbContext context) : IProblemQueries, 
     public async Task<Option<Problem>> GetById(ProblemId id, CancellationToken cancellationToken)
     {
         var entity = await context.Problems
-            .Include(x => x.Comments)
+            .Include(x => x.Comments).ThenInclude(c => c.User)
             .Include(x => x.Images)
             .Include(x => x.CoordinatorImages)
             .Include(x => x.CreatedBy)
@@ -93,7 +93,7 @@ public class ProblemRepository(ApplicationDbContext context) : IProblemQueries, 
     public async Task<IReadOnlyList<Problem>> GetByUserId(UserId userId, CancellationToken cancellationToken)
     {
         return await context.Problems
-            .Include(x => x.Comments)
+            .Include(x => x.Comments).ThenInclude(c => c.User)
             .Include(x => x.Images)
             .Include(x => x.CoordinatorImages)
             .Include(x => x.CreatedBy)
@@ -109,7 +109,7 @@ public class ProblemRepository(ApplicationDbContext context) : IProblemQueries, 
     public async Task<IReadOnlyList<Problem>> GetByCreatedBy(UserId userId, CancellationToken cancellationToken)
     {
         return await context.Problems
-            .Include(x => x.Comments)
+            .Include(x => x.Comments).ThenInclude(c => c.User)
             .Include(x => x.Images)
             .Include(x => x.CoordinatorImages)
             .Where(x => x.CreatedById == userId)
@@ -119,7 +119,7 @@ public class ProblemRepository(ApplicationDbContext context) : IProblemQueries, 
     public async Task<IReadOnlyList<Problem>> GetByCoordinatorId(UserId coordinatorId, CancellationToken cancellationToken)
     {
         return await context.Problems
-            .Include(x => x.Comments)
+            .Include(x => x.Comments).ThenInclude(c => c.User)
             .Include(x => x.Images)
             .Include(x => x.CoordinatorImages)
             .Include(x => x.CreatedBy)
@@ -135,7 +135,7 @@ public class ProblemRepository(ApplicationDbContext context) : IProblemQueries, 
     public async Task<IReadOnlyList<Problem>> GetByStatus(ProblemStatus status, CancellationToken cancellationToken)
     {
         return await context.Problems
-            .Include(x => x.Comments)
+            .Include(x => x.Comments).ThenInclude(c => c.User)
             .Include(x => x.Images)
             .Include(x => x.CoordinatorImages)
             .Include(x => x.CreatedBy)
@@ -177,7 +177,7 @@ public class ProblemRepository(ApplicationDbContext context) : IProblemQueries, 
         CancellationToken cancellationToken)
     {
         var query = context.Problems
-            .Include(x => x.Comments)
+            .Include(x => x.Comments).ThenInclude(c => c.User)
             .Include(x => x.Images)
             .Include(x => x.CoordinatorImages)
             .Include(x => x.CreatedBy)
