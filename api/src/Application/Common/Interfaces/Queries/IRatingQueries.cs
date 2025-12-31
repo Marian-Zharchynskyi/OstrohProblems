@@ -1,3 +1,4 @@
+using Domain.Problems;
 using Domain.Ratings;
 using Optional;
 
@@ -9,4 +10,5 @@ public interface IRatingQueries
     Task<Option<Rating>> GetById(RatingId id, CancellationToken cancellationToken);
     Task<(IReadOnlyList<Rating> Items, int TotalCount)> GetPaged(int page, int pageSize,
         CancellationToken cancellationToken);
+    Task<double> GetAverageByProblemId(ProblemId problemId, CancellationToken cancellationToken);
 }
