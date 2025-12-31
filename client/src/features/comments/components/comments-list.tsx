@@ -11,8 +11,10 @@ import {
   useDeleteComment,
 } from '../hooks/use-comments'
 import { toast } from '@/lib/toast'
+import { useAuth } from '@/contexts/auth-context'
 
 export function CommentsList() {
+  const { user } = useAuth()
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [isDeleteOpen, setIsDeleteOpen] = useState(false)
   const [selectedComment, setSelectedComment] = useState<Comment | null>(null)
@@ -21,6 +23,8 @@ export function CommentsList() {
   const createMutation = useCreateComment()
   const updateMutation = useUpdateComment()
   const deleteMutation = useDeleteComment()
+  
+  const isAdmin = user?.roles?.includes('Administrator')
 
   const columns: Column<Comment>[] = [
     {
@@ -91,10 +95,10 @@ export function CommentsList() {
       <PageHeader
         title="Comments"
         description="Manage problem comments"
-        action={{
+        action={!isAdmin ? {
           label: 'New Comment',
           onClick: handleCreate,
-        }}
+        } : undefined}
       />
 
       <DataTable

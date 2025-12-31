@@ -1,7 +1,7 @@
 import { useState, useMemo, useRef, useEffect, type CSSProperties } from 'react'
-import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet'
+import { MapContainer, TileLayer, Marker, useMap } from 'react-leaflet'
 import { Icon } from 'leaflet'
-import type { LatLngBoundsExpression, Map as LeafletMap, Marker as LeafletMarker } from 'leaflet'
+import type { LatLngBoundsExpression, Map as LeafletMap } from 'leaflet'
 import { useAuth } from '@/contexts/auth-context'
 import { useProblemsByUserFiltered, type UserProblemsFilter } from '../hooks/use-problems'
 import { useRealtimeComments } from '@/hooks/use-realtime-comments'
@@ -13,7 +13,7 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { toast } from '@/lib/toast'
 import { useQueryClient } from '@tanstack/react-query'
@@ -23,7 +23,6 @@ import {
   Star, 
   ChevronDown, 
   ChevronUp,
-  Image as ImageIcon,
   Loader2,
   X,
   Check,
@@ -35,6 +34,7 @@ import { designSystem } from '@/lib/design-system'
 import { CommentForm } from '@/features/comments/components/comment-form'
 import { commentsApi } from '@/features/comments/api/comments-api'
 import { DeleteDialog } from '@/components/shared/delete-dialog'
+import { ImageLightbox } from '@/components/shared/image-lightbox'
 
 const OSTROH_CENTER: [number, number] = [50.3292, 26.5143]
 
@@ -73,7 +73,12 @@ interface CommentsBlockProps {
 function CommentsBlock({ comments, problemId, onViewAllComments, onCommentUpdate }: CommentsBlockProps) {
   const { user } = useAuth()
   const realtimeComments = useRealtimeComments(problemId, comments)
-  const displayedComments = realtimeComments.slice(0, 3)
+  const sortedComments = useMemo(() => {
+    return [...realtimeComments].sort((a, b) => 
+      new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    )
+  }, [realtimeComments])
+  const displayedComments = sortedComments.slice(0, 3)
   
   const [editingComment, setEditingComment] = useState<Comment | null>(null)
   const [isEditOpen, setIsEditOpen] = useState(false)
@@ -119,12 +124,12 @@ function CommentsBlock({ comments, problemId, onViewAllComments, onCommentUpdate
   return (
     <div className="flex flex-col">
       <h2 className="text-xl font-bold text-[#1F2732] font-['Mulish'] mb-4">
-        Коментарі користувачів
+        Останні коментарі
       </h2>
       
       <Card className="bg-white border border-gray-200 rounded-lg flex flex-col h-fit">
         <CardContent className="p-5">
-          {realtimeComments.length === 0 ? (
+          {sortedComments.length === 0 ? (
             <p className="text-gray-500 text-sm">Коментарів поки немає</p>
           ) : (
             <div className="flex flex-col">
@@ -143,20 +148,22 @@ function CommentsBlock({ comments, problemId, onViewAllComments, onCommentUpdate
                             {new Date(comment.createdAt).toLocaleTimeString('uk-UA', { hour: '2-digit', minute: '2-digit' })}
                           </span>
                           {canEdit && (
-                            <div className="flex items-center gap-1 ml-2">
+                            <div className="flex items-center gap-2 ml-2">
                               <button 
+                                type="button"
                                 onClick={() => {
                                   setEditingComment(comment)
                                   setIsEditOpen(true)
                                 }}
-                                className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+                                className="p-0 bg-transparent border-none shadow-none transition-opacity hover:opacity-80 outline-none focus:outline-none focus:ring-0"
                                 title="Редагувати"
                               >
                                 <Pencil className="w-3.5 h-3.5 text-gray-500 hover:text-blue-600" />
                               </button>
                               <button 
+                                type="button"
                                 onClick={() => setCommentToDelete(comment.id)}
-                                className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+                                className="p-0 bg-transparent border-none shadow-none transition-opacity hover:opacity-80 outline-none focus:outline-none focus:ring-0"
                                 title="Видалити"
                               >
                                 <Trash2 className="w-3.5 h-3.5 text-gray-500 hover:text-red-600" />
@@ -174,7 +181,7 @@ function CommentsBlock({ comments, problemId, onViewAllComments, onCommentUpdate
                 )
               })}
               
-              {realtimeComments.length > 0 && (
+              {sortedComments.length > 0 && (
                 <>
                   <hr className="border-gray-200 border-b-[1px] mt-3 mx-4 md:mx-5" />
                   <button
@@ -204,6 +211,7 @@ function CommentsBlock({ comments, problemId, onViewAllComments, onCommentUpdate
         onOpenChange={setIsCreateOpen}
         onSubmit={handleCreateComment}
         initialData={null}
+        problemId={problemId}
       />
 
       <CommentForm
@@ -315,78 +323,79 @@ function DescriptionBlock({ problem, onUpdate }: DescriptionBlockProps) {
   }
 
   return (
-    <Card className="bg-white border border-gray-200 rounded-[10px]">
-      <CardHeader className="pb-4 flex flex-row items-center justify-between">
-        <CardTitle className="text-lg font-bold text-[#1F2732] font-['Mulish'] flex items-center gap-2">
-          Опис
-          {!isEditing && (
-            <button 
-              type="button"
-              className="p-0 !bg-transparent border-none shadow-none transition-opacity opacity-100 hover:opacity-80 outline-none focus:outline-none focus:ring-0"
-              onClick={() => setIsEditing(true)}
-            >
-              <img src="/icons/pen.png" alt="Edit" className="w-3.5 h-3.5 cursor-pointer transform -translate-y-[6px]" />
-            </button>
-          )}
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        {isEditing ? (
-          <div className="space-y-3">
-            <Textarea
-              value={editDescription}
-              onChange={(e) => setEditDescription(e.target.value)}
-              className="min-h-[100px] bg-[#F0F1F2] border-none rounded-lg"
-              placeholder="Введіть опис проблеми..."
-            />
-            <div className="flex gap-2 justify-end">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleCancel}
-                disabled={isSaving}
-              >
-                <X className="w-4 h-4 mr-1" />
-                Скасувати
-              </Button>
-              <Button
-                size="sm"
-                onClick={handleSave}
-                disabled={isSaving || !editDescription.trim()}
-                className="bg-[#E42556] hover:bg-[#E42556]/90"
-              >
-                <Check className="w-4 h-4 mr-1" />
-                {isSaving ? 'Збереження...' : 'Зберегти'}
-              </Button>
-            </div>
-          </div>
-        ) : (
-          <>
-            <p className={`text-gray-600 whitespace-pre-wrap break-words ${!expanded && isLongDescription ? 'line-clamp-3' : ''}`}>
-              {problem.description}
-            </p>
-            
-            {isLongDescription && (
-              <button
-                onClick={() => setExpanded(!expanded)}
-                className="mt-2 flex items-center gap-1 text-sm font-semibold text-[#165D9D] hover:underline bg-transparent p-0 border-none shadow-none focus:outline-none focus-visible:outline-none focus-visible:ring-0"
-                style={{ backgroundColor: 'transparent' }}
-              >
-                {expanded ? (
-                  <>
-                    Згорнути <ChevronUp className="w-4 h-4" />
-                  </>
-                ) : (
-                  <>
-                    Читати повністю <ChevronDown className="w-4 h-4" />
-                  </>
-                )}
-              </button>
-            )}
-          </>
+    <div className="flex flex-col h-full">
+      <h2 className="text-xl font-bold text-[#1F2732] font-['Mulish'] mb-4 flex items-center gap-2">
+        Опис
+        {!isEditing && (
+          <button 
+            type="button"
+            className="p-0 !bg-transparent border-none shadow-none transition-opacity opacity-100 hover:opacity-80 outline-none focus:outline-none focus:ring-0"
+            onClick={() => setIsEditing(true)}
+          >
+            <img src="/icons/pen.png" alt="Edit" className="w-3.5 h-3.5 cursor-pointer" />
+          </button>
         )}
-      </CardContent>
-    </Card>
+      </h2>
+      <Card className="bg-white border border-gray-200 rounded-[10px] mt-0">
+        <CardContent className="p-5 md:p-6">
+          {isEditing ? (
+            <div className="space-y-3">
+              <Textarea
+                value={editDescription}
+                onChange={(e) => setEditDescription(e.target.value)}
+                className="min-h-[120px] bg-[#F0F1F2] border-none rounded-lg"
+                placeholder="Введіть опис проблеми..."
+              />
+              <div className="flex gap-2 justify-end">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleCancel}
+                  disabled={isSaving}
+                  className="border border-[#D0D5DD] text-[#292929] hover:bg-[#F5F5F5] hover:text-[#292929]"
+                >
+                  <X className="w-4 h-4 mr-1 text-[#292929]" />
+                  Скасувати
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={handleSave}
+                  disabled={isSaving || !editDescription.trim()}
+                  className="bg-[#E42556] hover:bg-[#E42556]/90"
+                >
+                  <Check className="w-4 h-4 mr-1" />
+                  {isSaving ? 'Збереження...' : 'Зберегти'}
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <>
+              <p className={`text-gray-600 whitespace-pre-wrap break-words ${!expanded && isLongDescription ? 'line-clamp-3' : ''}`}>
+                {problem.description}
+              </p>
+              
+              {isLongDescription && (
+                <button
+                  onClick={() => setExpanded(!expanded)}
+                  className="mt-2 flex items-center gap-1 text-sm font-semibold text-[#165D9D] hover:underline bg-transparent p-0 border-none shadow-none focus:outline-none focus-visible:outline-none focus-visible:ring-0"
+                  style={{ backgroundColor: 'transparent' }}
+                >
+                  {expanded ? (
+                    <>
+                      Згорнути <ChevronUp className="w-4 h-4" />
+                    </>
+                  ) : (
+                    <>
+                      Читати повністю <ChevronDown className="w-4 h-4" />
+                    </>
+                  )}
+                </button>
+              )}
+            </>
+          )}
+        </CardContent>
+      </Card>
+    </div>
   )
 }
 
@@ -397,15 +406,54 @@ interface ProblemDetailsCardProps {
 }
 
 function ProblemDetailsCard({ problem, onUpdate }: ProblemDetailsCardProps) {
-  const [showImages, setShowImages] = useState(false)
-  const [showCoordinatorImages, setShowCoordinatorImages] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
   const [editTitle, setEditTitle] = useState(problem.title)
   const [editCategories, setEditCategories] = useState<string[]>(problem.categories || [])
   const [isSaving, setIsSaving] = useState(false)
+  const [averageRating, setAverageRating] = useState<number>(0)
+  const [lightboxOpen, setLightboxOpen] = useState(false)
+  const [lightboxImages, setLightboxImages] = useState<{ id: string | null; url: string }[]>([])
+  const [lightboxInitialIndex, setLightboxInitialIndex] = useState(0)
 
   const hasUserImages = problem.images && problem.images.length > 0
   const hasCoordinatorImages = problem.coordinatorImages && problem.coordinatorImages.length > 0
+  const hasRejectionReason = Boolean(problem.rejectionReason && problem.rejectionReason.trim())
+  const [address, setAddress] = useState<string>('Завантаження...')
+
+  useEffect(() => {
+    const fetchAddress = async () => {
+      try {
+        const response = await fetch(
+          `https://nominatim.openstreetmap.org/reverse?format=json&lat=${problem.latitude}&lon=${problem.longitude}&zoom=18&addressdetails=1`
+        )
+        const data = await response.json()
+        const addr = data.address || {}
+        const streetName = addr.road || addr.pedestrian || addr.footway || 
+                          addr.street || addr.suburb || addr.neighbourhood || 
+                          addr.city || 'Невідома вулиця'
+        setAddress(streetName)
+      } catch {
+        setAddress('Не вдалося визначити адресу')
+      }
+    }
+    
+    fetchAddress()
+  }, [problem.latitude, problem.longitude])
+
+  useEffect(() => {
+    const fetchRating = async () => {
+      if (problem.id) {
+        try {
+          const { ratingsApi } = await import('@/features/ratings/api/ratings-api')
+          const rating = await ratingsApi.getAverageByProblemId(problem.id)
+          setAverageRating(rating)
+        } catch {
+          setAverageRating(0)
+        }
+      }
+    }
+    fetchRating()
+  }, [problem.id])
 
   const handleSave = async () => {
     if (!problem.id || !editTitle.trim()) return
@@ -436,18 +484,34 @@ function ProblemDetailsCard({ problem, onUpdate }: ProblemDetailsCardProps) {
     )
   }
 
+  const openUserImagesLightbox = () => {
+    if (hasUserImages) {
+      setLightboxImages(problem.images!)
+      setLightboxInitialIndex(0)
+      setLightboxOpen(true)
+    }
+  }
+
+  const openCoordinatorImagesLightbox = () => {
+    if (hasCoordinatorImages) {
+      setLightboxImages(problem.coordinatorImages!)
+      setLightboxInitialIndex(0)
+      setLightboxOpen(true)
+    }
+  }
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case ProblemStatusConstants.New:
-        return 'bg-blue-100 text-blue-800'
+        return 'bg-blue-100 text-blue-800 hover:bg-blue-100'
       case ProblemStatusConstants.InProgress:
-        return 'bg-yellow-100 text-yellow-800'
+        return 'bg-yellow-100 text-yellow-800 hover:bg-yellow-100'
       case ProblemStatusConstants.Completed:
-        return 'bg-green-100 text-green-800'
+        return 'bg-green-100 text-green-800 hover:bg-green-100'
       case ProblemStatusConstants.Rejected:
-        return 'bg-red-100 text-red-800'
+        return 'bg-red-100 text-red-800 hover:bg-red-100'
       default:
-        return 'bg-gray-100 text-gray-800'
+        return 'bg-gray-100 text-gray-800 hover:bg-gray-100'
     }
   }
 
@@ -466,227 +530,203 @@ function ProblemDetailsCard({ problem, onUpdate }: ProblemDetailsCardProps) {
     }
   }
 
+  const roundedRating = Math.round(averageRating)
+
   return (
-    <Card className="bg-white border border-gray-200 rounded-[10px]">
-      <CardHeader className="pb-4">
-        <div className="flex items-start justify-between">
-          <div className="flex-1">
-            {isEditing ? (
-              <div className="space-y-3">
-                <div>
-                  <label className="text-sm text-gray-500 mb-1 block">Назва</label>
-                  <Input
-                    value={editTitle}
-                    onChange={(e) => setEditTitle(e.target.value)}
-                    className="bg-[#F0F1F2] border-none rounded-lg"
-                    placeholder="Введіть назву..."
-                  />
+    <div className="flex flex-col">
+      <h2 className="text-xl font-bold text-[#1F2732] font-['Mulish'] mb-4 flex items-center gap-2">
+        Характеристики
+        {!isEditing && (
+          <button 
+            type="button"
+            className="p-0 !bg-transparent border-none shadow-none transition-opacity opacity-100 hover:opacity-80 outline-none focus:outline-none focus:ring-0"
+            onClick={() => setIsEditing(true)}
+          >
+            <img src="/icons/pen.png" alt="Edit" className="w-3.5 h-3.5 cursor-pointer" />
+          </button>
+        )}
+      </h2>
+
+      <Card className="bg-white border border-gray-200 rounded-lg">
+        <CardContent className="p-5 md:p-6">
+          {isEditing ? (
+            <div className="space-y-4">
+              <div>
+                <label className="text-sm font-bold text-gray-700 mb-1 block">Назва</label>
+                <Input
+                  value={editTitle}
+                  onChange={(e) => setEditTitle(e.target.value)}
+                  className="bg-[#F0F1F2] border-none rounded-lg"
+                  placeholder="Введіть назву..."
+                />
+              </div>
+              <div>
+                <label className="text-sm font-bold text-gray-700 mb-2 block">Категорії</label>
+                <div className="flex flex-wrap gap-2">
+                  {Object.values(CategoryConstants).map((cat) => (
+                    <button
+                      key={cat}
+                      type="button"
+                      onClick={() => toggleCategory(cat)}
+                      className={`px-3 py-1 text-xs rounded-full border transition-colors ${
+                        editCategories.includes(cat)
+                          ? 'bg-[#E42556] text-white border-[#E42556]'
+                          : 'bg-white text-gray-600 border-gray-300 hover:border-[#E42556]'
+                      }`}
+                    >
+                      {cat}
+                    </button>
+                  ))}
                 </div>
-                <div>
-                  <label className="text-sm text-gray-500 mb-2 block">Категорії</label>
-                  <div className="flex flex-wrap gap-2">
-                    {Object.values(CategoryConstants).map((cat) => (
-                      <button
-                        key={cat}
-                        type="button"
-                        onClick={() => toggleCategory(cat)}
-                        className={`px-3 py-1 text-xs rounded-full border transition-colors ${
-                          editCategories.includes(cat)
-                            ? 'bg-[#E42556] text-white border-[#E42556]'
-                            : 'bg-white text-gray-600 border-gray-300 hover:border-[#E42556]'
-                        }`}
-                      >
-                        {cat}
-                      </button>
+              </div>
+              <div className="flex gap-2 justify-end">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleCancel}
+                  disabled={isSaving}
+                  className="border border-[#D0D5DD] text-[#292929] hover:bg-[#F5F5F5] hover:text-[#292929]"
+                >
+                  <X className="w-4 h-4 mr-1 text-[#292929]" />
+                  Скасувати
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={handleSave}
+                  disabled={isSaving || !editTitle.trim()}
+                  className="bg-[#E42556] hover:bg-[#E42556]/90"
+                >
+                  <Check className="w-4 h-4 mr-1" />
+                  {isSaving ? 'Збереження...' : 'Зберегти'}
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <>
+              <div className="flex items-start justify-between mb-4">
+                <div className="flex-1">
+                  <h3 className="text-lg font-bold text-[#1F2732] font-['Mulish'] mb-1">
+                    {problem.title}
+                  </h3>
+                  <p className="text-sm text-gray-600">
+                    <span className="font-bold">Адреса :</span> {address}
+                  </p>
+                </div>
+                <div className="flex flex-col items-end">
+                  {averageRating === 0 && (
+                    <span className="text-xs text-gray-500 mb-1">поки не оцінено</span>
+                  )}
+                  <div className="flex items-center gap-0.5">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <Star
+                        key={star}
+                        className={`w-5 h-5 ${star <= roundedRating ? 'text-[#FFA900] fill-[#FFA900]' : 'text-[#D2D2D2]'}`}
+                      />
                     ))}
                   </div>
-                </div>
-                <div className="flex gap-2 justify-end">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleCancel}
-                    disabled={isSaving}
-                  >
-                    <X className="w-4 h-4 mr-1" />
-                    Скасувати
-                  </Button>
-                  <Button
-                    size="sm"
-                    onClick={handleSave}
-                    disabled={isSaving || !editTitle.trim()}
-                    className="bg-[#E42556] hover:bg-[#E42556]/90"
-                  >
-                    <Check className="w-4 h-4 mr-1" />
-                    {isSaving ? 'Збереження...' : 'Зберегти'}
-                  </Button>
+                  <span className="text-xs font-bold text-[#E42556] mt-1">Рейтинг уподобань</span>
                 </div>
               </div>
-            ) : (
-              <>
-                <CardTitle className="text-lg font-bold text-[#1F2732] font-['Mulish'] flex items-center gap-2">
-                  {problem.title}
-                  <button 
-                    type="button"
-                    className="p-0 !bg-transparent border-none shadow-none transition-opacity opacity-100 hover:opacity-80 outline-none focus:outline-none focus:ring-0"
-                    onClick={() => setIsEditing(true)}
-                  >
-                    <img src="/icons/pen.png" alt="Edit" className="w-3.5 h-3.5 cursor-pointer transform -translate-y-[6px]" />
-                  </button>
-                </CardTitle>
-                
-              </>
-            )}
-          </div>
-          {!isEditing && (
-            <Badge className={getStatusColor(problem.status)}>
-              {problem.status}
-            </Badge>
-          )}
-        </div>
-        
-        {!isEditing && (
-          <div className="flex items-center gap-1 mt-3">
-            {[1, 2, 3, 4, 5].map((star) => (
-              <Star
-                key={star}
-                className={`w-5 h-5 ${star <= 4 ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'}`}
-              />
-            ))}
-          </div>
-        )}
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-3 text-sm">
-          <div className="flex justify-between">
-            <span className="text-gray-500">Дата створення:</span>
-            <span className="font-medium">
-              {new Date(problem.createdAt).toLocaleDateString('uk-UA')}
-            </span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-gray-500">Останнє оновлення:</span>
-            <span className="font-medium">
-              {new Date(problem.updatedAt).toLocaleDateString('uk-UA')}
-            </span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-gray-500">Пріоритетність:</span>
-            <span className={`font-medium ${getPriorityColor(problem.priority)}`}>
-              {problem.priority}
-            </span>
-          </div>
-          {problem.categories && problem.categories.length > 0 && (
-            <div className="flex justify-between">
-              <span className="text-gray-500">Категорія:</span>
-              <span className="font-medium">{problem.categories.join(', ')}</span>
-            </div>
-          )}
-          {problem.coordinator && (
-            <div className="flex justify-between">
-              <span className="text-gray-500">Координатор:</span>
-              <span className="font-medium">
-                {problem.coordinator.name} {problem.coordinator.surname}
-              </span>
-            </div>
-          )}
-          {problem.currentState && (
-            <div className="mt-4 p-3 bg-blue-50 rounded-md">
-              <p className="text-sm font-medium text-blue-800">Поточний стан:</p>
-              <p className="text-sm text-blue-700">{problem.currentState}</p>
-            </div>
-          )}
-          {problem.rejectionReason && (
-            <div className="mt-4 p-3 bg-red-50 rounded-md">
-              <p className="text-sm font-medium text-red-800">Причина відхилення:</p>
-              <p className="text-sm text-red-700">{problem.rejectionReason}</p>
-            </div>
-          )}
-        </div>
 
-        <div className="mt-6 space-y-2">
-          <div>
-            <button
-              type="button"
-              onClick={() => hasUserImages && setShowImages(!showImages)}
-              disabled={!hasUserImages}
-              className={`group flex items-center gap-2 text-sm transition-colors focus-visible:outline-none ${
-                hasUserImages ? 'hover:text-[#1F2732]' : ''
-              }`}
-              style={{
-                color: hasUserImages
-                  ? designSystem.colors.profile.links.text
-                  : designSystem.colors.profile.links.disabled,
-                backgroundColor: 'transparent',
-                border: 'none',
-                padding: 0,
-                cursor: hasUserImages ? 'pointer' : 'not-allowed',
-              }}
-              title={!hasUserImages ? 'Немає поданих зображень' : undefined}
-            >
-              <ImageIcon className="w-4 h-4" />
-              <span className="group-hover:underline" style={{ color: 'inherit' }}>
-                Відкрити подані зображення {hasUserImages ? `(${problem.images!.length})` : '(0)'}
-              </span>
-              {hasUserImages && (showImages ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />)}
-            </button>
-            {showImages && hasUserImages && (
-              <div className="mt-3 grid grid-cols-2 gap-2">
-                {problem.images!.map((image) => (
-                  <img
-                    key={image.id}
-                    src={image.url}
-                    alt="Зображення проблеми"
-                    className="w-full h-32 object-cover rounded-lg cursor-pointer hover:opacity-90"
-                    onClick={() => window.open(image.url, '_blank')}
-                  />
-                ))}
+              <div className="grid grid-cols-2 gap-x-8 gap-y-3 text-sm mb-4 my-8">
+                <div className="flex justify-between my-1">
+                  <span className="font-bold text-gray-700">Дата створення</span>
+                  <span className="text-gray-600">
+                    {new Date(problem.createdAt).toLocaleDateString('uk-UA')}
+                  </span>
+                </div>
+                <div className="flex justify-between my-1">
+                  <span className="font-bold text-gray-700">Останнє оновлення</span>
+                  <span className="text-gray-600">
+                    {new Date(problem.updatedAt).toLocaleDateString('uk-UA')}
+                  </span>
+                </div>
+                <div className="flex justify-between my-1">
+                  <span className="font-bold text-gray-700">Пріоритетність</span>
+                  <span className={`font-medium ${getPriorityColor(problem.priority)}`}>
+                    {problem.priority}
+                  </span>
+                </div>
+                <div className="flex justify-between items-start my-1">
+                  <span className="font-bold text-gray-700">Категорія</span>
+                  <div className="flex flex-col items-end">
+                    {problem.categories && problem.categories.length > 0 
+                      ? problem.categories.map((cat, index) => (
+                          <span key={index} className="text-gray-600">
+                            {cat}
+                          </span>
+                        ))
+                      : <span className="text-gray-600">Не вказано</span>}
+                  </div>
+                </div>
+                {hasRejectionReason ? (
+                  <div className="col-span-2 my-1">
+                    <div className="p-3 bg-red-50 rounded-lg">
+                      <span className="font-bold text-red-800 block mb-1">
+                        Причина відхилення :
+                      </span>
+                      <span className="text-red-700 font-semibold text-left">
+                        {problem.rejectionReason}
+                      </span>
+                    </div>
+                  </div>
+                ) : problem.currentState ? (
+                  <div className="col-span-2 my-1">
+                    <div className="p-3 bg-sky-50 rounded-lg">
+                      <span className="font-bold text-[#464646] block mb-1">
+                        Поточний стан :
+                      </span>
+                      <span className="text-[#464646] font-semibold text-left">
+                        {problem.currentState}
+                      </span>
+                    </div>
+                  </div>
+                ) : null}
               </div>
-            )}
-          </div>
-          
-          <div>
-            <button
-              type="button"
-              onClick={() => hasCoordinatorImages && setShowCoordinatorImages(!showCoordinatorImages)}
-              disabled={!hasCoordinatorImages}
-              className={`group flex items-center gap-2 text-sm transition-colors focus-visible:outline-none ${
-                hasCoordinatorImages ? 'hover:text-[#1F2732]' : ''
-              }`}
-              style={{
-                color: hasCoordinatorImages
-                  ? designSystem.colors.profile.links.text
-                  : designSystem.colors.profile.links.disabled,
-                backgroundColor: 'transparent',
-                border: 'none',
-                padding: 0,
-                cursor: hasCoordinatorImages ? 'pointer' : 'not-allowed',
-              }}
-              title={!hasCoordinatorImages ? 'Немає зображень від координатора' : undefined}
-            >
-              <ImageIcon className="w-4 h-4" />
-              <span className="group-hover:underline" style={{ color: 'inherit' }}>
-                Відкрити зображення від координатора {hasCoordinatorImages ? `(${problem.coordinatorImages!.length})` : '(0)'}
-              </span>
-              {hasCoordinatorImages && (showCoordinatorImages ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />)}
-            </button>
-            {showCoordinatorImages && hasCoordinatorImages && (
-              <div className="mt-3 grid grid-cols-2 gap-2">
-                {problem.coordinatorImages!.map((image) => (
-                  <img
-                    key={image.id}
-                    src={image.url}
-                    alt="Зображення від координатора"
-                    className="w-full h-32 object-cover rounded-lg cursor-pointer hover:opacity-90"
-                    onClick={() => window.open(image.url, '_blank')}
-                  />
-                ))}
+
+              <div className="flex items-end justify-between">
+                <div className="flex flex-col gap-1">
+                  <button
+                    type="button"
+                    onClick={openUserImagesLightbox}
+                    disabled={!hasUserImages}
+                    className="text-sm text-left focus:outline-none focus:ring-0 bg-transparent p-0 border-none shadow-none"
+                    style={{
+                      color: hasUserImages ? '#193CB8' : '#9CA3AF',
+                      cursor: hasUserImages ? 'pointer' : 'not-allowed',
+                    }}
+                  >
+                    Відкрити подані зображення ({problem.images?.length || 0})
+                  </button>
+                  <button
+                    type="button"
+                    onClick={openCoordinatorImagesLightbox}
+                    disabled={!hasCoordinatorImages}
+                    className="text-sm text-left focus:outline-none focus:ring-0 bg-transparent p-0 border-none shadow-none"
+                    style={{
+                      color: hasCoordinatorImages ? '#193CB8' : '#9CA3AF',
+                      cursor: hasCoordinatorImages ? 'pointer' : 'not-allowed',
+                    }}
+                  >
+                    Відкрити зображення від координатора ({problem.coordinatorImages?.length || 0})
+                  </button>
+                </div>
+                <Badge className={`${getStatusColor(problem.status)} px-4 py-1 rounded-full`}>
+                  {problem.status}
+                </Badge>
               </div>
-            )}
-          </div>
-        </div>
-      </CardContent>
-    </Card>
+            </>
+          )}
+        </CardContent>
+      </Card>
+
+      <ImageLightbox
+        images={lightboxImages}
+        initialIndex={lightboxInitialIndex}
+        open={lightboxOpen}
+        onClose={() => setLightboxOpen(false)}
+      />
+    </div>
   )
 }
 
@@ -780,20 +820,9 @@ type StatusTabStyle = CSSProperties & { '--tab-hover-color'?: string }
     '--tab-hover-color': statusTabColors.hoverText,
   })
 
-  const handleMarkerClick = (problem: Problem, marker?: LeafletMarker) => {
-    if (mapRef.current) {
-      mapRef.current.closePopup()
-    }
-    marker?.openPopup()
+  const handleMarkerClick = (problem: Problem) => {
     setSelectedProblem(problem)
-  }
-
-  const handleDetailsClick = (problem?: Problem) => {
-    if (problem) {
-      setSelectedProblem(problem)
-    }
     setShowDetails(true)
-    mapRef.current?.closePopup()
   }
 
   if (isLoading) {
@@ -892,7 +921,7 @@ type StatusTabStyle = CSSProperties & { '--tab-hover-color'?: string }
       ) : (
         <div className="space-y-6">
           {/* Верхній рядок: Карта зліва + Коментарі справа */}
-          <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 my-10">
             {/* Карта - займає ~60% ширини (3 з 5 колонок) */}
             <div className="lg:col-span-3 h-[500px] rounded-lg overflow-hidden shadow-lg">
               <MapContainer
@@ -916,25 +945,9 @@ type StatusTabStyle = CSSProperties & { '--tab-hover-color'?: string }
                     position={[problem.latitude, problem.longitude]}
                     icon={selectedProblem?.id === problem.id ? redMarkerIcon : blueMarkerIcon}
                     eventHandlers={{
-                      click: (event) => handleMarkerClick(problem, event.target as LeafletMarker),
+                      click: () => handleMarkerClick(problem),
                     }}
-                  >
-                    <Popup>
-                      <div className="min-w-[200px]">
-                        <h3 className="font-semibold text-gray-900 mb-1">{problem.title}</h3>
-                        <p className="text-sm text-gray-600 mb-2 line-clamp-2 overflow-hidden text-ellipsis break-words">
-                          {problem.description}
-                        </p>
-                        <button
-                          type="button"
-                          onClick={() => handleDetailsClick(problem)}
-                          className="mt-2 w-1/2 min-w-[100px] rounded-md border border-[#1E40AF] text-[#1E40AF] px-3 py-1.5 text-sm font-semibold bg-transparent hover:bg-[#1E40AF] hover:text-white transition-colors focus:outline-none focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 mx-auto block"
-                        >
-                          Детальніше
-                        </button>
-                      </div>
-                    </Popup>
-                  </Marker>
+                  />
                 ))}
               </MapContainer>
             </div>

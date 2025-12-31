@@ -53,6 +53,13 @@ public class RatingsController(ISender sender, IRatingQueries ratingQueries) : C
             () => NotFound());
     }
 
+    [HttpGet("average/{problemId:guid}")]
+    public async Task<ActionResult<double>> GetAverageByProblemId([FromRoute] Guid problemId, CancellationToken cancellationToken)
+    {
+        var average = await ratingQueries.GetAverageByProblemId(new Domain.Problems.ProblemId(problemId), cancellationToken);
+        return Ok(average);
+    }
+
     [HttpPost("create")]
     public async Task<ActionResult<CreateRatingDto>> Create(
         [FromBody] CreateRatingDto request,

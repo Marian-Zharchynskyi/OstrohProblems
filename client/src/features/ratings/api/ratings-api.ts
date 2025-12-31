@@ -36,4 +36,9 @@ export const ratingsApi = {
     const response = await apiClient.delete<Rating>(`${BASE_URL}/delete/${id}`)
     return response.data
   },
+
+  getAverageByProblemId: async (problemId: string) => {
+    const response = await apiClient.get<number>(`${BASE_URL}/average/${problemId}`)
+    return response.data
+  },
 }
