@@ -16,6 +16,7 @@ import { CreateIssuePage } from '@/pages/create-issue-page'
 import { ProblemDetailPage } from '@/pages/problem-detail-page'
 import { ProblemCommentsPage } from '@/pages/problem-comments-page'
 import { MyProblemsPage } from '@/pages/my-problems-page'
+import { MySubmittedProblemsPage } from '@/pages/my-submitted-problems-page'
 import CoordinatorPage from '@/pages/coordinator-page'
 
 export function AppRoutes() {
@@ -118,6 +119,16 @@ export function AppRoutes() {
           <ProtectedRoute allowedRoles={['User']}>
             <Layout>
               <MyProblemsPage />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/my-submitted-problems"
+        element={
+          <ProtectedRoute allowedRoles={['User']}>
+            <Layout>
+              <MySubmittedProblemsPage />
             </Layout>
           </ProtectedRoute>
         }

@@ -15,7 +15,7 @@ export const Footer = () => {
     <footer className="mt-auto">
       <div className="w-full">
         <div
-          className="px-8 py-12"
+          className="px-8 py-12 rounded-[1]"
           style={{ backgroundColor: designSystem.colors.footer.background }}
         >
           <div className="grid grid-cols-1 md:grid-cols-3 gap-12">

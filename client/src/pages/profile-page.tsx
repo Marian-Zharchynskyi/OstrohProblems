@@ -8,8 +8,8 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { User, FileText } from 'lucide-react'
-import { UserProblemsTab } from '@/features/problems/components/user-problems-tab'
 import { designSystem } from '@/lib/design-system'
+import { UserProblemsTab } from '@/features/problems/components/user-problems-tab'
 
 export function ProfilePage() {
   const { tokens, signOut } = useAuth()
@@ -17,7 +17,6 @@ export function ProfilePage() {
   const [userDetails, setUserDetails] = useState<UserDto | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
-  const [activeTab, setActiveTab] = useState<'profile' | 'problems'>('profile')
   const [formData, setFormData] = useState<UpdateUserDto>({
     email: '',
     name: '',
@@ -33,6 +32,7 @@ export function ProfilePage() {
   const [passwordSuccess, setPasswordSuccess] = useState('')
   const [isBasicInfoEditing, setIsBasicInfoEditing] = useState(false)
   const [isSecurityEditing, setIsSecurityEditing] = useState(false)
+  const [activeTab, setActiveTab] = useState<'profile' | 'problems'>('profile')
 
   useEffect(() => {
     const loadUserDetails = async () => {
@@ -176,15 +176,13 @@ export function ProfilePage() {
 
   return (
     <div>
-      {/* Верхня панель та Навігація */}
+      {/* Верхня панель */}
       <div
-        className="py-8"
+        className="py-2"
         style={{ backgroundColor: designSystem.colors.profile.headerBackground}}
       >
         <div className="max-w-6xl mx-auto px-6">
-          
-          {/* Вкладки навігації */}
-          <div className="flex flex-wrap justify-center gap-4">
+          <div className="flex flex-wrap justify-center gap-4 mt-6">
             <button
               onClick={() => setActiveTab('profile')}
               className="flex items-center gap-2 px-6 py-3 rounded-full border-2 font-bold text-base transition-all duration-200"
@@ -202,20 +200,20 @@ export function ProfilePage() {
               <span className="font-['Mulish']">Подані проблеми</span>
             </button>
           </div>
-        </div>
-        <div className="mt-6 h-px w-full relative">
-          <div
-            className="absolute inset-0"
-            style={{
-              backgroundColor: designSystem.colors.profile.tabs.border,
-              boxShadow: `0 0 0 100vmax ${designSystem.colors.profile.tabs.border}`,
-              clipPath: 'inset(0 -100vmax)',
-            }}
-          />
+          <div className="mt-6 h-px w-full relative">
+            <div
+              className="absolute inset-0"
+              style={{
+                backgroundColor: designSystem.colors.profile.tabs.border,
+                boxShadow: `0 0 0 100vmax ${designSystem.colors.profile.tabs.border}`,
+                clipPath: 'inset(0 -100vmax)',
+              }}
+            />
+          </div>
         </div>
       </div>
 
-      {activeTab === 'profile' && (
+      {activeTab === 'profile' ? (
         <div className="max-w-6xl mx-auto px-6 py-8">
           {/* Секція Аватара */}
           <div className="mb-6">
@@ -472,9 +470,11 @@ export function ProfilePage() {
             </CardContent>
           </Card>
         </div>
+      ) : (
+        <div className="max-w-6xl mx-auto px-6 py-8">
+          <UserProblemsTab />
+        </div>
       )}
-
-      {activeTab === 'problems' && <UserProblemsTab />}
     </div>
   )
 }

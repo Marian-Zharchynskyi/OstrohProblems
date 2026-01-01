@@ -84,9 +84,14 @@ export interface ProblemSummary {
   description: string
   status: string
   priority: string
+  createdBy: User | null
   categories: string[] | null
   createdAt: string
   updatedAt: string
+  currentState?: string | null
+  rejectionReason?: string | null
+  coordinatorComment?: string | null
+  coordinator?: User | null
 }
 
 export interface Problem {

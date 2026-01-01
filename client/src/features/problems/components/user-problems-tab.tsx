@@ -1,5 +1,5 @@
-import { useState, useMemo, useRef, useEffect, type CSSProperties } from 'react'
-import { MapContainer, TileLayer, Marker, useMap } from 'react-leaflet'
+import { useState, useMemo, useRef, useEffect, useCallback, memo, type CSSProperties } from 'react'
+import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet'
 import { Icon } from 'leaflet'
 import type { LatLngBoundsExpression, Map as LeafletMap } from 'leaflet'
 import { useAuth } from '@/contexts/auth-context'
@@ -70,7 +70,7 @@ interface CommentsBlockProps {
   onCommentUpdate: () => void
 }
 
-function CommentsBlock({ comments, problemId, onViewAllComments, onCommentUpdate }: CommentsBlockProps) {
+const CommentsBlock = memo(function CommentsBlock({ comments, problemId, onViewAllComments, onCommentUpdate }: CommentsBlockProps) {
   const { user } = useAuth()
   const realtimeComments = useRealtimeComments(problemId, comments)
   const sortedComments = useMemo(() => {
@@ -230,7 +230,7 @@ function CommentsBlock({ comments, problemId, onViewAllComments, onCommentUpdate
       />
     </div>
   )
-}
+})
 
 interface AllCommentsModalProps {
   open: boolean
@@ -240,7 +240,7 @@ interface AllCommentsModalProps {
   problemTitle: string
 }
 
-function AllCommentsModal({ open, onOpenChange, comments, problemId, problemTitle }: AllCommentsModalProps) {
+const AllCommentsModal = memo(function AllCommentsModal({ open, onOpenChange, comments, problemId, problemTitle }: AllCommentsModalProps) {
   const realtimeComments = useRealtimeComments(problemId, comments)
 
   return (
@@ -288,14 +288,14 @@ function AllCommentsModal({ open, onOpenChange, comments, problemId, problemTitl
       </DialogContent>
     </Dialog>
   )
-}
+})
 
 interface DescriptionBlockProps {
   problem: Problem
   onUpdate: () => void
 }
 
-function DescriptionBlock({ problem, onUpdate }: DescriptionBlockProps) {
+const DescriptionBlock = memo(function DescriptionBlock({ problem, onUpdate }: DescriptionBlockProps) {
   const [expanded, setExpanded] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
   const [editDescription, setEditDescription] = useState(problem.description)
@@ -397,7 +397,7 @@ function DescriptionBlock({ problem, onUpdate }: DescriptionBlockProps) {
       </Card>
     </div>
   )
-}
+})
 
 interface ProblemDetailsCardProps {
   problem: Problem
@@ -405,7 +405,7 @@ interface ProblemDetailsCardProps {
   onViewAllComments: () => void
 }
 
-function ProblemDetailsCard({ problem, onUpdate }: ProblemDetailsCardProps) {
+const ProblemDetailsCard = memo(function ProblemDetailsCard({ problem, onUpdate }: ProblemDetailsCardProps) {
   const [isEditing, setIsEditing] = useState(false)
   const [editTitle, setEditTitle] = useState(problem.title)
   const [editCategories, setEditCategories] = useState<string[]>(problem.categories || [])
@@ -728,7 +728,7 @@ function ProblemDetailsCard({ problem, onUpdate }: ProblemDetailsCardProps) {
       />
     </div>
   )
-}
+})
 
 function MapRefUpdater({ onReady }: { onReady: (map: LeafletMap) => void }) {
   const map = useMap()
@@ -740,7 +740,7 @@ function MapRefUpdater({ onReady }: { onReady: (map: LeafletMap) => void }) {
   return null
 }
 
-function EmptyProblemState() {
+const EmptyProblemState = memo(function EmptyProblemState() {
   return (
     <div className="flex flex-col items-center justify-center h-full text-center p-8">
       <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
@@ -752,7 +752,7 @@ function EmptyProblemState() {
       </p>
     </div>
   )
-}
+})
 
 export function UserProblemsTab() {
   const { user } = useAuth()
@@ -779,51 +779,58 @@ export function UserProblemsTab() {
 
   const { data: problems, isLoading, refetch } = useProblemsByUserFiltered(user?.id || '', filter)
 
-  const handleProblemUpdate = async () => {
+  const handleProblemUpdate = useCallback(async () => {
     await refetch()
     queryClient.invalidateQueries({ queryKey: ['problems'] })
     if (selectedProblem?.id) {
-      const updatedProblems = await problemsApi.getByUserFiltered(user?.id || '', filter)
-      const updated = updatedProblems.find(p => p.id === selectedProblem.id)
-      if (updated) {
+      try {
+        const updated = await problemsApi.getById(selectedProblem.id)
         setSelectedProblem(updated)
+      } catch {
+        toast.error('Не вдалося оновити дані проблеми')
       }
     }
-  }
+  }, [refetch, queryClient, selectedProblem?.id])
 
-  const handleViewAllComments = () => {
+  const handleViewAllComments = useCallback(() => {
     setShowAllCommentsModal(true)
-  }
+  }, [])
 
-  const statusTabs = [
+  const statusTabs = useMemo(() => [
     { key: 'all', label: 'Всі' },
     { key: ProblemStatusConstants.New, label: 'Нові' },
     { key: ProblemStatusConstants.InProgress, label: 'У процесі' },
     { key: ProblemStatusConstants.Completed, label: 'Вирішені' },
     { key: ProblemStatusConstants.Rejected, label: 'Відхилені' },
-  ]
+  ], [])
 
-  const dateFilterOptions = [
+  const dateFilterOptions = useMemo(() => [
     { value: '', label: 'Весь час' },
     { value: 'week', label: 'Цього тижня' },
     { value: 'month', label: 'Цього місяця' },
     { value: 'year', label: 'Цього року' },
-  ] as const
+  ] as const, [])
 
   const statusTabColors = designSystem.colors.profile.tabs
 type StatusTabStyle = CSSProperties & { '--tab-hover-color'?: string }
-  const getStatusTabStyle = (isActive: boolean): StatusTabStyle => ({
+  const getStatusTabStyle = useCallback((isActive: boolean): StatusTabStyle => ({
     color: isActive ? statusTabColors.text : statusTabColors.inactiveText,
     backgroundColor: 'transparent',
     border: 'none',
     borderRadius: 0,
     '--tab-hover-color': statusTabColors.hoverText,
-  })
+  }), [statusTabColors])
 
-  const handleMarkerClick = (problem: Problem) => {
-    setSelectedProblem(problem)
-    setShowDetails(true)
-  }
+  const handleMarkerClick = useCallback(async (problemId: string | null) => {
+    if (!problemId) return
+    try {
+      const fullProblem = await problemsApi.getById(problemId)
+      setSelectedProblem(fullProblem)
+      setShowDetails(true)
+    } catch {
+      toast.error('Не вдалося завантажити дані проблеми')
+    }
+  }, [])
 
   if (isLoading) {
     return (
@@ -945,9 +952,15 @@ type StatusTabStyle = CSSProperties & { '--tab-hover-color'?: string }
                     position={[problem.latitude, problem.longitude]}
                     icon={selectedProblem?.id === problem.id ? redMarkerIcon : blueMarkerIcon}
                     eventHandlers={{
-                      click: () => handleMarkerClick(problem),
+                      click: () => handleMarkerClick(problem.id),
                     }}
-                  />
+                  >
+                    <Popup>
+                      <div className="text-sm font-semibold">
+                        {problem.title}
+                      </div>
+                    </Popup>
+                  </Marker>
                 ))}
               </MapContainer>
             </div>
