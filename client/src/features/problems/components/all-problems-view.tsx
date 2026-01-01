@@ -3,14 +3,13 @@ import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet'
 import { Icon } from 'leaflet'
 import type { LatLngBoundsExpression, Map as LeafletMap } from 'leaflet'
 import { useAuth } from '@/contexts/auth-context'
-import { useProblemsByUserFiltered, type UserProblemsFilter } from '../hooks/use-problems'
+import { useProblemsForMap } from '../hooks/use-problems'
 import { useRealtimeComments } from '@/hooks/use-realtime-comments'
 import { problemsApi } from '../api/problems-api'
 import type { Problem, Comment } from '@/types'
 import { ProblemStatusConstants, PriorityConstants, CategoryConstants } from '@/types'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
@@ -24,8 +23,6 @@ import {
   ChevronDown, 
   ChevronUp,
   Loader2,
-  X,
-  Check,
   Pencil,
   Trash2
 } from 'lucide-react'
@@ -292,106 +289,39 @@ const AllCommentsModal = memo(function AllCommentsModal({ open, onOpenChange, co
 
 interface DescriptionBlockProps {
   problem: Problem
-  onUpdate: () => void
 }
 
-const DescriptionBlock = memo(function DescriptionBlock({ problem, onUpdate }: DescriptionBlockProps) {
+const DescriptionBlock = memo(function DescriptionBlock({ problem }: DescriptionBlockProps) {
   const [expanded, setExpanded] = useState(false)
-  const [isEditing, setIsEditing] = useState(false)
-  const [editDescription, setEditDescription] = useState(problem.description)
-  const [isSaving, setIsSaving] = useState(false)
   const isLongDescription = problem.description.length > 200
-
-  const handleSave = async () => {
-    if (!problem.id || !editDescription.trim()) return
-    try {
-      setIsSaving(true)
-      await problemsApi.updateDescription(problem.id, editDescription)
-      toast.success('Опис оновлено')
-      setIsEditing(false)
-      onUpdate()
-    } catch {
-      toast.error('Не вдалося оновити опис')
-    } finally {
-      setIsSaving(false)
-    }
-  }
-
-  const handleCancel = () => {
-    setEditDescription(problem.description)
-    setIsEditing(false)
-  }
 
   return (
     <div className="flex flex-col h-full">
-      <h2 className="text-xl font-bold text-[#1F2732] font-['Mulish'] mb-4 flex items-center gap-2">
+      <h2 className="text-xl font-bold text-[#1F2732] font-['Mulish'] mb-4">
         Опис
-        {!isEditing && (
-          <button 
-            type="button"
-            className="p-0 !bg-transparent border-none shadow-none transition-opacity opacity-100 hover:opacity-80 outline-none focus:outline-none focus:ring-0"
-            onClick={() => setIsEditing(true)}
-          >
-            <img src="/icons/pen.png" alt="Edit" className="w-3.5 h-3.5 cursor-pointer" />
-          </button>
-        )}
       </h2>
       <Card className="bg-white border border-gray-200 rounded-[10px] mt-0">
         <CardContent className="p-5 md:p-6">
-          {isEditing ? (
-            <div className="space-y-3">
-              <Textarea
-                value={editDescription}
-                onChange={(e) => setEditDescription(e.target.value)}
-                className="min-h-[120px] bg-[#F0F1F2] border-none rounded-lg"
-                placeholder="Введіть опис проблеми..."
-              />
-              <div className="flex gap-2 justify-end">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleCancel}
-                  disabled={isSaving}
-                  className="border border-[#D0D5DD] text-[#292929] hover:bg-[#F5F5F5] hover:text-[#292929]"
-                >
-                  <X className="w-4 h-4 mr-1 text-[#292929]" />
-                  Скасувати
-                </Button>
-                <Button
-                  size="sm"
-                  onClick={handleSave}
-                  disabled={isSaving || !editDescription.trim()}
-                  className="bg-[#E42556] hover:bg-[#E42556]/90"
-                >
-                  <Check className="w-4 h-4 mr-1" />
-                  {isSaving ? 'Збереження...' : 'Зберегти'}
-                </Button>
-              </div>
-            </div>
-          ) : (
-            <>
-              <p className={`text-gray-600 whitespace-pre-wrap break-words ${!expanded && isLongDescription ? 'line-clamp-3' : ''}`}>
-                {problem.description}
-              </p>
-              
-              {isLongDescription && (
-                <button
-                  onClick={() => setExpanded(!expanded)}
-                  className="mt-2 flex items-center gap-1 text-sm font-semibold text-[#165D9D] hover:underline bg-transparent p-0 border-none shadow-none focus:outline-none focus-visible:outline-none focus-visible:ring-0"
-                  style={{ backgroundColor: 'transparent' }}
-                >
-                  {expanded ? (
-                    <>
-                      Згорнути <ChevronUp className="w-4 h-4" />
-                    </>
-                  ) : (
-                    <>
-                      Читати повністю <ChevronDown className="w-4 h-4" />
-                    </>
-                  )}
-                </button>
+          <p className={`text-gray-600 whitespace-pre-wrap break-words ${!expanded && isLongDescription ? 'line-clamp-3' : ''}`}>
+            {problem.description}
+          </p>
+          
+          {isLongDescription && (
+            <button
+              onClick={() => setExpanded(!expanded)}
+              className="mt-2 flex items-center gap-1 text-sm font-semibold text-[#165D9D] hover:underline bg-transparent p-0 border-none shadow-none focus:outline-none focus-visible:outline-none focus-visible:ring-0"
+              style={{ backgroundColor: 'transparent' }}
+            >
+              {expanded ? (
+                <>
+                  Згорнути <ChevronUp className="w-4 h-4" />
+                </>
+              ) : (
+                <>
+                  Читати повністю <ChevronDown className="w-4 h-4" />
+                </>
               )}
-            </>
+            </button>
           )}
         </CardContent>
       </Card>
@@ -401,15 +331,9 @@ const DescriptionBlock = memo(function DescriptionBlock({ problem, onUpdate }: D
 
 interface ProblemDetailsCardProps {
   problem: Problem
-  onUpdate: () => void
-  onViewAllComments: () => void
 }
 
-const ProblemDetailsCard = memo(function ProblemDetailsCard({ problem, onUpdate }: ProblemDetailsCardProps) {
-  const [isEditing, setIsEditing] = useState(false)
-  const [editTitle, setEditTitle] = useState(problem.title)
-  const [editCategories, setEditCategories] = useState<string[]>(problem.categories || [])
-  const [isSaving, setIsSaving] = useState(false)
+const ProblemDetailsCard = memo(function ProblemDetailsCard({ problem }: ProblemDetailsCardProps) {
   const [averageRating, setAverageRating] = useState<number>(0)
   const [lightboxOpen, setLightboxOpen] = useState(false)
   const [lightboxImages, setLightboxImages] = useState<{ id: string | null; url: string }[]>([])
@@ -454,35 +378,6 @@ const ProblemDetailsCard = memo(function ProblemDetailsCard({ problem, onUpdate 
     }
     fetchRating()
   }, [problem.id])
-
-  const handleSave = async () => {
-    if (!problem.id || !editTitle.trim()) return
-    try {
-      setIsSaving(true)
-      await problemsApi.updateTitleAndCategories(problem.id, editTitle, editCategories.length > 0 ? editCategories : undefined)
-      toast.success('Дані оновлено')
-      setIsEditing(false)
-      onUpdate()
-    } catch {
-      toast.error('Не вдалося оновити дані')
-    } finally {
-      setIsSaving(false)
-    }
-  }
-
-  const handleCancel = () => {
-    setEditTitle(problem.title)
-    setEditCategories(problem.categories || [])
-    setIsEditing(false)
-  }
-
-  const toggleCategory = (category: string) => {
-    setEditCategories(prev => 
-      prev.includes(category) 
-        ? prev.filter(c => c !== category)
-        : [...prev, category]
-    )
-  }
 
   const openUserImagesLightbox = () => {
     if (hasUserImages) {
@@ -534,189 +429,129 @@ const ProblemDetailsCard = memo(function ProblemDetailsCard({ problem, onUpdate 
 
   return (
     <div className="flex flex-col">
-      <h2 className="text-xl font-bold text-[#1F2732] font-['Mulish'] mb-4 flex items-center gap-2">
+      <h2 className="text-xl font-bold text-[#1F2732] font-['Mulish'] mb-4">
         Характеристики
-        {!isEditing && (
-          <button 
-            type="button"
-            className="p-0 !bg-transparent border-none shadow-none transition-opacity opacity-100 hover:opacity-80 outline-none focus:outline-none focus:ring-0"
-            onClick={() => setIsEditing(true)}
-          >
-            <img src="/icons/pen.png" alt="Edit" className="w-3.5 h-3.5 cursor-pointer" />
-          </button>
-        )}
       </h2>
 
       <Card className="bg-white border border-gray-200 rounded-lg">
         <CardContent className="p-5 md:p-6">
-          {isEditing ? (
-            <div className="space-y-4">
-              <div>
-                <label className="text-sm font-bold text-gray-700 mb-1 block">Назва</label>
-                <Input
-                  value={editTitle}
-                  onChange={(e) => setEditTitle(e.target.value)}
-                  className="bg-[#F0F1F2] border-none rounded-lg"
-                  placeholder="Введіть назву..."
-                />
-              </div>
-              <div>
-                <label className="text-sm font-bold text-gray-700 mb-2 block">Категорії</label>
-                <div className="flex flex-wrap gap-2">
-                  {Object.values(CategoryConstants).map((cat) => (
-                    <button
-                      key={cat}
-                      type="button"
-                      onClick={() => toggleCategory(cat)}
-                      className={`px-3 py-1 text-xs rounded-full border transition-colors ${
-                        editCategories.includes(cat)
-                          ? 'bg-[#E42556] text-white border-[#E42556]'
-                          : 'bg-white text-gray-600 border-gray-300 hover:border-[#E42556]'
-                      }`}
-                    >
-                      {cat}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <div className="flex gap-2 justify-end">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleCancel}
-                  disabled={isSaving}
-                  className="border border-[#D0D5DD] text-[#292929] hover:bg-[#F5F5F5] hover:text-[#292929]"
-                >
-                  <X className="w-4 h-4 mr-1 text-[#292929]" />
-                  Скасувати
-                </Button>
-                <Button
-                  size="sm"
-                  onClick={handleSave}
-                  disabled={isSaving || !editTitle.trim()}
-                  className="bg-[#E42556] hover:bg-[#E42556]/90"
-                >
-                  <Check className="w-4 h-4 mr-1" />
-                  {isSaving ? 'Збереження...' : 'Зберегти'}
-                </Button>
+          <div className="flex items-start justify-between mb-4">
+            <div className="flex-1">
+              <h3 className="text-lg font-bold text-[#1F2732] font-['Mulish'] mb-3">
+                {problem.title}
+              </h3>
+              <div className="space-y-1">
+                <p className="text-sm text-gray-600">
+                  <span className="font-bold">Адреса :</span> {address}
+                </p>
+                <p className="text-sm text-gray-600">
+                  <span className="font-bold">Автор :</span> {problem.createdBy?.name} {problem.createdBy?.surname}
+                </p>
               </div>
             </div>
-          ) : (
-            <>
-              <div className="flex items-start justify-between mb-4">
-                <div className="flex-1">
-                  <h3 className="text-lg font-bold text-[#1F2732] font-['Mulish'] mb-1">
-                    {problem.title}
-                  </h3>
-                  <p className="text-sm text-gray-600">
-                    <span className="font-bold">Адреса :</span> {address}
-                  </p>
-                </div>
-                <div className="flex flex-col items-end">
-                  {averageRating === 0 && (
-                    <span className="text-xs text-gray-500 mb-1">поки не оцінено</span>
-                  )}
-                  <div className="flex items-center gap-0.5">
-                    {[1, 2, 3, 4, 5].map((star) => (
-                      <Star
-                        key={star}
-                        className={`w-5 h-5 ${star <= roundedRating ? 'text-[#FFA900] fill-[#FFA900]' : 'text-[#D2D2D2]'}`}
-                      />
-                    ))}
-                  </div>
-                  <span className="text-xs font-bold text-[#E42556] mt-1">Рейтинг уподобань</span>
-                </div>
+            <div className="flex flex-col items-end">
+              {averageRating === 0 && (
+                <span className="text-xs text-gray-500 mb-1">поки не оцінено</span>
+              )}
+              <div className="flex items-center gap-0.5">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <Star
+                    key={star}
+                    className={`w-5 h-5 ${star <= roundedRating ? 'text-[#FFA900] fill-[#FFA900]' : 'text-[#D2D2D2]'}`}
+                  />
+                ))}
               </div>
+              <span className="text-xs font-bold text-[#E42556] mt-1">Рейтинг уподобань</span>
+            </div>
+          </div>
 
-              <div className="grid grid-cols-2 gap-x-8 gap-y-3 text-sm mb-4 my-8">
-                <div className="flex justify-between my-1">
-                  <span className="font-bold text-gray-700">Дата створення</span>
-                  <span className="text-gray-600">
-                    {new Date(problem.createdAt).toLocaleDateString('uk-UA')}
-                  </span>
-                </div>
-                <div className="flex justify-between my-1">
-                  <span className="font-bold text-gray-700">Останнє оновлення</span>
-                  <span className="text-gray-600">
-                    {new Date(problem.updatedAt).toLocaleDateString('uk-UA')}
-                  </span>
-                </div>
-                <div className="flex justify-between my-1">
-                  <span className="font-bold text-gray-700">Пріоритетність</span>
-                  <span className={`font-medium ${getPriorityColor(problem.priority)}`}>
-                    {problem.priority}
-                  </span>
-                </div>
-                <div className="flex justify-between items-start my-1">
-                  <span className="font-bold text-gray-700">Категорія</span>
-                  <div className="flex flex-col items-end">
-                    {problem.categories && problem.categories.length > 0 
-                      ? problem.categories.map((cat, index) => (
-                          <span key={index} className="text-gray-600">
-                            {cat}
-                          </span>
-                        ))
-                      : <span className="text-gray-600">Не вказано</span>}
-                  </div>
-                </div>
-                {hasRejectionReason ? (
-                  <div className="col-span-2 my-1">
-                    <div className="p-3 bg-red-50 rounded-lg">
-                      <span className="font-bold text-red-800 block mb-1">
-                        Причина відхилення :
+          <div className="grid grid-cols-2 gap-x-8 gap-y-3 text-sm mb-4 my-8">
+            <div className="flex justify-between my-1">
+              <span className="font-bold text-gray-700">Дата створення</span>
+              <span className="text-gray-600">
+                {new Date(problem.createdAt).toLocaleDateString('uk-UA')}
+              </span>
+            </div>
+            <div className="flex justify-between my-1">
+              <span className="font-bold text-gray-700">Останнє оновлення</span>
+              <span className="text-gray-600">
+                {new Date(problem.updatedAt).toLocaleDateString('uk-UA')}
+              </span>
+            </div>
+            <div className="flex justify-between my-1">
+              <span className="font-bold text-gray-700">Пріоритетність</span>
+              <span className={`font-medium ${getPriorityColor(problem.priority)}`}>
+                {problem.priority}
+              </span>
+            </div>
+            <div className="flex justify-between items-start my-1">
+              <span className="font-bold text-gray-700">Категорія</span>
+              <div className="flex flex-col items-end">
+                {problem.categories && problem.categories.length > 0 
+                  ? problem.categories.map((cat, index) => (
+                      <span key={index} className="text-gray-600">
+                        {cat}
                       </span>
-                      <span className="text-red-700 font-semibold text-left">
-                        {problem.rejectionReason}
-                      </span>
-                    </div>
-                  </div>
-                ) : problem.currentState ? (
-                  <div className="col-span-2 my-1">
-                    <div className="p-3 bg-sky-50 rounded-lg">
-                      <span className="font-bold text-[#464646] block mb-1">
-                        Поточний стан :
-                      </span>
-                      <span className="text-[#464646] font-semibold text-left">
-                        {problem.currentState}
-                      </span>
-                    </div>
-                  </div>
-                ) : null}
+                    ))
+                  : <span className="text-gray-600">Не вказано</span>}
               </div>
+            </div>
+            {hasRejectionReason ? (
+              <div className="col-span-2 my-1">
+                <div className="p-3 bg-red-50 rounded-lg">
+                  <span className="font-bold text-red-800 block mb-1">
+                    Причина відхилення :
+                  </span>
+                  <span className="text-red-700 font-semibold text-left">
+                    {problem.rejectionReason}
+                  </span>
+                </div>
+              </div>
+            ) : problem.currentState ? (
+              <div className="col-span-2 my-1">
+                <div className="p-3 bg-sky-50 rounded-lg">
+                  <span className="font-bold text-[#464646] block mb-1">
+                    Поточний стан :
+                  </span>
+                  <span className="text-[#464646] font-semibold text-left">
+                    {problem.currentState}
+                  </span>
+                </div>
+              </div>
+            ) : null}
+          </div>
 
-              <div className="flex items-end justify-between">
-                <div className="flex flex-col gap-1">
-                  <button
-                    type="button"
-                    onClick={openUserImagesLightbox}
-                    disabled={!hasUserImages}
-                    className="text-sm text-left focus:outline-none focus:ring-0 bg-transparent p-0 border-none shadow-none"
-                    style={{
-                      color: hasUserImages ? '#193CB8' : '#9CA3AF',
-                      cursor: hasUserImages ? 'pointer' : 'not-allowed',
-                    }}
-                  >
-                    Відкрити подані зображення ({problem.images?.length || 0})
-                  </button>
-                  <button
-                    type="button"
-                    onClick={openCoordinatorImagesLightbox}
-                    disabled={!hasCoordinatorImages}
-                    className="text-sm text-left focus:outline-none focus:ring-0 bg-transparent p-0 border-none shadow-none"
-                    style={{
-                      color: hasCoordinatorImages ? '#193CB8' : '#9CA3AF',
-                      cursor: hasCoordinatorImages ? 'pointer' : 'not-allowed',
-                    }}
-                  >
-                    Відкрити зображення від координатора ({problem.coordinatorImages?.length || 0})
-                  </button>
-                </div>
-                <Badge className={`${getStatusColor(problem.status)} px-4 py-1 rounded-full`}>
-                  {problem.status}
-                </Badge>
-              </div>
-            </>
-          )}
+          <div className="flex items-end justify-between">
+            <div className="flex flex-col gap-1">
+              <button
+                type="button"
+                onClick={openUserImagesLightbox}
+                disabled={!hasUserImages}
+                className="text-sm text-left focus:outline-none focus:ring-0 bg-transparent p-0 border-none shadow-none"
+                style={{
+                  color: hasUserImages ? '#193CB8' : '#9CA3AF',
+                  cursor: hasUserImages ? 'pointer' : 'not-allowed',
+                }}
+              >
+                Відкрити подані зображення ({problem.images?.length || 0})
+              </button>
+              <button
+                type="button"
+                onClick={openCoordinatorImagesLightbox}
+                disabled={!hasCoordinatorImages}
+                className="text-sm text-left focus:outline-none focus:ring-0 bg-transparent p-0 border-none shadow-none"
+                style={{
+                  color: hasCoordinatorImages ? '#193CB8' : '#9CA3AF',
+                  cursor: hasCoordinatorImages ? 'pointer' : 'not-allowed',
+                }}
+              >
+                Відкрити зображення від координатора ({problem.coordinatorImages?.length || 0})
+              </button>
+            </div>
+            <Badge className={`${getStatusColor(problem.status)} px-4 py-1 rounded-full`}>
+              {problem.status}
+            </Badge>
+          </div>
         </CardContent>
       </Card>
 
@@ -740,7 +575,7 @@ function MapRefUpdater({ onReady }: { onReady: (map: LeafletMap) => void }) {
   return null
 }
 
-const EmptyProblemState = memo(function EmptyProblemState() {
+function EmptyProblemState() {
   return (
     <div className="flex flex-col items-center justify-center h-full text-center p-8">
       <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
@@ -752,12 +587,12 @@ const EmptyProblemState = memo(function EmptyProblemState() {
       </p>
     </div>
   )
-})
+}
 
-export function UserProblemsTab() {
-  const { user } = useAuth()
+export function AllProblemsView() {
   const queryClient = useQueryClient()
   const mapRef = useRef<LeafletMap | null>(null)
+  const [selectedProblemId, setSelectedProblemId] = useState<string | null>(null)
   const [selectedProblem, setSelectedProblem] = useState<Problem | null>(null)
   const [showDetails, setShowDetails] = useState(false)
   const [showAllCommentsModal, setShowAllCommentsModal] = useState(false)
@@ -767,33 +602,61 @@ export function UserProblemsTab() {
   const [priorityFilter, setPriorityFilter] = useState<string>('')
   const [dateFilter, setDateFilter] = useState<string>('')
 
-  const filter: UserProblemsFilter = useMemo(() => ({
-    searchTerm: searchTerm || undefined,
-    status: statusFilter !== 'all' ? statusFilter : undefined,
-    category: categoryFilter || undefined,
-    priority: priorityFilter || undefined,
-    sortBy: 'createdAt',
-    sortDescending: true,
-    dateFilter: dateFilter || undefined,
-  }), [searchTerm, statusFilter, categoryFilter, priorityFilter, dateFilter])
+  const { data: allProblems, isLoading, refetch } = useProblemsForMap()
 
-  const { data: problems, isLoading, refetch } = useProblemsByUserFiltered(user?.id || '', filter)
+  const filteredProblems = useMemo(() => {
+    if (!allProblems) return []
+    
+    return allProblems.filter(problem => {
+      if (statusFilter !== 'all' && problem.status !== statusFilter) return false
+      if (searchTerm && !problem.title.toLowerCase().includes(searchTerm.toLowerCase())) return false
+      if (categoryFilter && (!problem.categories || !problem.categories.includes(categoryFilter))) return false
+      if (priorityFilter && problem.priority !== priorityFilter) return false
+      if (dateFilter) {
+        const createdDate = new Date(problem.createdAt)
+        const now = new Date()
+        if (dateFilter === 'week') {
+          const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
+          if (createdDate < weekAgo) return false
+        } else if (dateFilter === 'month') {
+          const monthAgo = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate())
+          if (createdDate < monthAgo) return false
+        } else if (dateFilter === 'year') {
+          const yearAgo = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate())
+          if (createdDate < yearAgo) return false
+        }
+      }
+      return true
+    })
+  }, [allProblems, statusFilter, searchTerm, categoryFilter, priorityFilter, dateFilter])
 
   const handleProblemUpdate = useCallback(async () => {
     await refetch()
     queryClient.invalidateQueries({ queryKey: ['problems'] })
-    if (selectedProblem?.id) {
+    if (selectedProblemId) {
       try {
-        const updated = await problemsApi.getById(selectedProblem.id)
+        const updated = await problemsApi.getById(selectedProblemId)
         setSelectedProblem(updated)
       } catch {
         toast.error('Не вдалося оновити дані проблеми')
       }
     }
-  }, [refetch, queryClient, selectedProblem?.id])
+  }, [refetch, queryClient, selectedProblemId])
 
   const handleViewAllComments = useCallback(() => {
     setShowAllCommentsModal(true)
+  }, [])
+
+  const handleMarkerClick = useCallback(async (problemId: string | null) => {
+    if (!problemId) return
+    setSelectedProblemId(problemId)
+    try {
+      const fullProblem = await problemsApi.getById(problemId)
+      setSelectedProblem(fullProblem)
+      setShowDetails(true)
+    } catch {
+      toast.error('Не вдалося завантажити дані проблеми')
+    }
   }, [])
 
   const statusTabs = useMemo(() => [
@@ -809,10 +672,10 @@ export function UserProblemsTab() {
     { value: 'week', label: 'Цього тижня' },
     { value: 'month', label: 'Цього місяця' },
     { value: 'year', label: 'Цього року' },
-  ] as const, [])
+  ], [])
 
   const statusTabColors = designSystem.colors.profile.tabs
-type StatusTabStyle = CSSProperties & { '--tab-hover-color'?: string }
+  type StatusTabStyle = CSSProperties & { '--tab-hover-color'?: string }
   const getStatusTabStyle = useCallback((isActive: boolean): StatusTabStyle => ({
     color: isActive ? statusTabColors.text : statusTabColors.inactiveText,
     backgroundColor: 'transparent',
@@ -820,17 +683,6 @@ type StatusTabStyle = CSSProperties & { '--tab-hover-color'?: string }
     borderRadius: 0,
     '--tab-hover-color': statusTabColors.hoverText,
   }), [statusTabColors])
-
-  const handleMarkerClick = useCallback(async (problemId: string | null) => {
-    if (!problemId) return
-    try {
-      const fullProblem = await problemsApi.getById(problemId)
-      setSelectedProblem(fullProblem)
-      setShowDetails(true)
-    } catch {
-      toast.error('Не вдалося завантажити дані проблеми')
-    }
-  }, [])
 
   if (isLoading) {
     return (
@@ -841,7 +693,16 @@ type StatusTabStyle = CSSProperties & { '--tab-hover-color'?: string }
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-6 py-8">
+    <div className="max-w-7xl mx-auto px-6 py-2">
+      <div className="mb-8">
+        <h1 className="font-semibold text-[#1F2732] font-['Sora'] text-[2.4rem] leading-[3.6rem]">
+          Проблеми
+        </h1>
+        <p className="font-semibold text-[#464646] font-['Mulish'] text-[1.3rem] leading-[1.8rem] mt-2">
+          Виберіть доступні проблеми, відфільтруйте та сортуйте за бажанням
+        </p>
+      </div>
+
       <div className="border-b border-gray-200 mb-6 w-fit">
         <div className="flex gap-2">
           {statusTabs.map((tab) => (
@@ -915,21 +776,19 @@ type StatusTabStyle = CSSProperties & { '--tab-hover-color'?: string }
         </Select>
       </div>
 
-      {(!problems || problems.length === 0) ? (
+      {(!filteredProblems || filteredProblems.length === 0) ? (
         <Card className="bg-white border border-gray-200 rounded-[10px] h-[500px] flex items-center justify-center">
           <div className="text-center p-8">
             <p className="text-gray-500 text-lg">
               {statusFilter === 'all' 
-                ? 'У вас ще немає звернень'
-                : 'Немає звернень з таким статусом'}
+                ? 'Немає проблем для відображення'
+                : 'Немає проблем з таким статусом'}
             </p>
           </div>
         </Card>
       ) : (
         <div className="space-y-6">
-          {/* Верхній рядок: Карта зліва + Коментарі справа */}
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 my-10">
-            {/* Карта - займає ~60% ширини (3 з 5 колонок) */}
             <div className="lg:col-span-3 h-[500px] rounded-lg overflow-hidden shadow-lg">
               <MapContainer
                 center={OSTROH_CENTER}
@@ -946,7 +805,7 @@ type StatusTabStyle = CSSProperties & { '--tab-hover-color'?: string }
                   url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                 />
 
-                {problems && problems.length > 0 && problems.map((problem) => (
+                {filteredProblems.map((problem) => (
                   <Marker
                     key={problem.id}
                     position={[problem.latitude, problem.longitude]}
@@ -965,7 +824,6 @@ type StatusTabStyle = CSSProperties & { '--tab-hover-color'?: string }
               </MapContainer>
             </div>
 
-            {/* Коментарі - займає ~40% ширини (2 з 5 колонок) */}
             <div className="lg:col-span-2 h-[500px]">
               {selectedProblem && showDetails ? (
                 <CommentsBlock 
@@ -982,20 +840,15 @@ type StatusTabStyle = CSSProperties & { '--tab-hover-color'?: string }
             </div>
           </div>
 
-          {/* Нижній рядок: Опис зліва + Деталі справа */}
           {selectedProblem && showDetails && (
             <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-              {/* Опис - під картою (3 з 5 колонок) */}
               <div className="lg:col-span-2">
-                <DescriptionBlock problem={selectedProblem} onUpdate={handleProblemUpdate} />
+                <DescriptionBlock problem={selectedProblem} />
               </div>
               
-              {/* Деталі проблеми - займає більше місця справа (3 з 5 колонок) */}
               <div className="lg:col-span-3">
                 <ProblemDetailsCard 
-                  problem={selectedProblem} 
-                  onUpdate={handleProblemUpdate}
-                  onViewAllComments={handleViewAllComments}
+                  problem={selectedProblem}
                 />
               </div>
             </div>

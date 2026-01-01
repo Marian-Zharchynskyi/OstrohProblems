@@ -42,7 +42,7 @@ public class ProblemsController(ISender sender, IProblemQueries problemQueries, 
     public async Task<ActionResult<IReadOnlyList<ProblemSummaryDto>>> GetAll(CancellationToken cancellationToken)
     {
         var entities = await problemQueries.GetAll(cancellationToken);
-        return entities.Select(ProblemSummaryDto.FromDomainModel).ToList();
+        return entities.Select(e => ProblemSummaryDto.FromDomainModel(e, imageService.GetImageUrl)).ToList();
     }
 
     [AllowAnonymous]
@@ -50,7 +50,7 @@ public class ProblemsController(ISender sender, IProblemQueries problemQueries, 
     public async Task<ActionResult<IReadOnlyList<ProblemSummaryDto>>> GetForMap(CancellationToken cancellationToken)
     {
         var entities = await problemQueries.GetForMap(cancellationToken);
-        return entities.Select(ProblemSummaryDto.FromDomainModel).ToList();
+        return entities.Select(e => ProblemSummaryDto.FromDomainModel(e, imageService.GetImageUrl)).ToList();
     }
 
     [Authorize(Roles = $"{RoleNames.Admin}, {RoleNames.User}")]

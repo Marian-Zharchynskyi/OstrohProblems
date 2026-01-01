@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQueryClient } from '@tanstack/react-query'
-import type { Problem, CreateProblem } from '@/types'
+import type { ProblemSummary, CreateProblem } from '@/types'
 import { DataTable, type Column } from '@/components/shared/data-table'
 import { PageHeader } from '@/components/shared/page-header'
 import { DeleteDialog } from '@/components/shared/delete-dialog'
@@ -11,6 +11,7 @@ import {
   useCreateProblem,
   useUpdateProblem,
   useDeleteProblem,
+  useProblem,
 } from '../hooks/use-problems'
 import { useSignalR } from '@/contexts/use-signalr'
 import { toast } from '@/lib/toast'
@@ -21,7 +22,8 @@ export function ProblemsList() {
   const { onProblemsUpdated } = useSignalR()
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [isDeleteOpen, setIsDeleteOpen] = useState(false)
-  const [selectedProblem, setSelectedProblem] = useState<Problem | null>(null)
+  const [selectedProblemId, setSelectedProblemId] = useState<string | null>(null)
+  const { data: selectedProblem } = useProblem(selectedProblemId || '')
 
   // Subscribe to SignalR refresh events for auto-refresh
   useEffect(() => {
@@ -35,7 +37,7 @@ export function ProblemsList() {
   const updateMutation = useUpdateProblem()
   const deleteMutation = useDeleteProblem()
 
-  const columns: Column<Problem>[] = [
+  const columns: Column<ProblemSummary>[] = [
     {
       header: 'ID',
       accessor: 'id',
@@ -66,17 +68,17 @@ export function ProblemsList() {
   ]
 
   const handleCreate = () => {
-    setSelectedProblem(null)
+    setSelectedProblemId(null)
     setIsFormOpen(true)
   }
 
-  const handleEdit = (problem: Problem) => {
-    setSelectedProblem(problem)
+  const handleEdit = (problem: ProblemSummary) => {
+    setSelectedProblemId(problem.id)
     setIsFormOpen(true)
   }
 
-  const handleDelete = (problem: Problem) => {
-    setSelectedProblem(problem)
+  const handleDelete = (problem: ProblemSummary) => {
+    setSelectedProblemId(problem.id)
     setIsDeleteOpen(true)
   }
 
@@ -96,12 +98,13 @@ export function ProblemsList() {
   }
 
   const handleConfirmDelete = async () => {
-    if (!selectedProblem?.id) return
+    if (!selectedProblemId) return
 
     try {
-      await deleteMutation.mutateAsync(selectedProblem.id)
+      await deleteMutation.mutateAsync(selectedProblemId)
       toast.success('Problem deleted successfully')
       setIsDeleteOpen(false)
+      setSelectedProblemId(null)
     } catch (error) {
       toast.error('An error occurred: ' + error)
     }

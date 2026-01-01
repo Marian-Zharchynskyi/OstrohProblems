@@ -53,27 +53,27 @@ export function ImageLightbox({ images, initialIndex = 0, open, onClose }: Image
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90">
       <button
         onClick={onClose}
-        className="absolute top-4 right-4 p-2 text-white hover:bg-white/10 rounded-full transition-colors z-10 focus:outline-none focus:ring-0"
+        className="absolute top-4 right-4 p-2 text-white bg-white/10 hover:bg-white/10 rounded-full transition-colors z-10 focus:outline-none focus:ring-0"
         aria-label="Закрити"
       >
-        <X className="w-6 h-6" />
+        <X className="w-[1.8rem] h-[1.8rem]" />
       </button>
 
       <div className="absolute top-4 left-1/2 -translate-x-1/2 flex items-center gap-4 z-10">
         <button
           onClick={handleZoomOut}
-          className="p-2 text-white hover:bg-white/10 rounded-full transition-colors focus:outline-none focus:ring-0"
+          className="p-2 text-white bg-white/10 hover:bg-white/10 rounded-full transition-colors focus:outline-none focus:ring-0"
           aria-label="Зменшити"
         >
-          <ZoomOut className="w-5 h-5" />
+          <ZoomOut className="w-6 h-6" />
         </button>
         <span className="text-white text-sm">{Math.round(scale * 100)}%</span>
         <button
           onClick={handleZoomIn}
-          className="p-2 text-white hover:bg-white/10 rounded-full transition-colors focus:outline-none focus:ring-0"
+          className="p-2 text-white bg-white/10 hover:bg-white/10 rounded-full transition-colors focus:outline-none focus:ring-0"
           aria-label="Збільшити"
         >
-          <ZoomIn className="w-5 h-5" />
+          <ZoomIn className="w-6 h-6" />
         </button>
       </div>
 
@@ -81,17 +81,17 @@ export function ImageLightbox({ images, initialIndex = 0, open, onClose }: Image
         <>
           <button
             onClick={handlePrev}
-            className="absolute left-4 p-2 text-white hover:bg-white/10 rounded-full transition-colors z-10 focus:outline-none focus:ring-0"
+            className="absolute left-4 p-2 text-white bg-white/10 hover:bg-white/10 rounded-full transition-colors z-10 focus:outline-none focus:ring-0"
             aria-label="Попереднє"
           >
-            <ChevronLeft className="w-8 h-8" />
+            <ChevronLeft className="w-[2.4rem] h-[2.4rem]" />
           </button>
           <button
             onClick={handleNext}
-            className="absolute right-4 p-2 text-white hover:bg-white/10 rounded-full transition-colors z-10 focus:outline-none focus:ring-0"
+            className="absolute right-4 p-2 text-white bg-white/10 hover:bg-white/10 rounded-full transition-colors z-10 focus:outline-none focus:ring-0"
             aria-label="Наступне"
           >
-            <ChevronRight className="w-8 h-8" />
+            <ChevronRight className="w-[2.4rem] h-[2.4rem]" />
           </button>
         </>
       )}
