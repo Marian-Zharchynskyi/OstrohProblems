@@ -41,4 +41,16 @@ export const ratingsApi = {
     const response = await apiClient.get<number>(`${BASE_URL}/average/${problemId}`)
     return response.data
   },
+
+  getUserRatingForProblem: async (problemId: string) => {
+    try {
+      const response = await apiClient.get<Rating>(`${BASE_URL}/user-rating/${problemId}`)
+      return response.data
+    } catch (error: any) {
+      if (error?.response?.status === 404) {
+        return null
+      }
+      throw error
+    }
+  },
 }

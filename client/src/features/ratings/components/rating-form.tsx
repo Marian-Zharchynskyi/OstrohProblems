@@ -51,24 +51,25 @@ export function RatingForm({
       <DialogContent>
         <DialogHeader>
           <DialogTitle>
-            {initialData ? 'Edit Rating' : 'Create Rating'}
+            {initialData ? 'Редагувати рейтинг' : 'Створити рейтинг'}
           </DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit}>
           <div className="space-y-4 py-4">
+            {!initialData && (
+              <FormField
+                label="ID Проблеми"
+                name="problemId"
+                value={formData.problemId}
+                onChange={(value) =>
+                  setFormData({ ...formData, problemId: value as string })
+                }
+                required
+                placeholder="Введіть ID проблеми"
+              />
+            )}
             <FormField
-              label="Problem ID"
-              name="problemId"
-              value={formData.problemId}
-              onChange={(value) =>
-                setFormData({ ...formData, problemId: value as string })
-              }
-              required
-              placeholder="Enter problem ID"
-              disabled={!!initialData}
-            />
-            <FormField
-              label="Points"
+              label="Бали"
               name="points"
               type="number"
               value={formData.points}
@@ -76,7 +77,7 @@ export function RatingForm({
                 setFormData({ ...formData, points: value as number })
               }
               required
-              placeholder="Enter rating points"
+              placeholder="Введіть кількість балів"
             />
           </div>
           <DialogFooter>
@@ -85,11 +86,12 @@ export function RatingForm({
               variant="outline"
               onClick={() => onOpenChange(false)}
               disabled={isLoading}
+              className="border border-[#D0D5DD] text-[#292929] bg-transparent hover:bg-[#F5F5F5] hover:text-[#292929] focus:outline-none focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0"
             >
-              Cancel
+              Скасувати
             </Button>
             <Button type="submit" disabled={isLoading}>
-              {isLoading ? 'Saving...' : 'Save'}
+              {isLoading ? 'Збереження...' : 'Зберегти'}
             </Button>
           </DialogFooter>
         </form>

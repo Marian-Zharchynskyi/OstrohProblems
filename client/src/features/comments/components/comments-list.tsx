@@ -30,21 +30,20 @@ export function CommentsList() {
     {
       header: 'ID',
       accessor: 'id',
-      cell: (value) => String(value).substring(0, 8) + '...',
     },
     {
-      header: 'Content',
+      header: 'Зміст',
       accessor: 'content',
       cell: (value) => String(value).substring(0, 50) + (String(value).length > 50 ? '...' : ''),
     },
     {
-      header: 'User',
+      header: 'Користувач',
       accessor: (item) => item.user?.email || 'N/A',
     },
     {
-      header: 'Created At',
+      header: 'Створено',
       accessor: 'createdAt',
-      cell: (value) => new Date(String(value)).toLocaleDateString(),
+      cell: (value) => new Date(String(value)).toLocaleDateString('uk-UA'),
     },
   ]
 
@@ -67,14 +66,14 @@ export function CommentsList() {
     try {
       if (id) {
         await updateMutation.mutateAsync({ id, data })
-        toast.success('Comment updated successfully')
+        toast.success('Коментар успішно оновлено')
       } else {
         await createMutation.mutateAsync(data)
-        toast.success('Comment created successfully')
+        toast.success('Коментар успішно створено')
       }
       setIsFormOpen(false)
     } catch (error) {
-      toast.error('An error occurred: ' + error)
+      toast.error('Виникла помилка: ' + error)
     }
   }
 
@@ -83,20 +82,20 @@ export function CommentsList() {
 
     try {
       await deleteMutation.mutateAsync(selectedComment.id)
-      toast.success('Comment deleted successfully')
+      toast.success('Коментар успішно видалено')
       setIsDeleteOpen(false)
     } catch (error) {
-      toast.error('An error occurred: ' + error)
+      toast.error('Виникла помилка: ' + error)
     }
   }
 
   return (
     <div>
       <PageHeader
-        title="Comments"
-        description="Manage problem comments"
+        title="Коментарі"
+        description="Управління коментарями"
         action={!isAdmin ? {
-          label: 'New Comment',
+          label: 'Новий коментар',
           onClick: handleCreate,
         } : undefined}
       />
@@ -107,7 +106,7 @@ export function CommentsList() {
         onEdit={handleEdit}
         onDelete={handleDelete}
         isLoading={isLoading}
-        emptyMessage="No comments found"
+        emptyMessage="Коментарів не знайдено"
       />
 
       <CommentForm
@@ -122,8 +121,8 @@ export function CommentsList() {
         open={isDeleteOpen}
         onOpenChange={setIsDeleteOpen}
         onConfirm={handleConfirmDelete}
-        title="Delete Comment"
-        description="Are you sure you want to delete this comment? This action cannot be undone."
+        title="Видалити коментар"
+        description="Ви впевнені, що хочете видалити цей коментар? Цю дію неможливо скасувати."
         isLoading={deleteMutation.isPending}
       />
     </div>

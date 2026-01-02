@@ -228,8 +228,8 @@ export function AdminUsersPage() {
                   <TableRow>
                     <TableHead>Email</TableHead>
                     <TableHead>Ім'я та Прізвище</TableHead>
-                    <TableHead>Ролі</TableHead>
-                    <TableHead>Зображення</TableHead>
+                    <TableHead>Роль</TableHead>
+                    <TableHead>Аватар</TableHead>
                     <TableHead className="text-right">Дії</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -257,7 +257,7 @@ export function AdminUsersPage() {
                               className="inline-flex items-center gap-1 px-2 py-1 bg-primary/10 text-primary rounded text-xs"
                             >
                               <Shield className="w-3 h-3" />
-                              {user.role.name}
+                              {user.role.name === 'Administrator' ? 'Адміністратор' : user.role.name === 'Coordinator' ? 'Координатор' : user.role.name === 'User' ? 'Користувач' : user.role.name}
                             </span>
                           ) : (
                             <span className="text-muted-foreground text-sm">
@@ -283,20 +283,22 @@ export function AdminUsersPage() {
                         <div className="flex justify-end gap-2">
                           <Button
                             variant="outline"
-                            size="sm"
+                            size="icon"
+                            className="h-9 w-9 border border-[#D0D5DD] bg-white text-[#292929] hover:bg-[#F5F5F5] hover:text-[#292929] disabled:bg-white disabled:text-[#292929]"
                             onClick={() => handleOpenEditDialog(user)}
+                            title="Редагувати"
                           >
-                            <Pencil className="w-4 h-4 mr-1" />
-                            Редагувати
+                            <Pencil className="w-4 h-4 text-[#292929]" />
                           </Button>
                           <Button
                             variant="destructive"
-                            size="sm"
+                            size="icon"
+                            className="h-9 w-9 bg-[#E42556] hover:bg-[#E42556]/90 text-white disabled:bg-[#E42556]/80 disabled:text-white"
                             onClick={() => handleOpenDeleteDialog(user)}
                             disabled={deletingUserId === user.id}
+                            title="Видалити"
                           >
-                            <Trash2 className="w-4 h-4 mr-1" />
-                            {deletingUserId === user.id ? 'Видалення...' : 'Видалити'}
+                            <Trash2 className="w-4 h-4 text-white" />
                           </Button>
                         </div>
                       </TableCell>
@@ -311,7 +313,7 @@ export function AdminUsersPage() {
 
       {/* Create User Dialog */}
       <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-        <DialogContent className="sm:max-w-[425px]">
+        <DialogContent className="sm:max-w-[490px]">
           <DialogHeader>
             <DialogTitle>Створити користувача</DialogTitle>
             <DialogDescription>
@@ -324,6 +326,7 @@ export function AdminUsersPage() {
               <Input
                 id="email"
                 type="email"
+                autoComplete="off"
                 placeholder="user@example.com"
                 value={createForm.email}
                 onChange={(e) =>
@@ -336,6 +339,7 @@ export function AdminUsersPage() {
               <Input
                 id="password"
                 type="password"
+                autoComplete="new-password"
                 placeholder="Мінімум 6 символів"
                 value={createForm.password}
                 onChange={(e) =>
@@ -376,11 +380,11 @@ export function AdminUsersPage() {
                     className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-md text-sm border transition-colors ${
                       createForm.roleId === role.id
                         ? 'bg-primary text-primary-foreground border-primary'
-                        : 'bg-background hover:bg-muted border-input'
+                        : 'border-[#D0D5DD] text-[#292929] bg-transparent hover:bg-[#F5F5F5]'
                     }`}
                   >
                     <Shield className="w-3 h-3" />
-                    {role.name}
+                    {role.name === 'Administrator' ? 'Адміністратор' : role.name === 'Coordinator' ? 'Координатор' : role.name === 'User' ? 'Користувач' : role.name}
                   </button>
                 ))}
               </div>
@@ -391,6 +395,7 @@ export function AdminUsersPage() {
               variant="outline"
               onClick={() => setIsCreateDialogOpen(false)}
               disabled={isCreating}
+              className="border border-[#D0D5DD] text-[#292929] bg-transparent hover:bg-[#F5F5F5] hover:text-[#292929] focus:outline-none focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0"
             >
               Скасувати
             </Button>
@@ -453,7 +458,7 @@ export function AdminUsersPage() {
                     className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-md text-sm border transition-colors ${
                       editForm.roleId === role.id
                         ? 'bg-primary text-primary-foreground border-primary'
-                        : 'bg-background hover:bg-muted border-input'
+                        : 'border-[#D0D5DD] text-[#292929] bg-transparent hover:bg-[#F5F5F5]'
                     }`}
                   >
                     <Shield className="w-3 h-3" />
@@ -468,6 +473,7 @@ export function AdminUsersPage() {
               variant="outline"
               onClick={() => setIsEditDialogOpen(false)}
               disabled={isEditing}
+              className="border border-[#D0D5DD] text-[#292929] bg-transparent hover:bg-[#F5F5F5] hover:text-[#292929] focus:outline-none focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0"
             >
               Скасувати
             </Button>
@@ -480,7 +486,7 @@ export function AdminUsersPage() {
 
       {/* Delete Confirmation Dialog */}
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <DialogContent className="sm:max-w-[425px]">
+        <DialogContent className="sm:max-w-[490px]">
           <DialogHeader>
             <DialogTitle>Підтвердження видалення</DialogTitle>
             <DialogDescription>
@@ -500,7 +506,7 @@ export function AdminUsersPage() {
                 )}
                 {userToDelete.role && (
                   <p className="text-sm">
-                    <span className="font-semibold">Роль:</span> {userToDelete.role.name}
+                    <span className="font-semibold">Роль:</span> {userToDelete.role.name === 'Administrator' ? 'Адміністратор' : userToDelete.role.name === 'Coordinator' ? 'Координатор' : userToDelete.role.name === 'User' ? 'Користувач' : userToDelete.role.name}
                   </p>
                 )}
               </div>
@@ -519,6 +525,7 @@ export function AdminUsersPage() {
                 setUserToDelete(null)
               }}
               disabled={deletingUserId !== null}
+              className="border border-[#D0D5DD] text-[#292929] bg-transparent hover:bg-[#F5F5F5] hover:text-[#292929] focus:outline-none focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0"
             >
               Скасувати
             </Button>

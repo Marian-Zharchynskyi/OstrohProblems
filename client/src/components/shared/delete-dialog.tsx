@@ -21,8 +21,8 @@ export function DeleteDialog({
   open,
   onOpenChange,
   onConfirm,
-  title = 'Are you sure?',
-  description = 'This action cannot be undone. This will permanently delete this item.',
+  title = 'Ви впевнені?',
+  description = 'Цю дію неможливо скасувати. Це призведе до остаточного видалення цього елемента.',
   isLoading,
 }: DeleteDialogProps) {
   return (

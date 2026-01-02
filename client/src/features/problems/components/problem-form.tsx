@@ -86,59 +86,65 @@ export function ProblemForm({
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
-            {initialData ? 'Edit Problem' : 'Create Problem'}
+            {initialData ? 'Редагувати проблему' : 'Створити проблему'}
           </DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit}>
           <div className="space-y-4 py-4">
-            <FormField
-              label="Title"
-              name="title"
-              value={formData.title}
-              onChange={(value) =>
-                setFormData({ ...formData, title: value as string })
-              }
-              required
-              placeholder="Enter problem title"
-            />
-
-            <FormField
-              label="Description"
-              name="description"
-              type="textarea"
-              value={formData.description}
-              onChange={(value) =>
-                setFormData({ ...formData, description: value as string })
-              }
-              required
-              placeholder="Enter problem description"
-            />
-
-            <div className="grid grid-cols-2 gap-4">
+            <div className="mt-6">
               <FormField
-                label="Latitude"
-                name="latitude"
-                type="number"
-                value={formData.latitude}
+                label="Заголовок"
+                name="title"
+                value={formData.title}
                 onChange={(value) =>
-                  setFormData({ ...formData, latitude: value as number })
+                  setFormData({ ...formData, title: value as string })
                 }
                 required
-                placeholder="Enter latitude"
-              />
-
-              <FormField
-                label="Longitude"
-                name="longitude"
-                type="number"
-                value={formData.longitude}
-                onChange={(value) =>
-                  setFormData({ ...formData, longitude: value as number })
-                }
-                required
-                placeholder="Enter longitude"
+                placeholder="Введіть заголовок проблеми"
               />
             </div>
+
+            <div className="mt-6">
+              <FormField
+                label="Опис"
+                name="description"
+                type="textarea"
+                value={formData.description}
+                onChange={(value) =>
+                  setFormData({ ...formData, description: value as string })
+                }
+                required
+                placeholder="Введіть опис проблеми"
+              />
+            </div>
+
+            {!initialData && (
+              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  label="Широта"
+                  name="latitude"
+                  type="number"
+                  value={formData.latitude}
+                  onChange={(value) =>
+                    setFormData({ ...formData, latitude: value as number })
+                  }
+                  required
+                  placeholder="Введіть широту"
+                />
+
+                <FormField
+                  label="Довгота"
+                  name="longitude"
+                  type="number"
+                  value={formData.longitude}
+                  onChange={(value) =>
+                    setFormData({ ...formData, longitude: value as number })
+                  }
+                  required
+                  placeholder="Введіть довготу"
+                />
+              </div>
+            )}
 
             <div className="space-y-2">
               <div className="flex items-center gap-2">
@@ -192,11 +198,12 @@ export function ProblemForm({
               variant="outline"
               onClick={() => onOpenChange(false)}
               disabled={isLoading}
+              className="border border-[#D0D5DD] text-[#292929] bg-transparent hover:bg-[#F5F5F5] hover:text-[#292929] focus:outline-none focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0"
             >
-              Cancel
+              Скасувати
             </Button>
             <Button type="submit" disabled={isLoading}>
-              {isLoading ? 'Saving...' : 'Save'}
+              {isLoading ? 'Збереження...' : 'Зберегти'}
             </Button>
           </DialogFooter>
         </form>

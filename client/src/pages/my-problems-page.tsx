@@ -1,11 +1,12 @@
-import { useState } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useProblems } from '@/features/problems/hooks/use-problems'
 import { useAuth } from '@/contexts/auth-context'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Plus, MapPin, Calendar, Eye } from 'lucide-react'
+import { Plus, MapPin, Calendar, Eye, Star } from 'lucide-react'
 import { ProblemStatusConstants } from '@/types'
+import { ratingsApi } from '@/features/ratings/api/ratings-api'
 
 const getStatusColor = (status: string) => {
   switch (status) {
@@ -22,14 +23,60 @@ const getStatusColor = (status: string) => {
   }
 }
 
+interface ProblemRatings {
+  [problemId: string]: {
+    average: number
+    user: number | null
+    showUser: boolean
+  }
+}
+
 export function MyProblemsPage() {
   const { user } = useAuth()
   const navigate = useNavigate()
   const { data: problems, isLoading } = useProblems()
   const [filter, setFilter] = useState<string>('all')
+  const [ratings, setRatings] = useState<ProblemRatings>({})
 
-  // Фільтруємо тільки проблеми поточного користувача
-  const myProblems = problems?.filter(p => p.createdBy?.id === user?.id) || []
+  const myProblems = useMemo(
+    () => problems?.filter((p) => p.createdBy?.id === user?.id) || [],
+    [problems, user?.id]
+  )
+
+  useEffect(() => {
+    const fetchRatings = async () => {
+      if (!myProblems || myProblems.length === 0) return
+      
+      const ratingsData: ProblemRatings = {}
+      
+      await Promise.all(
+        myProblems.map(async (problem) => {
+          if (problem.id) {
+            try {
+              const avgRating = await ratingsApi.getAverageByProblemId(problem.id)
+              const userRating = user ? await ratingsApi.getUserRatingForProblem(problem.id) : null
+              
+              ratingsData[problem.id] = {
+                average: avgRating,
+                user: userRating?.points || null,
+                showUser: false,
+              }
+            } catch {
+              ratingsData[problem.id] = {
+                average: 0,
+                user: null,
+                showUser: false,
+              }
+            }
+          }
+        })
+      )
+      
+      setRatings(ratingsData)
+    }
+    
+    fetchRatings()
+  }, [myProblems, user])
 
   const filteredProblems = filter === 'all' 
     ? myProblems 
@@ -147,6 +194,46 @@ export function MyProblemsPage() {
                       <Calendar className="h-4 w-4" />
                       {new Date(problem.createdAt).toLocaleDateString('uk-UA')}
                     </span>
+                    {problem.id && ratings[problem.id] && (
+                      <div className="flex items-center gap-1">
+                        <div className="flex items-center gap-0.5">
+                          {[1, 2, 3, 4, 5].map((star) => {
+                            const problemRating = ratings[problem.id!]
+                            const displayRating = problemRating.showUser && problemRating.user !== null
+                              ? problemRating.user
+                              : problemRating.average
+                            const roundedRating = Math.round(displayRating || 0)
+                            return (
+                              <Star
+                                key={star}
+                                className={`w-4 h-4 ${star <= roundedRating ? 'text-yellow-500 fill-yellow-500' : 'text-gray-300'}`}
+                              />
+                            )
+                          })}
+                        </div>
+                        {user && ratings[problem.id].user !== null && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              const problemId = problem.id!
+                              setRatings(prev => ({
+                                ...prev,
+                                [problemId]: {
+                                  ...prev[problemId],
+                                  showUser: !prev[problemId].showUser,
+                                },
+                              }))
+                            }}
+                            className="text-xs text-blue-600 hover:underline focus:outline-none ml-1"
+                          >
+                            {ratings[problem.id].showUser ? 'Ваша' : 'Середня'}
+                          </button>
+                        )}
+                        {(!user || ratings[problem.id].user === null) && ratings[problem.id].average === 0 && (
+                          <span className="text-xs text-gray-500 ml-1">Оцініть</span>
+                        )}
+                      </div>
+                    )}
                   </div>
                   
                   {/* Поточний стан від координатора */}
