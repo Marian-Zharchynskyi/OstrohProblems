@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useProblem } from '@/features/problems/hooks/use-problems'
 import { useRealtimeComments } from '@/hooks/use-realtime-comments'
@@ -34,6 +34,8 @@ export function ProblemDetailPage() {
   
   const [newRating, setNewRating] = useState<number>(5)
   const [isSubmittingRating, setIsSubmittingRating] = useState(false)
+  const [userRating, setUserRating] = useState<number | null>(null)
+  const [hasUserRated, setHasUserRated] = useState(false)
 
   const handleSubmitComment = async () => {
     if (!id || !newComment.trim()) return
@@ -51,6 +53,23 @@ export function ProblemDetailPage() {
     }
   }
 
+  const fetchUserRating = async () => {
+    if (!id) return
+    try {
+      const rating = await ratingsApi.getUserRatingForProblem(id)
+      if (rating) {
+        setUserRating(rating.points)
+        setHasUserRated(true)
+      } else {
+        setUserRating(null)
+        setHasUserRated(false)
+      }
+    } catch {
+      setUserRating(null)
+      setHasUserRated(false)
+    }
+  }
+
   const handleSubmitRating = async () => {
     if (!id) return
     
@@ -58,6 +77,7 @@ export function ProblemDetailPage() {
       setIsSubmittingRating(true)
       await ratingsApi.create({ points: newRating, problemId: id })
       toast.success('Оцінку додано')
+      await fetchUserRating()
       refetch()
     } catch {
       toast.error('Не вдалося додати оцінку')
@@ -65,6 +85,13 @@ export function ProblemDetailPage() {
       setIsSubmittingRating(false)
     }
   }
+
+  useEffect(() => {
+    if (id && user) {
+      fetchUserRating()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id, user])
 
   if (isLoading) {
     return (
@@ -91,8 +118,13 @@ export function ProblemDetailPage() {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center gap-4">
-        <Button variant="outline" size="icon" onClick={() => navigate('/problems')}>
-          <ArrowLeft className="w-4 h-4" />
+        <Button 
+          variant="outline" 
+          size="icon" 
+          onClick={() => navigate('/problems')}
+          className="h-9 w-9 border border-[#D0D5DD] bg-white text-[#292929] hover:bg-[#F5F5F5] hover:text-[#292929]"
+        >
+          <ArrowLeft className="w-4 h-4 text-[#292929]" />
         </Button>
         <div>
           <h1 className="text-2xl font-bold">{problem.title}</h1>
@@ -168,8 +200,11 @@ export function ProblemDetailPage() {
                   <Button 
                     onClick={handleSubmitComment} 
                     disabled={isSubmittingComment || !newComment.trim()}
+                    variant="outline"
+                    size="icon"
+                    className="h-9 w-9 border border-[#D0D5DD] bg-white text-[#292929] hover:bg-[#F5F5F5] hover:text-[#292929] disabled:bg-white disabled:text-[#292929]"
                   >
-                    <Send className="w-4 h-4" />
+                    <Send className="w-4 h-4 text-[#292929]" />
                   </Button>
                 </div>
               )}
@@ -202,6 +237,21 @@ export function ProblemDetailPage() {
 
         {/* Sidebar */}
         <div className="space-y-6">
+          {/* Location */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Місце на карті</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <LocationPickerMap
+                latitude={problem.latitude}
+                longitude={problem.longitude}
+                readonly={true}
+                height="240px"
+              />
+            </CardContent>
+          </Card>
+
           {/* Status */}
           <Card>
             <CardHeader>
@@ -243,21 +293,6 @@ export function ProblemDetailPage() {
               </CardContent>
             </Card>
           )}
-
-          {/* Location */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Місце на карті</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <LocationPickerMap
-                latitude={problem.latitude}
-                longitude={problem.longitude}
-                readonly={true}
-                height="200px"
-              />
-            </CardContent>
-          </Card>
 
           {/* Categories */}
           {problem.categories && problem.categories.length > 0 && (
@@ -320,32 +355,53 @@ export function ProblemDetailPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label>Оцінка (1-5)</Label>
-                  <div className="flex gap-1">
-                    {[1, 2, 3, 4, 5].map((value) => (
-                      <button
-                        key={value}
-                        type="button"
-                        onClick={() => setNewRating(value)}
-                        className={`p-1 rounded ${
-                          value <= newRating
-                            ? 'text-yellow-500'
-                            : 'text-gray-300'
-                        }`}
-                      >
-                        <Star className="w-6 h-6 fill-current" />
-                      </button>
-                    ))}
+                {hasUserRated ? (
+                  <div className="space-y-3">
+                    <div className="p-3 bg-green-50 rounded-lg">
+                      <p className="text-sm font-medium text-green-800 mb-2">Ваша оцінка</p>
+                      <div className="flex gap-1">
+                        {[1, 2, 3, 4, 5].map((value) => (
+                          <Star
+                            key={value}
+                            className={`w-6 h-6 ${
+                              value <= (userRating || 0)
+                                ? 'text-yellow-500 fill-yellow-500'
+                                : 'text-gray-300'
+                            }`}
+                          />
+                        ))}
+                      </div>
+                      <p className="text-xs text-green-700 mt-2">Ви вже оцінили цю проблему</p>
+                    </div>
                   </div>
-                </div>
-                <Button 
-                  onClick={handleSubmitRating} 
-                  disabled={isSubmittingRating}
-                  className="w-full"
-                >
-                  {isSubmittingRating ? 'Збереження...' : 'Оцінити'}
-                </Button>
+                ) : (
+                  <div className="space-y-2">
+                    <Label>Оцінка (1-5)</Label>
+                    <div className="flex gap-1">
+                      {[1, 2, 3, 4, 5].map((value) => (
+                        <button
+                          key={value}
+                          type="button"
+                          onClick={() => setNewRating(value)}
+                          className={`p-1 rounded hover:bg-gray-100 ${
+                            value <= newRating
+                              ? 'text-yellow-500'
+                              : 'text-gray-300'
+                          }`}
+                        >
+                          <Star className="w-6 h-6 fill-current" />
+                        </button>
+                      ))}
+                    </div>
+                    <Button 
+                      onClick={handleSubmitRating} 
+                      disabled={isSubmittingRating}
+                      className="w-full"
+                    >
+                      {isSubmittingRating ? 'Збереження...' : 'Оцінити'}
+                    </Button>
+                  </div>
+                )}
               </CardContent>
             </Card>
           )}

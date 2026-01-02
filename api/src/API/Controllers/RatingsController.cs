@@ -60,6 +60,24 @@ public class RatingsController(ISender sender, IRatingQueries ratingQueries) : C
         return Ok(average);
     }
 
+    [HttpGet("user-rating/{problemId:guid}")]
+    public async Task<ActionResult<RatingDto>> GetUserRatingForProblem([FromRoute] Guid problemId, CancellationToken cancellationToken)
+    {
+        var userIdClaim = HttpContext.User.Claims.FirstOrDefault(c => c.Type == "id");
+        
+        if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userIdGuid))
+        {
+            return Unauthorized();
+        }
+
+        var userId = new Domain.Identity.Users.UserId(userIdGuid);
+        var entity = await ratingQueries.GetByUserAndProblem(userId, new Domain.Problems.ProblemId(problemId), cancellationToken);
+
+        return entity.Match<ActionResult<RatingDto>>(
+            r => RatingDto.FromDomainModel(r),
+            () => NotFound());
+    }
+
     [HttpPost("create")]
     public async Task<ActionResult<CreateRatingDto>> Create(
         [FromBody] CreateRatingDto request,

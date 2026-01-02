@@ -41,29 +41,28 @@ export function ProblemsList() {
     {
       header: 'ID',
       accessor: 'id',
-      cell: (value) => String(value).substring(0, 8) + '...',
     },
     {
-      header: 'Title',
+      header: 'Заголовок',
       accessor: 'title',
     },
     {
-      header: 'Status',
+      header: 'Статус',
       accessor: (item) => item.status || 'N/A',
     },
     {
-      header: 'Location',
+      header: 'Локація',
       accessor: (item) => `${item.latitude.toFixed(4)}, ${item.longitude.toFixed(4)}`,
     },
     {
-      header: 'Categories',
+      header: 'Категорії',
       accessor: (item) =>
         item.categories?.join(', ') || 'N/A',
     },
     {
-      header: 'Created At',
+      header: 'Створено',
       accessor: 'createdAt',
-      cell: (value) => new Date(String(value)).toLocaleDateString(),
+      cell: (value) => new Date(String(value)).toLocaleDateString('uk-UA'),
     },
   ]
 
@@ -86,14 +85,14 @@ export function ProblemsList() {
     try {
       if (id) {
         await updateMutation.mutateAsync({ id, data })
-        toast.success('Problem updated successfully')
+        toast.success('Проблему успішно оновлено')
       } else {
         await createMutation.mutateAsync(data)
-        toast.success('Problem created successfully')
+        toast.success('Проблему успішно створено')
       }
       setIsFormOpen(false)
     } catch (error) {
-      toast.error('An error occurred: ' + error)
+      toast.error('Виникла помилка: ' + error)
     }
   }
 
@@ -102,21 +101,21 @@ export function ProblemsList() {
 
     try {
       await deleteMutation.mutateAsync(selectedProblemId)
-      toast.success('Problem deleted successfully')
+      toast.success('Проблему успішно видалено')
       setIsDeleteOpen(false)
       setSelectedProblemId(null)
     } catch (error) {
-      toast.error('An error occurred: ' + error)
+      toast.error('Виникла помилка: ' + error)
     }
   }
 
   return (
     <div>
       <PageHeader
-        title="Problems"
-        description="Manage problems reported in the system"
+        title="Проблеми"
+        description="Управління проблемами в системі"
         action={{
-          label: 'New Problem',
+          label: 'Нова проблема',
           onClick: handleCreate,
         }}
       />
@@ -128,7 +127,7 @@ export function ProblemsList() {
         onDelete={handleDelete}
         onRowClick={(problem) => problem.id && navigate(`/problems/${problem.id}`)}
         isLoading={isLoading}
-        emptyMessage="No problems found"
+        emptyMessage="Проблем не знайдено"
       />
 
       <ProblemForm
@@ -143,8 +142,8 @@ export function ProblemsList() {
         open={isDeleteOpen}
         onOpenChange={setIsDeleteOpen}
         onConfirm={handleConfirmDelete}
-        title="Delete Problem"
-        description="Are you sure you want to delete this problem? This action cannot be undone."
+        title="Видалити проблему"
+        description="Ви впевнені, що хочете видалити цю проблему? Цю дію неможливо скасувати."
         isLoading={deleteMutation.isPending}
       />
     </div>

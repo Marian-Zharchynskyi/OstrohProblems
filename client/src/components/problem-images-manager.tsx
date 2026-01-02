@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Upload, Trash2, Image as ImageIcon, X } from 'lucide-react'
 import { toast } from '@/lib/toast'
+import { ImageLightbox } from '@/components/shared/image-lightbox'
 
 type ImageType = 'problem' | 'coordinator'
 
@@ -31,6 +32,8 @@ export function ProblemImagesManager({
   const [isDeleting, setIsDeleting] = useState<string | null>(null)
   const [selectedFiles, setSelectedFiles] = useState<File[]>([])
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const [lightboxOpen, setLightboxOpen] = useState(false)
+  const [lightboxInitialIndex, setLightboxInitialIndex] = useState(0)
 
   const currentImagesCount = images?.length || 0
   const canAddMore = currentImagesCount + selectedFiles.length < maxImages
@@ -111,16 +114,23 @@ export function ProblemImagesManager({
         {/* Existing Images */}
         {images && images.length > 0 && (
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-            {images.map((image) => (
+            {images.map((image, index) => (
               <div key={image.id} className="relative group">
                 <img
                   src={image.url}
                   alt="Problem"
-                  className="h-32 w-full rounded-lg object-cover"
+                  className="h-32 w-full rounded-lg object-cover cursor-pointer hover:opacity-90 transition-opacity"
+                  onClick={() => {
+                    setLightboxInitialIndex(index)
+                    setLightboxOpen(true)
+                  }}
                 />
                 {canEdit && (
                   <button
-                    onClick={() => image.id && handleDeleteImage(image.id)}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      if (image.id) handleDeleteImage(image.id)
+                    }}
                     disabled={isDeleting === image.id}
                     className="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity disabled:opacity-50"
                   >
@@ -209,6 +219,13 @@ export function ProblemImagesManager({
           </div>
         )}
       </CardContent>
+
+      <ImageLightbox
+        images={images || []}
+        initialIndex={lightboxInitialIndex}
+        open={lightboxOpen}
+        onClose={() => setLightboxOpen(false)}
+      />
     </Card>
   )
 }

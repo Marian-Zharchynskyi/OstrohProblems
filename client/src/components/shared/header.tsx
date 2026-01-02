@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom'
-import { LogOut, Users, UserCircle, Plus } from 'lucide-react'
+import { LogOut, UserCircle, Plus } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/contexts/auth-context'
 import { NotificationsBell } from '@/components/notifications/notifications-bell'
@@ -16,6 +16,7 @@ const adminNavItems = [
   { path: '/problems', label: 'Проблеми' },
   { path: '/comments', label: 'Коментарі' },
   { path: '/ratings', label: 'Рейтинги' },
+  { path: '/admin/users', label: 'Користувачі' },
 ]
 
 const coordinatorNavItems = [
@@ -101,23 +102,13 @@ export const Header = () => {
                   </>
                 )}
 
-                {!isCoordinator && (
+                {!isCoordinator && !isAdmin && (
                   <Link
                     to="/profile"
                     className="flex items-center justify-center w-10 h-10 rounded-full hover:bg-black/5 transition-colors"
                     title="Профіль"
                   >
                     <UserCircle className="w-5 h-5 text-black" strokeWidth={2} />
-                  </Link>
-                )}
-
-                {isAdmin && (
-                  <Link
-                    to="/admin/users"
-                    className="flex items-center justify-center w-10 h-10 rounded-full hover:bg-black/5 transition-colors"
-                    title="Користувачі"
-                  >
-                    <Users className="w-5 h-5 text-black" strokeWidth={2} />
                   </Link>
                 )}
 

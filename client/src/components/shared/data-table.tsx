@@ -8,7 +8,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Button } from '@/components/ui/button'
-import { Edit, Trash2 } from 'lucide-react'
+import { Pencil, Trash2 } from 'lucide-react'
 
 export interface Column<T> {
   header: string
@@ -38,7 +38,7 @@ export function DataTable<T extends { id: string | null }>({
   if (isLoading) {
     return (
       <div className="flex items-center justify-center p-8">
-        <div className="text-muted-foreground">Loading...</div>
+        <div className="text-muted-foreground">Завантаження...</div>
       </div>
     )
   }
@@ -66,7 +66,7 @@ export function DataTable<T extends { id: string | null }>({
             {columns.map((column, index) => (
               <TableHead key={index}>{column.header}</TableHead>
             ))}
-            {(onEdit || onDelete) && <TableHead className="text-right">Actions</TableHead>}
+            {(onEdit || onDelete) && <TableHead className="text-right">Дії</TableHead>}
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -89,20 +89,30 @@ export function DataTable<T extends { id: string | null }>({
                   <div className="flex justify-end gap-2">
                     {onEdit && (
                       <Button
-                        variant="ghost"
+                        variant="outline"
                         size="icon"
-                        onClick={() => onEdit(item)}
+                        className="h-9 w-9 border border-[#D0D5DD] bg-white text-[#292929] hover:bg-[#F5F5F5] hover:text-[#292929] disabled:bg-white disabled:text-[#292929]"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          onEdit(item)
+                        }}
+                        title="Редагувати"
                       >
-                        <Edit className="h-4 w-4" />
+                        <Pencil className="h-4 w-4 text-[#292929]" />
                       </Button>
                     )}
                     {onDelete && (
                       <Button
-                        variant="ghost"
+                        variant="destructive"
                         size="icon"
-                        onClick={() => onDelete(item)}
+                        className="h-9 w-9 bg-[#DC2626] hover:bg-[#B91C1C] text-white disabled:bg-[#DC2626]/80 disabled:text-white"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          onDelete(item)
+                        }}
+                        title="Видалити"
                       >
-                        <Trash2 className="h-4 w-4" />
+                        <Trash2 className="h-4 w-4 text-white" />
                       </Button>
                     )}
                   </div>

@@ -334,7 +334,10 @@ interface ProblemDetailsCardProps {
 }
 
 const ProblemDetailsCard = memo(function ProblemDetailsCard({ problem }: ProblemDetailsCardProps) {
+  const { user } = useAuth()
   const [averageRating, setAverageRating] = useState<number>(0)
+  const [userRating, setUserRating] = useState<number | null>(null)
+  const [showUserRating, setShowUserRating] = useState(false)
   const [lightboxOpen, setLightboxOpen] = useState(false)
   const [lightboxImages, setLightboxImages] = useState<{ id: string | null; url: string }[]>([])
   const [lightboxInitialIndex, setLightboxInitialIndex] = useState(0)
@@ -365,19 +368,29 @@ const ProblemDetailsCard = memo(function ProblemDetailsCard({ problem }: Problem
   }, [problem.latitude, problem.longitude])
 
   useEffect(() => {
-    const fetchRating = async () => {
+    const fetchRatings = async () => {
       if (problem.id) {
         try {
           const { ratingsApi } = await import('@/features/ratings/api/ratings-api')
-          const rating = await ratingsApi.getAverageByProblemId(problem.id)
-          setAverageRating(rating)
+          const avgRating = await ratingsApi.getAverageByProblemId(problem.id)
+          setAverageRating(avgRating)
+          
+          if (user) {
+            const userRatingData = await ratingsApi.getUserRatingForProblem(problem.id)
+            if (userRatingData) {
+              setUserRating(userRatingData.points)
+            } else {
+              setUserRating(null)
+            }
+          }
         } catch {
           setAverageRating(0)
+          setUserRating(null)
         }
       }
     }
-    fetchRating()
-  }, [problem.id])
+    fetchRatings()
+  }, [problem.id, user])
 
   const openUserImagesLightbox = () => {
     if (hasUserImages) {
@@ -425,7 +438,8 @@ const ProblemDetailsCard = memo(function ProblemDetailsCard({ problem }: Problem
     }
   }
 
-  const roundedRating = Math.round(averageRating)
+  const displayRating = showUserRating && userRating !== null ? userRating : averageRating
+  const roundedRating = Math.round(displayRating)
 
   return (
     <div className="flex flex-col">
@@ -450,8 +464,11 @@ const ProblemDetailsCard = memo(function ProblemDetailsCard({ problem }: Problem
               </div>
             </div>
             <div className="flex flex-col items-end">
-              {averageRating === 0 && (
+              {averageRating === 0 && !userRating && (
                 <span className="text-xs text-gray-500 mb-1">поки не оцінено</span>
+              )}
+              {userRating === null && averageRating === 0 && user && (
+                <span className="text-xs text-blue-600 mb-1 cursor-default">Оцініть проблему</span>
               )}
               <div className="flex items-center gap-0.5">
                 {[1, 2, 3, 4, 5].map((star) => (
@@ -461,7 +478,17 @@ const ProblemDetailsCard = memo(function ProblemDetailsCard({ problem }: Problem
                   />
                 ))}
               </div>
-              <span className="text-xs font-bold text-[#E42556] mt-1">Рейтинг уподобань</span>
+              {user && userRating !== null && (
+                <button
+                  onClick={() => setShowUserRating(!showUserRating)}
+                  className="text-xs font-bold text-[#E42556] mt-1 hover:underline focus:outline-none"
+                >
+                  {showUserRating ? 'Ваша оцінка' : 'Середня оцінка'}
+                </button>
+              )}
+              {(!user || userRating === null) && (
+                <span className="text-xs font-bold text-[#E42556] mt-1">Рейтинг уподобань</span>
+              )}
             </div>
           </div>
 
@@ -699,7 +726,7 @@ export function AllProblemsView() {
           Проблеми
         </h1>
         <p className="font-semibold text-[#464646] font-['Mulish'] text-[1.3rem] leading-[1.8rem] mt-2">
-          Виберіть доступні проблеми, відфільтруйте та сортуйте за бажанням
+          Виберіть доступні проблеми та відфільтруйте за бажанням, щоб знайти потрібну
         </p>
       </div>
 

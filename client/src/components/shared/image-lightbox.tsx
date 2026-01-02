@@ -50,7 +50,7 @@ export function ImageLightbox({ images, initialIndex = 0, open, onClose }: Image
   if (!open || images.length === 0) return null
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90">
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/90">
       <button
         onClick={onClose}
         className="absolute top-4 right-4 p-2 text-white bg-white/10 hover:bg-white/10 rounded-full transition-colors z-10 focus:outline-none focus:ring-0"
