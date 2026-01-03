@@ -6,6 +6,7 @@ import { useAuth } from '@/contexts/auth-context'
 import { useProblemsForMap } from '../hooks/use-problems'
 import { useRealtimeComments } from '@/hooks/use-realtime-comments'
 import { problemsApi } from '../api/problems-api'
+import { ratingsApi } from '@/features/ratings/api/ratings-api'
 import type { Problem, Comment } from '@/types'
 import { ProblemStatusConstants, PriorityConstants, CategoryConstants } from '@/types'
 import { Button } from '@/components/ui/button'
@@ -13,7 +14,7 @@ import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { toast } from '@/lib/toast'
 import { useQueryClient } from '@tanstack/react-query'
 import { 
@@ -341,6 +342,9 @@ const ProblemDetailsCard = memo(function ProblemDetailsCard({ problem }: Problem
   const [lightboxOpen, setLightboxOpen] = useState(false)
   const [lightboxImages, setLightboxImages] = useState<{ id: string | null; url: string }[]>([])
   const [lightboxInitialIndex, setLightboxInitialIndex] = useState(0)
+  const [isRatingModalOpen, setIsRatingModalOpen] = useState(false)
+  const [newRating, setNewRating] = useState<number>(5)
+  const [isSubmittingRating, setIsSubmittingRating] = useState(false)
 
   const hasUserImages = problem.images && problem.images.length > 0
   const hasCoordinatorImages = problem.coordinatorImages && problem.coordinatorImages.length > 0
@@ -371,7 +375,6 @@ const ProblemDetailsCard = memo(function ProblemDetailsCard({ problem }: Problem
     const fetchRatings = async () => {
       if (problem.id) {
         try {
-          const { ratingsApi } = await import('@/features/ratings/api/ratings-api')
           const avgRating = await ratingsApi.getAverageByProblemId(problem.id)
           setAverageRating(avgRating)
           
@@ -379,13 +382,16 @@ const ProblemDetailsCard = memo(function ProblemDetailsCard({ problem }: Problem
             const userRatingData = await ratingsApi.getUserRatingForProblem(problem.id)
             if (userRatingData) {
               setUserRating(userRatingData.points)
+              setNewRating(userRatingData.points)
             } else {
               setUserRating(null)
+              setNewRating(5)
             }
           }
         } catch {
           setAverageRating(0)
           setUserRating(null)
+          setNewRating(5)
         }
       }
     }
@@ -438,8 +444,51 @@ const ProblemDetailsCard = memo(function ProblemDetailsCard({ problem }: Problem
     }
   }
 
-  const displayRating = showUserRating && userRating !== null ? userRating : averageRating
-  const roundedRating = Math.round(displayRating)
+  const handleSubmitRating = async () => {
+    if (!problem.id) return
+    
+    try {
+      setIsSubmittingRating(true)
+      await ratingsApi.create({ points: newRating, problemId: problem.id })
+      toast.success('Оцінку додано')
+      setIsRatingModalOpen(false)
+      
+      const avgRating = await ratingsApi.getAverageByProblemId(problem.id)
+      setAverageRating(avgRating)
+      
+      if (user) {
+        const userRatingData = await ratingsApi.getUserRatingForProblem(problem.id)
+        if (userRatingData) {
+          setUserRating(userRatingData.points)
+        }
+      }
+    } catch {
+      toast.error('Не вдалося додати оцінку')
+    } finally {
+      setIsSubmittingRating(false)
+    }
+  }
+
+  const displayRating = showUserRating ? (userRating ?? 0) : averageRating
+  const hasUserRating = Boolean(user && userRating !== null)
+  
+  const renderStars = (rating: number) => {
+    return [1, 2, 3, 4, 5].map((star) => {
+      const fillPercentage = Math.max(0, Math.min(100, (rating - star + 1) * 100))
+      
+      return (
+        <div key={star} className="relative w-5 h-5">
+          <Star className="w-5 h-5 text-[#D2D2D2] absolute" />
+          <div 
+            className="overflow-hidden absolute" 
+            style={{ width: `${fillPercentage}%` }}
+          >
+            <Star className="w-5 h-5 text-[#FFA900] fill-[#FFA900]" />
+          </div>
+        </div>
+      )
+    })
+  }
 
   return (
     <div className="flex flex-col">
@@ -464,31 +513,33 @@ const ProblemDetailsCard = memo(function ProblemDetailsCard({ problem }: Problem
               </div>
             </div>
             <div className="flex flex-col items-end">
-              {averageRating === 0 && !userRating && (
-                <span className="text-xs text-gray-500 mb-1">поки не оцінено</span>
-              )}
-              {userRating === null && averageRating === 0 && user && (
-                <span className="text-xs text-blue-600 mb-1 cursor-default">Оцініть проблему</span>
-              )}
-              <div className="flex items-center gap-0.5">
-                {[1, 2, 3, 4, 5].map((star) => (
-                  <Star
-                    key={star}
-                    className={`w-5 h-5 ${star <= roundedRating ? 'text-[#FFA900] fill-[#FFA900]' : 'text-[#D2D2D2]'}`}
-                  />
-                ))}
-              </div>
-              {user && userRating !== null && (
-                <button
-                  onClick={() => setShowUserRating(!showUserRating)}
-                  className="text-xs font-bold text-[#E42556] mt-1 hover:underline focus:outline-none"
+              <div 
+                className="flex flex-col items-end group"
+              >
+                <div 
+                  className="flex items-center gap-0.5 cursor-pointer"
+                  onClick={() => setIsRatingModalOpen(true)}
                 >
-                  {showUserRating ? 'Ваша оцінка' : 'Середня оцінка'}
-                </button>
-              )}
-              {(!user || userRating === null) && (
-                <span className="text-xs font-bold text-[#E42556] mt-1">Рейтинг уподобань</span>
-              )}
+                  {renderStars(displayRating)}
+                </div>
+                <div className="mt-2 flex items-center justify-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setShowUserRating(!showUserRating)}
+                    className="p-0 bg-transparent border-none shadow-none transition-opacity hover:opacity-80 outline-none focus:outline-none focus:ring-0"
+                    title="Змінити відображення рейтингу"
+                  >
+                    <img 
+                      src="/icons/change.png" 
+                      alt="Change rating view" 
+                      className="w-5 h-5"
+                    />
+                  </button>
+                  <span className="text-xs font-bold text-[#E42556]">
+                    {showUserRating ? 'Ваший рейтинг' : 'Середній рейтинг'}
+                  </span>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -588,6 +639,53 @@ const ProblemDetailsCard = memo(function ProblemDetailsCard({ problem }: Problem
         open={lightboxOpen}
         onClose={() => setLightboxOpen(false)}
       />
+
+      <Dialog open={isRatingModalOpen} onOpenChange={setIsRatingModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{hasUserRating ? 'Оновити оцінку' : 'Оцінити проблему'}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="flex justify-center pt-4">
+              <Input
+                type="number"
+                min="1"
+                max="5"
+                step="0.1"
+                value={newRating}
+                onChange={(e) => {
+                  const val = parseFloat(e.target.value)
+                  if (!isNaN(val)) {
+                    setNewRating(val)
+                  }
+                }}
+                className="w-24 text-center text-lg"
+              />
+            </div>
+            <p className="text-sm text-gray-500 text-center mb-2">
+              Введіть оцінку від 1 до 5 (можна використовувати дробові числа)
+            </p>
+          </div>
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setIsRatingModalOpen(false)}
+              disabled={isSubmittingRating}
+              className="border border-[#D0D5DD] text-[#292929] bg-transparent hover:bg-[#F5F5F5] hover:text-[#292929]"
+            >
+              Скасувати
+            </Button>
+            <Button 
+              onClick={handleSubmitRating} 
+              disabled={isSubmittingRating}
+              className="bg-[#E42556] hover:bg-[#E42556]/90 text-white"
+            >
+              {isSubmittingRating ? 'Збереження...' : hasUserRating ? 'Оновити оцінку' : 'Зберегти'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 })

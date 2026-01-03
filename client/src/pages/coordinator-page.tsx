@@ -264,7 +264,12 @@ export default function CoordinatorPage() {
           <CardContent className="space-y-4">
             <div>
               <h3 className="font-semibold mb-1">Опис:</h3>
-              <p className="text-gray-600">{detailProblem.description}</p>
+              <p
+                className="text-gray-600 whitespace-pre-wrap break-words"
+                style={{ overflowWrap: 'anywhere' }}
+              >
+                {detailProblem.description}
+              </p>
             </div>
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
@@ -548,6 +553,11 @@ export default function CoordinatorPage() {
             variant={activeTab === tab.key ? 'default' : 'outline'}
             onClick={() => setActiveTab(tab.key)}
             size="sm"
+            className={`justify-between min-w-[150px] ${
+              activeTab === tab.key
+                ? 'shadow-sm'
+                : 'border-[#D0D5DD] bg-transparent text-[#1F2732] hover:bg-[#F5F5F5] hover:text-[#1F2732]'
+            }`}
           >
             {tab.label} {tab.key === 'my' ? `(${myProblems.length})` : tab.key === 'new' ? `(${newProblems.length})` : ''}
           </Button>
@@ -573,17 +583,12 @@ export default function CoordinatorPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-sm text-gray-600 mb-2 line-clamp-2">{problem.description}</p>
-                {problem.currentState && (
-                  <p className="text-sm text-blue-600 mb-2 line-clamp-1">
-                    <span className="font-semibold">Стан:</span> {problem.currentState}
-                  </p>
-                )}
-                {problem.rejectionReason && (
-                  <p className="text-sm text-red-600 mb-2 line-clamp-1">
-                    <span className="font-semibold">Причина:</span> {problem.rejectionReason}
-                  </p>
-                )}
+                <p
+                  className="text-sm text-gray-600 mb-2 line-clamp-2 break-words"
+                  style={{ overflowWrap: 'anywhere' }}
+                >
+                  {problem.description}
+                </p>
                 <p className="text-xs text-gray-500">
                   Автор: {problem.createdBy?.email} | {new Date(problem.createdAt).toLocaleDateString('uk-UA')}
                 </p>
@@ -591,7 +596,7 @@ export default function CoordinatorPage() {
                 {activeTab === 'my' && (
                   <div className="mt-3 flex gap-2" onClick={(e) => e.stopPropagation()}>
                     <Button
-                      variant="outline"
+                      variant="default"
                       size="sm"
                       disabled={!problem.id}
                       onClick={() => problem.id && navigate(`/problems/${problem.id}`)}
@@ -599,6 +604,7 @@ export default function CoordinatorPage() {
                       Детальніше
                     </Button>
                     <Button
+                      variant="default"
                       size="sm"
                       onClick={() => {
                         setDetailProblem(problem)
