@@ -1,30 +1,14 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { problemsApi } from '@/features/problems/api/problems-api'
 import { useProblemsByCoordinator, useProblemsByStatus } from '@/features/problems/hooks/use-problems'
-import type { Problem } from '@/types'
-import { ProblemStatusConstants, PriorityConstants } from '@/types'
+import { ProblemStatusConstants } from '@/types'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Textarea } from '@/components/ui/textarea'
-import { Label } from '@/components/ui/label'
 import { useAuth } from '@/contexts/auth-context'
 import { useSignalR } from '@/contexts/use-signalr'
-import { toast } from '@/lib/toast'
 import { useQueryClient } from '@tanstack/react-query'
-import { LocationPickerMap } from '@/components/location-picker-map'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-
-const MAX_COORDINATOR_IMAGES = 6
 
 type TabType = 'new' | 'my' | 'completed' | 'rejected'
-
-const tabConfig: { key: TabType; label: string; status?: string }[] = [
-  { key: 'new', label: 'Нові', status: ProblemStatusConstants.New },
-  { key: 'my', label: 'Мої проблеми' },
-  { key: 'completed', label: 'Виконано', status: ProblemStatusConstants.Completed },
-  { key: 'rejected', label: 'Відхилені', status: ProblemStatusConstants.Rejected },
-]
 
 export default function CoordinatorPage() {
   const { user } = useAuth()
@@ -41,496 +25,39 @@ export default function CoordinatorPage() {
     })
   }, [onProblemsUpdated, queryClient])
   
-  // Get current status for API filtering
-  const currentTabConfig = tabConfig.find(t => t.key === activeTab)
-  const currentStatus = currentTabConfig?.status || ''
+  // Fetch New problems (unassigned)
+  const { data: allNewProblems = [], isLoading: loadingNew } = useProblemsByStatus(ProblemStatusConstants.New)
   
-  // Use hooks for fetching problems with API filtering
-  const { data: statusProblems = [], isLoading: loadingStatus } = useProblemsByStatus(currentStatus)
+  // Fetch My problems (all assigned to me)
   const { data: myProblems = [], isLoading: loadingMy } = useProblemsByCoordinator(user?.id || '')
   
-  const [rejectionReason, setRejectionReason] = useState('')
-  const [currentStateInput, setCurrentStateInput] = useState('')
-  const [detailProblem, setDetailProblem] = useState<Problem | null>(null)
-  const [actionMode, setActionMode] = useState<'reject' | 'currentState' | 'complete' | 'assign' | 'changeLocation' | null>(null)
-  const [coordinatorFiles, setCoordinatorFiles] = useState<FileList | null>(null)
-  const [selectedPriority, setSelectedPriority] = useState<string>('')
-  const [newLocation, setNewLocation] = useState<{ lat: number; lng: number } | null>(null)
-  const fileInputRef = useRef<HTMLInputElement>(null)
+  const loading = loadingNew || loadingMy
 
-  const loading = loadingStatus || loadingMy
+  // Derived lists
+  const newProblems = allNewProblems.filter((p) => !p.coordinator)
+  const myInProgressProblems = myProblems.filter((p) => p.status === ProblemStatusConstants.InProgress)
+  const myCompletedProblems = myProblems.filter((p) => p.status === ProblemStatusConstants.Completed)
+  const myRejectedProblems = myProblems.filter((p) => p.status === ProblemStatusConstants.Rejected)
 
-  const invalidateQueries = () => {
-    queryClient.invalidateQueries({ queryKey: ['problems'] })
-  }
-
-  const handleAssignToMe = async (problemId: string) => {
-    if (!user?.id) return
-    try {
-      const priorityToUse = selectedPriority || detailProblem?.priority
-      await problemsApi.assignCoordinator(problemId, user.id, priorityToUse)
-      toast.success('Проблему взято в роботу')
-      setDetailProblem(null)
-      setSelectedPriority('')
-      setActionMode(null)
-      invalidateQueries()
-    } catch {
-      toast.error('Помилка призначення')
-    }
-  }
-
-  const handleReject = async (problemId: string) => {
-    if (!rejectionReason.trim()) {
-      toast.error('Вкажіть причину відхилення')
-      return
-    }
-    if (!user?.id) return
-    try {
-      await problemsApi.reject(problemId, user.id, rejectionReason)
-      toast.success('Проблему відхилено')
-      setRejectionReason('')
-      setDetailProblem(null)
-      setActionMode(null)
-      invalidateQueries()
-    } catch {
-      toast.error('Помилка відхилення')
-    }
-  }
-
-  const handleUpdateCurrentState = async (problemId: string) => {
-    if (!currentStateInput.trim()) {
-      toast.error('Введіть поточний стан')
-      return
-    }
-    
-    const currentImagesCount = detailProblem?.coordinatorImages?.length || 0
-    const newFilesCount = coordinatorFiles?.length || 0
-    if (currentImagesCount + newFilesCount > MAX_COORDINATOR_IMAGES) {
-      toast.error(`Максимальна кількість фото: ${MAX_COORDINATOR_IMAGES}. Вже завантажено: ${currentImagesCount}`)
-      return
-    }
-    
-    try {
-      // Update priority if changed
-      if (selectedPriority && selectedPriority !== detailProblem?.priority) {
-        await problemsApi.assignCoordinator(problemId, user?.id || '', selectedPriority)
-      }
-      
-      await problemsApi.updateCurrentState(problemId, currentStateInput)
-      
-      if (coordinatorFiles && coordinatorFiles.length > 0) {
-        await problemsApi.uploadCoordinatorImages(problemId, coordinatorFiles)
-      }
-      
-      toast.success('Поточний стан оновлено')
-      setCurrentStateInput('')
-      setCoordinatorFiles(null)
-      setSelectedPriority('')
-      setActionMode(null)
-      invalidateQueries()
-    } catch {
-      toast.error('Помилка оновлення')
-    }
-  }
-
-  const handleRestoreProblem = async (problemId: string) => {
-    try {
-      await problemsApi.restoreProblem(problemId)
-      toast.success('Проблему повернено')
-      setDetailProblem(null)
-      invalidateQueries()
-    } catch {
-      toast.error('Помилка повернення проблеми')
-    }
-  }
-
-  const handleUpdateLocation = async (problemId: string) => {
-    if (!newLocation) {
-      toast.error('Оберіть нову локацію на карті')
-      return
-    }
-    try {
-      await problemsApi.updateLocation(problemId, newLocation.lat, newLocation.lng)
-      toast.success('Адресу оновлено')
-      setNewLocation(null)
-      setActionMode(null)
-      invalidateQueries()
-    } catch {
-      toast.error('Помилка оновлення адреси')
-    }
-  }
-
-  const handleCompleteProblem = async (problemId: string) => {
-    if (!currentStateInput.trim()) {
-      toast.error('Опишіть що було зроблено')
-      return
-    }
-
-    const currentImagesCount = detailProblem?.coordinatorImages?.length || 0
-    const newFilesCount = coordinatorFiles?.length || 0
-    if (currentImagesCount + newFilesCount > MAX_COORDINATOR_IMAGES) {
-      toast.error(`Максимальна кількість фото: ${MAX_COORDINATOR_IMAGES}. Вже завантажено: ${currentImagesCount}`)
-      return
-    }
-    try {
-      await problemsApi.completeProblem(problemId, currentStateInput)
-      
-      if (coordinatorFiles && coordinatorFiles.length > 0) {
-        await problemsApi.uploadCoordinatorImages(problemId, coordinatorFiles)
-      }
-      
-      toast.success('Проблему завершено')
-      setCurrentStateInput('')
-      setCoordinatorFiles(null)
-      setActionMode(null)
-      invalidateQueries()
-    } catch {
-      toast.error('Помилка завершення')
-    }
-  }
-
-  const handleCoordinatorFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const selectedFiles = e.target.files
-    const currentImagesCount = detailProblem?.coordinatorImages?.length || 0
-    const maxNewFiles = MAX_COORDINATOR_IMAGES - currentImagesCount
-    
-    if (selectedFiles && selectedFiles.length > maxNewFiles) {
-      toast.error(`Можна додати ще ${maxNewFiles} фото (максимум ${MAX_COORDINATOR_IMAGES})`)
-      e.target.value = ''
-      setCoordinatorFiles(null)
-      return
-    }
-    setCoordinatorFiles(selectedFiles)
-  }
-
-  const resetActionMode = () => {
-    setActionMode(null)
-    setCoordinatorFiles(null)
-    setCurrentStateInput('')
-    setRejectionReason('')
-    setSelectedPriority('')
-    setNewLocation(null)
-    if (fileInputRef.current) fileInputRef.current.value = ''
-  }
-
-  if (loading) {
-    return <div className="container mx-auto p-6">Завантаження...</div>
-  }
-
-  // For 'new' tab, filter only problems without coordinator
-  const newProblems = activeTab === 'new' 
-    ? statusProblems.filter((p) => !p.coordinator)
-    : []
+  const tabConfig: { key: TabType; label: string; count: number }[] = [
+    { key: 'new', label: 'Нові', count: newProblems.length },
+    { key: 'my', label: 'Мої проблеми', count: myInProgressProblems.length },
+    { key: 'completed', label: 'Виконано', count: myCompletedProblems.length },
+    { key: 'rejected', label: 'Відхилені', count: myRejectedProblems.length },
+  ]
 
   // Get problems to display based on active tab
   const getDisplayProblems = () => {
-    // For 'my' tab, show problems with status 'В роботі' assigned to this coordinator
-    if (activeTab === 'my') return myProblems.filter((p) => 
-      p.status === ProblemStatusConstants.InProgress
-    )
-    if (activeTab === 'new') return newProblems
-    // For 'completed' and 'rejected' tabs, show only problems assigned to this coordinator
-    if (activeTab === 'completed' || activeTab === 'rejected') {
-      return statusProblems.filter((p) => p.coordinator?.id === user?.id)
+    switch (activeTab) {
+      case 'new': return newProblems
+      case 'my': return myInProgressProblems
+      case 'completed': return myCompletedProblems
+      case 'rejected': return myRejectedProblems
+      default: return []
     }
-    return statusProblems
   }
 
   const displayProblems = getDisplayProblems()
-
-  // Detail view for a specific problem
-  if (detailProblem) {
-    const isMyProblem = detailProblem.coordinator?.id === user?.id
-    return (
-      <div className="container mx-auto p-6">
-        <Button variant="outline" onClick={() => setDetailProblem(null)} className="mb-4">
-          ← Назад
-        </Button>
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex justify-between items-center">
-              <span>{detailProblem.title}</span>
-              <span className={`inline-flex items-center rounded-full px-3 py-1 text-sm font-medium ${
-                detailProblem.status === ProblemStatusConstants.New ? 'bg-blue-100 text-blue-800' :
-                detailProblem.status === ProblemStatusConstants.InProgress ? 'bg-yellow-100 text-yellow-800' :
-                detailProblem.status === ProblemStatusConstants.Completed ? 'bg-green-100 text-green-800' :
-                detailProblem.status === ProblemStatusConstants.Rejected ? 'bg-red-100 text-red-800' :
-                'bg-gray-100 text-gray-800'
-              }`}>
-                {detailProblem.status}
-              </span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <h3 className="font-semibold mb-1">Опис:</h3>
-              <p
-                className="text-gray-600 whitespace-pre-wrap break-words"
-                style={{ overflowWrap: 'anywhere' }}
-              >
-                {detailProblem.description}
-              </p>
-            </div>
-            <div className="grid grid-cols-2 gap-4 text-sm">
-              <div>
-                <span className="font-semibold">Автор:</span> {detailProblem.createdBy?.email}
-              </div>
-              <div>
-                <span className="font-semibold">Створено:</span> {new Date(detailProblem.createdAt).toLocaleString('uk-UA')}
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <h3 className="font-semibold">Місце на карті:</h3>
-              <LocationPickerMap
-                latitude={detailProblem.latitude}
-                longitude={detailProblem.longitude}
-                readonly={true}
-                height="200px"
-              />
-            </div>
-
-            {detailProblem.currentState && (
-              <div className="bg-blue-50 p-4 rounded">
-                <h3 className="font-semibold mb-1">Поточний стан:</h3>
-                <p>{detailProblem.currentState}</p>
-              </div>
-            )}
-
-            {detailProblem.rejectionReason && (
-              <div className="bg-red-50 p-4 rounded">
-                <h3 className="font-semibold mb-1">Причина відхилення:</h3>
-                <p>{detailProblem.rejectionReason}</p>
-              </div>
-            )}
-
-            {!isMyProblem && detailProblem.status === ProblemStatusConstants.New && (
-              <div className="space-y-4 pt-4 border-t">
-                <div className="flex gap-2">
-                  <Button onClick={() => setActionMode('assign')}>
-                    Взяти в роботу
-                  </Button>
-                  <Button variant="outline" onClick={() => navigate(`/problems/${detailProblem.id}`)}>
-                    Детальніше
-                  </Button>
-                  <Button variant="destructive" onClick={() => setActionMode('reject')}>
-                    Відхилити
-                  </Button>
-                </div>
-                
-                {actionMode === 'assign' && (
-                  <div className="space-y-3">
-                    <div className="space-y-2">
-                      <Label>Пріоритет проблеми</Label>
-                      <Select
-                        value={selectedPriority || detailProblem.priority || ''}
-                        onValueChange={setSelectedPriority}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Оберіть пріоритет" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value={PriorityConstants.Low}>{PriorityConstants.Low}</SelectItem>
-                          <SelectItem value={PriorityConstants.Medium}>{PriorityConstants.Medium}</SelectItem>
-                          <SelectItem value={PriorityConstants.High}>{PriorityConstants.High}</SelectItem>
-                          <SelectItem value={PriorityConstants.Critical}>{PriorityConstants.Critical}</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="flex gap-2">
-                      <Button onClick={() => handleAssignToMe(detailProblem.id!)}>
-                        Підтвердити призначення
-                      </Button>
-                      <Button variant="outline" onClick={resetActionMode}>
-                        Скасувати
-                      </Button>
-                    </div>
-                  </div>
-                )}
-                
-                {actionMode === 'reject' && (
-                  <div className="space-y-2">
-                    <Textarea
-                      placeholder="Причина відхилення..."
-                      value={rejectionReason}
-                      onChange={(e) => setRejectionReason(e.target.value)}
-                    />
-                    <div className="flex gap-2">
-                      <Button onClick={() => handleReject(detailProblem.id!)}>Підтвердити відхилення</Button>
-                      <Button variant="outline" onClick={() => setActionMode(null)}>Скасувати</Button>
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {isMyProblem && detailProblem.status === ProblemStatusConstants.InProgress && (
-              <div className="space-y-4 pt-4 border-t">
-                <div className="flex gap-2 flex-wrap">
-                  {actionMode !== 'reject' && actionMode !== 'complete' && actionMode !== 'currentState' && actionMode !== 'changeLocation' && (
-                    <>
-                      <Button variant="outline" onClick={() => setActionMode('currentState')}>
-                        Оновити поточний стан
-                      </Button>
-                      <Button variant="outline" onClick={() => {
-                        setActionMode('changeLocation')
-                        setNewLocation({ lat: detailProblem.latitude, lng: detailProblem.longitude })
-                      }}>
-                        Змінити адресу
-                      </Button>
-                      <Button className="bg-green-600 hover:bg-green-700" onClick={() => setActionMode('complete')}>
-                        Завершити
-                      </Button>
-                      <Button variant="destructive" onClick={() => setActionMode('reject')}>
-                        Відхилити
-                      </Button>
-                    </>
-                  )}
-                </div>
-
-                {actionMode === 'changeLocation' && (
-                  <div className="space-y-3">
-                    <Label>Оберіть нову локацію на карті</Label>
-                    <div className="h-[300px]">
-                      <LocationPickerMap
-                        latitude={newLocation?.lat || detailProblem.latitude}
-                        longitude={newLocation?.lng || detailProblem.longitude}
-                        readonly={false}
-                        height="300px"
-                        onLocationChange={(lat, lng) => setNewLocation({ lat, lng })}
-                      />
-                    </div>
-                    {newLocation && (
-                      <p className="text-sm text-muted-foreground">
-                        Нові координати: {newLocation.lat.toFixed(6)}, {newLocation.lng.toFixed(6)}
-                      </p>
-                    )}
-                    <div className="flex gap-2">
-                      <Button onClick={() => handleUpdateLocation(detailProblem.id!)}>
-                        Зберегти нову адресу
-                      </Button>
-                      <Button variant="outline" onClick={resetActionMode}>Скасувати</Button>
-                    </div>
-                  </div>
-                )}
-
-                {actionMode === 'currentState' && (
-                  <div className="space-y-3">
-                    <Textarea
-                      placeholder="Опишіть поточний стан виконання..."
-                      value={currentStateInput}
-                      onChange={(e) => setCurrentStateInput(e.target.value)}
-                    />
-                    <div className="space-y-2">
-                      <Label>Пріоритет проблеми (можна змінити)</Label>
-                      <Select
-                        value={selectedPriority || detailProblem.priority || ''}
-                        onValueChange={setSelectedPriority}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Оберіть пріоритет" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value={PriorityConstants.Low}>{PriorityConstants.Low}</SelectItem>
-                          <SelectItem value={PriorityConstants.Medium}>{PriorityConstants.Medium}</SelectItem>
-                          <SelectItem value={PriorityConstants.High}>{PriorityConstants.High}</SelectItem>
-                          <SelectItem value={PriorityConstants.Critical}>{PriorityConstants.Critical}</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="space-y-2">
-                      <p className="text-sm text-muted-foreground">
-                        Додати фото (завантажено {detailProblem.coordinatorImages?.length || 0} з {MAX_COORDINATOR_IMAGES}, можна ще {MAX_COORDINATOR_IMAGES - (detailProblem.coordinatorImages?.length || 0)})
-                      </p>
-                      <input
-                        ref={fileInputRef}
-                        type="file"
-                        multiple
-                        accept="image/*"
-                        onChange={handleCoordinatorFileChange}
-                        className="text-sm"
-                      />
-                      {coordinatorFiles && coordinatorFiles.length > 0 && (
-                        <p className="text-sm text-muted-foreground">
-                          Обрано файлів: {coordinatorFiles.length}
-                        </p>
-                      )}
-                    </div>
-                    <div className="flex gap-2">
-                      <Button onClick={() => handleUpdateCurrentState(detailProblem.id!)}>Зберегти</Button>
-                      <Button variant="outline" onClick={resetActionMode}>Скасувати</Button>
-                    </div>
-                  </div>
-                )}
-
-                {actionMode === 'complete' && (
-                  <div className="space-y-3">
-                    <Textarea
-                      placeholder="Опишіть що було зроблено для вирішення проблеми..."
-                      value={currentStateInput}
-                      onChange={(e) => setCurrentStateInput(e.target.value)}
-                    />
-                    <div className="space-y-2">
-                      <p className="text-sm text-muted-foreground">
-                        Додати фото (завантажено {detailProblem.coordinatorImages?.length || 0} з {MAX_COORDINATOR_IMAGES}, можна ще {MAX_COORDINATOR_IMAGES - (detailProblem.coordinatorImages?.length || 0)})
-                      </p>
-                      <input
-                        ref={fileInputRef}
-                        type="file"
-                        multiple
-                        accept="image/*"
-                        onChange={handleCoordinatorFileChange}
-                        className="text-sm"
-                      />
-                      {coordinatorFiles && coordinatorFiles.length > 0 && (
-                        <p className="text-sm text-muted-foreground">
-                          Обрано файлів: {coordinatorFiles.length}
-                        </p>
-                      )}
-                    </div>
-                    <div className="flex gap-2">
-                      <Button className="bg-green-600 hover:bg-green-700" onClick={() => handleCompleteProblem(detailProblem.id!)}>
-                        Завершити проблему
-                      </Button>
-                      <Button variant="outline" onClick={resetActionMode}>Скасувати</Button>
-                    </div>
-                  </div>
-                )}
-
-                {actionMode === 'reject' && (
-                  <div className="space-y-2">
-                    <Textarea
-                      placeholder="Причина відхилення..."
-                      value={rejectionReason}
-                      onChange={(e) => setRejectionReason(e.target.value)}
-                    />
-                    <div className="flex gap-2">
-                      <Button variant="destructive" onClick={() => handleReject(detailProblem.id!)}>Підтвердити відхилення</Button>
-                      <Button variant="outline" onClick={() => setActionMode(null)}>Скасувати</Button>
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Restore button for rejected problems */}
-            {detailProblem.status === ProblemStatusConstants.Rejected && (
-              <div className="space-y-4 pt-4 border-t">
-                <div className="bg-red-50 p-4 rounded">
-                  <p className="text-sm text-red-700">
-                    Ця проблема була відхилена. Ви можете повернути її до статусу "Нова".
-                  </p>
-                </div>
-                <Button onClick={() => handleRestoreProblem(detailProblem.id!)}>
-                  Повернути проблему
-                </Button>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
-    )
-  }
 
   const getStatusBadgeClass = (status: string) => {
     switch (status) {
@@ -540,6 +67,10 @@ export default function CoordinatorPage() {
       case ProblemStatusConstants.Rejected: return 'bg-red-100 text-red-800'
       default: return 'bg-gray-100 text-gray-800'
     }
+  }
+
+  if (loading) {
+    return <div className="container mx-auto p-6">Завантаження...</div>
   }
 
   return (
@@ -559,7 +90,7 @@ export default function CoordinatorPage() {
                 : 'border-[#D0D5DD] bg-transparent text-[#1F2732] hover:bg-[#F5F5F5] hover:text-[#1F2732]'
             }`}
           >
-            {tab.label} {tab.key === 'my' ? `(${myProblems.length})` : tab.key === 'new' ? `(${newProblems.length})` : ''}
+            {tab.label} ({tab.count})
           </Button>
         ))}
       </div>
@@ -572,7 +103,13 @@ export default function CoordinatorPage() {
             <Card
               key={problem.id}
               className="cursor-pointer hover:shadow-md transition-shadow"
-              onClick={() => setDetailProblem(problem)}
+              onClick={() => {
+                  if (activeTab === 'new' && problem.id) {
+                       navigate(`/coordinator/problems/${problem.id}/update`)
+                  } else if (problem.id) {
+                      navigate(`/problems/${problem.id}`)
+                  }
+              }}
             >
               <CardHeader>
                 <CardTitle className="flex justify-between items-center">
@@ -583,39 +120,54 @@ export default function CoordinatorPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <p
-                  className="text-sm text-gray-600 mb-2 line-clamp-2 break-words"
-                  style={{ overflowWrap: 'anywhere' }}
-                >
-                  {problem.description}
-                </p>
-                <p className="text-xs text-gray-500">
-                  Автор: {problem.createdBy?.email} | {new Date(problem.createdAt).toLocaleDateString('uk-UA')}
-                </p>
-
-                {activeTab === 'my' && (
-                  <div className="mt-3 flex gap-2" onClick={(e) => e.stopPropagation()}>
-                    <Button
-                      variant="default"
-                      size="sm"
-                      disabled={!problem.id}
-                      onClick={() => problem.id && navigate(`/problems/${problem.id}`)}
-                    >
-                      Детальніше
-                    </Button>
-                    <Button
-                      variant="default"
-                      size="sm"
-                      onClick={() => {
-                        setDetailProblem(problem)
-                        setActionMode('currentState')
-                        setCurrentStateInput(problem.currentState || '')
-                      }}
-                    >
-                      Оновити
-                    </Button>
-                  </div>
-                )}
+                <div className="flex justify-between items-start gap-4">
+                    <div className="flex-1">
+                        <p
+                        className="text-sm text-gray-600 mb-2 line-clamp-2 break-words"
+                        style={{ overflowWrap: 'anywhere' }}
+                        >
+                        {problem.description}
+                        </p>
+                        <p className="text-xs text-gray-500">
+                        Автор: {problem.createdBy?.email} | {new Date(problem.createdAt).toLocaleDateString('uk-UA')}
+                        </p>
+                    </div>
+                     <div className="flex flex-col gap-2 shrink-0" onClick={(e) => e.stopPropagation()}>
+                         {activeTab === 'new' ? (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                disabled={!problem.id}
+                                className="border-[#D0D5DD] text-[#1F2732] hover:bg-[#F5F5F5]"
+                                onClick={() => problem.id && navigate(`/coordinator/problems/${problem.id}/update`)}
+                              >
+                                Переглянути та призначити
+                              </Button>
+                         ) : (
+                             <>
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    disabled={!problem.id}
+                                    className="border-[#D0D5DD] text-[#1F2732] hover:bg-[#F5F5F5]"
+                                    onClick={() => problem.id && navigate(`/problems/${problem.id}`)}
+                                >
+                                    Детальніше
+                                </Button>
+                                {activeTab === 'my' && (
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        className="border-[#D0D5DD] text-[#1F2732] hover:bg-[#F5F5F5]"
+                                        onClick={() => problem.id && navigate(`/coordinator/problems/${problem.id}/update`)}
+                                    >
+                                        Оновити
+                                    </Button>
+                                )}
+                             </>
+                         )}
+                    </div>
+                </div>
               </CardContent>
             </Card>
           ))
