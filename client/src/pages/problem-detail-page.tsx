@@ -25,6 +25,7 @@ export function ProblemDetailPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const { user } = useAuth()
+  const isCoordinator = user?.roles?.includes('Coordinator')
   const { data: problem, isLoading, refetch } = useProblem(id || '')
   
   const realtimeComments = useRealtimeComments(id || null, problem?.comments ?? undefined)
@@ -38,6 +39,14 @@ export function ProblemDetailPage() {
   const [hasUserRated, setHasUserRated] = useState(false)
   const [isRatingModalOpen, setIsRatingModalOpen] = useState(false)
   const [averageRating, setAverageRating] = useState<number>(0)
+
+  const handleBackNavigation = () => {
+    if (isCoordinator) {
+      navigate('/coordinator')
+    } else {
+      navigate('/problems')
+    }
+  }
 
   const handleSubmitComment = async () => {
     if (!id || !newComment.trim()) return
@@ -130,7 +139,7 @@ export function ProblemDetailPage() {
     return (
       <div className="flex flex-col items-center justify-center h-64 gap-4">
         <p className="text-muted-foreground">Проблему не знайдено</p>
-        <Button onClick={() => navigate('/problems')}>
+        <Button onClick={handleBackNavigation}>
           <ArrowLeft className="w-4 h-4 mr-2" />
           Повернутися до списку
         </Button>
@@ -146,7 +155,7 @@ export function ProblemDetailPage() {
         <Button 
           variant="outline" 
           size="icon" 
-          onClick={() => navigate('/problems')}
+          onClick={handleBackNavigation}
           className="h-9 w-9 border border-[#D0D5DD] bg-white text-[#292929] hover:bg-[#F5F5F5] hover:text-[#292929]"
         >
           <ArrowLeft className="w-4 h-4 text-[#292929]" />

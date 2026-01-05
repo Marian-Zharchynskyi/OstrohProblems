@@ -18,6 +18,7 @@ import { ProblemCommentsPage } from '@/pages/problem-comments-page'
 import { MyProblemsPage } from '@/pages/my-problems-page'
 import { MySubmittedProblemsPage } from '@/pages/my-submitted-problems-page'
 import CoordinatorPage from '@/pages/coordinator-page'
+import CoordinatorUpdatePage from '@/pages/coordinator-update-page'
 
 export function AppRoutes() {
   return (
@@ -107,6 +108,16 @@ export function AppRoutes() {
           <ProtectedRoute allowedRoles={['Coordinator']}>
             <Layout>
               <CoordinatorPage />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/coordinator/problems/:id/update"
+        element={
+          <ProtectedRoute allowedRoles={['Coordinator']}>
+            <Layout>
+              <CoordinatorUpdatePage />
             </Layout>
           </ProtectedRoute>
         }
