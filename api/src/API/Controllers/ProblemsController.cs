@@ -401,13 +401,13 @@ public class ProblemsController(ISender sender, IProblemQueries problemQueries, 
     [HttpPut("delete-coordinator-image/{problemId:guid}")]
     public async Task<ActionResult<ProblemDto>> DeleteCoordinatorImage(
         [FromRoute] Guid problemId,
-        [FromBody] Guid coordinatorImageId,
+        [FromBody] DeleteCoordinatorImageDto request,
         CancellationToken cancellationToken)
     {
         var input = new DeleteCoordinatorImageCommand
         {
             ProblemId = problemId,
-            CoordinatorImageId = coordinatorImageId
+            CoordinatorImageId = request.CoordinatorImageId
         };
 
         var result = await sender.Send(input, cancellationToken);

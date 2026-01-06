@@ -1,12 +1,14 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useProblemsByCoordinator, useProblemsByStatus } from '@/features/problems/hooks/use-problems'
+import { problemsApi } from '@/features/problems/api/problems-api'
 import { ProblemStatusConstants } from '@/types'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { useAuth } from '@/contexts/auth-context'
 import { useSignalR } from '@/contexts/use-signalr'
 import { useQueryClient } from '@tanstack/react-query'
+import { toast } from '@/lib/toast'
 
 type TabType = 'new' | 'my' | 'completed' | 'rejected'
 
@@ -54,6 +56,17 @@ export default function CoordinatorPage() {
       case 'completed': return myCompletedProblems
       case 'rejected': return myRejectedProblems
       default: return []
+    }
+  }
+
+  const handleRestoreProblem = async (problemId?: string) => {
+    if (!problemId) return
+    try {
+      await problemsApi.restoreProblem(problemId)
+      toast.success('Проблему повернуто до нових')
+      queryClient.invalidateQueries({ queryKey: ['problems'] })
+    } catch {
+      toast.error('Не вдалося повернути проблему')
     }
   }
 
@@ -120,7 +133,7 @@ export default function CoordinatorPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="flex justify-between items-start gap-4">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-stretch">
                     <div className="flex-1">
                         <p
                         className="text-sm text-gray-600 mb-2 line-clamp-2 break-words"
@@ -132,41 +145,45 @@ export default function CoordinatorPage() {
                         Автор: {problem.createdBy?.email} | {new Date(problem.createdAt).toLocaleDateString('uk-UA')}
                         </p>
                     </div>
-                     <div className="flex flex-col gap-2 shrink-0" onClick={(e) => e.stopPropagation()}>
-                         {activeTab === 'new' ? (
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                disabled={!problem.id}
-                                className="border-[#D0D5DD] text-[#1F2732] hover:bg-[#F5F5F5]"
-                                onClick={() => problem.id && navigate(`/coordinator/problems/${problem.id}/update`)}
-                              >
-                                Переглянути та призначити
-                              </Button>
-                         ) : (
-                             <>
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    disabled={!problem.id}
-                                    className="border-[#D0D5DD] text-[#1F2732] hover:bg-[#F5F5F5]"
-                                    onClick={() => problem.id && navigate(`/problems/${problem.id}`)}
-                                >
-                                    Детальніше
-                                </Button>
-                                {activeTab === 'my' && (
+                     <div
+                        className="flex flex-col gap-2 shrink-0 min-w-[200px] justify-end sm:items-end"
+                        onClick={(e) => e.stopPropagation()}
+                     >
+                        {activeTab === 'new' ? (
+                             <Button
+                               variant="outline"
+                               size="sm"
+                               disabled={!problem.id}
+                               className="border-[#D0D5DD] text-[#1F2732] hover:bg-[#EAEAEA] hover:text-[#1F2732] transition-colors"
+                               onClick={() => problem.id && navigate(`/coordinator/problems/${problem.id}/update`)}
+                             >
+                               Переглянути та призначити
+                             </Button>
+                        ) : (
+                            <>
+                               {activeTab === 'my' && (
+                                   <Button
+                                       variant="outline"
+                                       size="sm"
+                                       className="border-[#D0D5DD] text-[#1F2732] hover:bg-[#EAEAEA] hover:text-[#1F2732] transition-colors"
+                                       onClick={() => problem.id && navigate(`/coordinator/problems/${problem.id}/update`)}
+                                   >
+                                       Оновити
+                                   </Button>
+                               )}
+                               {activeTab === 'rejected' && (
                                     <Button
                                         variant="outline"
                                         size="sm"
-                                        className="border-[#D0D5DD] text-[#1F2732] hover:bg-[#F5F5F5]"
-                                        onClick={() => problem.id && navigate(`/coordinator/problems/${problem.id}/update`)}
+                                        className="border-[#E42556] text-[#E42556] hover:bg-[#FFE5EC] hover:text-[#C41C47] transition-colors"
+                                        onClick={() => handleRestoreProblem(problem.id || undefined)}
                                     >
-                                        Оновити
+                                        Повернути в роботу
                                     </Button>
-                                )}
-                             </>
-                         )}
-                    </div>
+                               )}
+                            </>
+                        )}
+                   </div>
                 </div>
               </CardContent>
             </Card>

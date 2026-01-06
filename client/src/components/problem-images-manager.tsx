@@ -186,6 +186,7 @@ export function ProblemImagesManager({
               variant="outline"
               onClick={() => fileInputRef.current?.click()}
               disabled={!canAddMore || isUploading}
+              className="border border-[#D0D5DD] bg-white text-[#292929] hover:bg-[#F5F5F5] hover:text-[#292929]"
             >
               <Upload className="w-4 h-4 mr-2" />
               Обрати файли
@@ -199,9 +200,10 @@ export function ProblemImagesManager({
                   {isUploading ? 'Завантаження...' : `Завантажити (${selectedFiles.length})`}
                 </Button>
                 <Button
-                  variant="ghost"
+                  variant="outline"
                   onClick={() => setSelectedFiles([])}
                   disabled={isUploading}
+                  className="border border-[#E42556] text-[#E42556] bg-transparent hover:bg-[#E42556]/10 hover:text-[#E42556]"
                 >
                   Скасувати
                 </Button>
