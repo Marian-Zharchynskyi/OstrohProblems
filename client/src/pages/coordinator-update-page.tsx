@@ -207,7 +207,7 @@ export default function CoordinatorUpdatePage() {
                     </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                     <div>
+                     <div className="mb-6">
                         <h3 className="font-semibold mb-1">Опис:</h3>
                         <p className="text-gray-600 whitespace-pre-wrap break-words" style={{ overflowWrap: 'anywhere' }}>
                             {problem.description}
@@ -233,14 +233,16 @@ export default function CoordinatorUpdatePage() {
                     {/* Status Management */}
                     {(problem.status === ProblemStatusConstants.New || problem.status === ProblemStatusConstants.InProgress) && (
                         <div className="space-y-4">
-                             <div className="space-y-2">
-                                <Label>Пріоритет проблеми</Label>
+                             <div className="space-y-6">
+                                <Label className="block text-sm font-medium text-[#1F2732] mb-3">
+                                    Пріоритет проблеми
+                                </Label>
                                 <div className="mb-6">
                                     <Select
                                         value={selectedPriority || problem.priority || ''}
                                         onValueChange={setSelectedPriority}
                                     >
-                                        <SelectTrigger className="w-full bg-white border border-gray-300 text-gray-900">
+                                        <SelectTrigger className="w-full bg-white border border-gray-300 text-gray-900 focus:ring-offset-0 focus-visible:ring-offset-0">
                                             <SelectValue placeholder="Оберіть пріоритет" />
                                         </SelectTrigger>
                                         <SelectContent className="bg-white border border-gray-200 shadow-lg text-gray-900">
@@ -254,13 +256,15 @@ export default function CoordinatorUpdatePage() {
                             </div>
 
                             {/* State / Comments */}
-                            <div className="space-y-2">
-                                <Label>Поточний стан / Коментар до виконання</Label>
+                            <div className="space-y-4">
+                                <Label className="block text-sm font-medium text-[#1F2732] mb-3">
+                                    Поточний стан / Коментар до виконання
+                                </Label>
                                 <Textarea
-                                    placeholder={problem.status === ProblemStatusConstants.New ? "Причина відхилення (якщо відхиляєте)..." : "Опишіть поточний стан виконання..."}
+                                    placeholder={"Опишіть поточний стан виконання або причину відхилення (якщо відхиляєте)..."}
                                     value={problem.status === ProblemStatusConstants.New ? rejectionReason : currentStateInput}
                                     onChange={(e) => problem.status === ProblemStatusConstants.New ? setRejectionReason(e.target.value) : setCurrentStateInput(e.target.value)}
-                                    className="min-h-[100px]"
+                                    className="min-h-[100px] focus-visible:ring-offset-0"
                                 />
                             </div>
 
@@ -344,7 +348,7 @@ export default function CoordinatorUpdatePage() {
                                 onClick={handleUpdateLocation}
                                 disabled={!newLocation}
                                 variant="outline"
-                                className="border-primary text-primary hover:bg-primary/5"
+                                className="border-primary text-primary hover:bg-primary/10 hover:text-primary transition-colors"
                              >
                                 Зберегти нову адресу
                              </Button>
