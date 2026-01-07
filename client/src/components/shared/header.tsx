@@ -5,9 +5,8 @@ import { useAuth } from '@/contexts/auth-context'
 import { NotificationsBell } from '@/components/notifications/notifications-bell'
 import { designSystem } from '@/lib/design-system'
 
-// Filtered nav items (Removed Home, About, Contact as requested)
 const publicNavItems = [
-  { path: '/map', label: 'Карта' },
+  { path: '/map', label: 'Всі проблеми' },
 ]
 
 const adminNavItems = [
@@ -23,7 +22,7 @@ const coordinatorNavItems = [
 ]
 
 const userNavItems = [
-  { path: '/map', label: 'Карта' },
+  { path: '/map', label: 'Всі проблеми' },
 ]
 
 export const Header = () => {
