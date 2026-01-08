@@ -57,27 +57,30 @@ export const Header = () => {
             to={logoLink}
             className="text-xl font-heading font-semibold text-black"
           >
-            OstrohBetter
+            Острог Разом
           </Link>
 
           {/* Center Navigation */}
           {navItems.length > 0 && (
-            <ul className="hidden md:flex gap-8">
-              {navItems.map((item) => (
-                <li key={item.path}>
-                  <Link
-                    to={item.path}
-                    className={cn(
-                      'text-sm font-heading font-semibold transition-colors hover:text-primary',
-                      location.pathname === item.path
-                        ? 'text-black'
-                        : 'text-black/80'
-                    )}
-                  >
-                    {item.label}
-                  </Link>
-                </li>
-              ))}
+            <ul className="hidden md:flex items-center gap-2">
+              {navItems.map((item) => {
+                const isActive = location.pathname === item.path
+                return (
+                  <li key={item.path}>
+                    <Link
+                      to={item.path}
+                      className={cn(
+                        'text-sm font-heading font-semibold px-5 py-2.5 rounded-full transition-all duration-200',
+                        isActive
+                          ? 'bg-black text-white shadow-md transform scale-105'
+                          : 'text-black/70 hover:text-black hover:bg-black/5'
+                      )}
+                    >
+                      {item.label}
+                    </Link>
+                  </li>
+                )
+              })}
             </ul>
           )}
 
@@ -90,7 +93,7 @@ export const Header = () => {
                   <>
                     <Link
                       to="/problems/create"
-                      className="hidden sm:flex items-center gap-2 text-sm font-medium bg-primary text-primary-foreground px-4 py-2 rounded-[20px] hover:bg-primary/90 transition-colors"
+                      className="hidden sm:flex items-center gap-2 text-sm font-medium bg-primary text-primary-foreground px-5 py-2.5 rounded-full hover:bg-primary/90 transition-all shadow-sm active:scale-95"
                     >
                       <Plus className="h-4 w-4" />
                       Подати проблему
@@ -103,33 +106,33 @@ export const Header = () => {
                 {!isCoordinator && !isAdmin && (
                   <Link
                     to="/profile"
-                    className="flex items-center justify-center w-10 h-10 rounded-full hover:bg-black/5 transition-colors"
+                    className="flex items-center justify-center w-10 h-10 rounded-full hover:bg-black/5 transition-colors text-black/70 hover:text-black"
                     title="Профіль"
                   >
-                    <UserCircle className="w-5 h-5 text-black" strokeWidth={2} />
+                    <UserCircle className="w-6 h-6" strokeWidth={2} />
                   </Link>
                 )}
 
                 <button
                   onClick={signOut}
-                  className="flex items-center justify-center w-10 h-10 rounded-full hover:bg-black/5 transition-colors text-black"
+                  className="group flex items-center justify-center w-10 h-10 p-0 bg-transparent rounded-full hover:bg-red-50 transition-all duration-200"
                   title="Вийти"
                 >
-                  <LogOut className="w-5 h-5" strokeWidth={2} />
+                  <LogOut className="w-5 h-5 text-black/70 group-hover:text-red-600 transition-colors" strokeWidth={2} />
                 </button>
               </>
             ) : (
               // Unauthenticated Actions
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2">
                 <Link
                   to="/login"
-                  className="text-sm font-heading font-semibold text-black hover:text-primary transition-colors"
+                  className="text-sm font-heading font-semibold text-black hover:bg-black/5 px-5 py-2.5 rounded-full transition-all"
                 >
                   Увійти
                 </Link>
                 <Link
                   to="/register"
-                  className="text-sm font-heading font-semibold bg-black text-white px-4 py-2 rounded-[20px] hover:bg-black/80 transition-colors"
+                  className="text-sm font-heading font-semibold bg-black text-white px-5 py-2.5 rounded-full hover:bg-black/80 transition-all shadow-md hover:shadow-lg active:scale-95"
                 >
                   Реєстрація
                 </Link>
