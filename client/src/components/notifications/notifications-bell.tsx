@@ -64,13 +64,13 @@ export function NotificationsBell() {
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="relative p-2 text-muted-foreground hover:text-primary transition-colors rounded-lg hover:bg-gray-100"
+        className="relative flex items-center justify-center w-10 h-10 p-0 bg-transparent rounded-full hover:bg-black/5 transition-colors text-black/70 hover:text-black"
         aria-label="Нотифікації"
       >
-        <Bell className="h-5 w-5" />
+        <Bell className="h-6 w-6" strokeWidth={2} />
         {unreadCount > 0 && (
-          <span className="absolute top-1 right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white">
-            {unreadCount > 9 ? '9+' : unreadCount}
+          <span className="absolute top-2 right-2 flex h-2.5 w-2.5 items-center justify-center rounded-full bg-red-500 ring-2 ring-white">
+            <span className="sr-only">{unreadCount} unread</span>
           </span>
         )}
       </button>
