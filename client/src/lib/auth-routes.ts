@@ -5,5 +5,5 @@ export function getDefaultRouteForUser(user: User | null | undefined): string {
 
   if (roles.includes('Coordinator')) return '/coordinator'
   if (roles.includes('Administrator')) return '/dashboard'
-  return '/'
+  return '/my-problems'
 }

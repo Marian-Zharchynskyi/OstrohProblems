@@ -3,6 +3,10 @@ export interface PagedResult<T> {
   totalCount: number
   page: number
   pageSize: number
+  currentPage?: number
+  totalPages?: number
+  hasNextPage?: boolean
+  hasPreviousPage?: boolean
 }
 
 

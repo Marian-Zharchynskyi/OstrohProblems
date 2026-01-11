@@ -8,13 +8,6 @@ export const designSystem = {
             text: '#000000',
             shadow: 'rgba(0, 0, 0, 0.25)',
         },
-        footer: {
-            background: '#1F2732',
-            text: '#FFFFFF',
-            textSecondary: '#9CA3AF',
-            accent: '#D81B60',
-            elementBackground: '#3A3F47',
-        },
         hero: {
             background: '#FAFBFD',
             backgroundGradient: 'linear-gradient(135deg, #FFFFFF 0%, #F0F4F8 50%, #E8F0F7 100%)',
