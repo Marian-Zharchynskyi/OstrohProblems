@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '@/contexts/auth-context'
+import { PasswordInput } from '@/components/ui/password-input'
 import { getDefaultRouteForUser } from '@/lib/auth-routes'
 
 export function LoginPage() {
@@ -9,6 +10,14 @@ export function LoginPage() {
   const [rememberMe, setRememberMe] = useState(false)
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+
+  const [showChangePassword, setShowChangePassword] = useState(false)
+  const [resetEmail, setResetEmail] = useState('')
+  const [oldPassword, setOldPassword] = useState('')
+  const [newPassword, setNewPassword] = useState('')
+  const [resetError, setResetError] = useState('')
+  const [resetSuccess, setResetSuccess] = useState('')
+  const [isResetLoading, setIsResetLoading] = useState(false)
 
   const { signIn } = useAuth()
   const navigate = useNavigate()
@@ -19,8 +28,10 @@ export function LoginPage() {
     setIsLoading(true)
 
     try {
-      const user = await signIn(email, password)
-      navigate(getDefaultRouteForUser(user))
+      const user = await signIn(email, password, rememberMe)
+      if (user) {
+        navigate(getDefaultRouteForUser(user))
+      }
     } catch (err: unknown) {
       const errorMessage =
         typeof err === 'string'
@@ -33,6 +44,65 @@ export function LoginPage() {
       )
     } finally {
       setIsLoading(false)
+    }
+  }
+
+  const handleChangePassword = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setResetError('')
+    setResetSuccess('')
+    setIsResetLoading(true)
+
+    try {
+      // 1. Try to login with old password to verify credentials and key user
+      // We use authService directly or signIn method, but we don't want to redirect.
+      // We'll use the existing signIn from context but we need to handle the state carefully.
+      // Actually, let's use authService directly to avoid global state changes if possible,
+      // OR better, use signIn, but if successful, we get the token, then do the change, then maybe signOut?
+      // The user says "Allow change".
+
+      // Let's use the authToken we get from signIn.
+      const user = await signIn(resetEmail, oldPassword)
+      if (!user) throw new Error("Authentication failed")
+
+      // We need the token. signIn updates usage of tokenStorage.
+      // We can get token from tokenStorage.
+      // Wait, signIn inside context updates the state `user` and `tokens`.
+
+      // Import userService and tokenStorage dynamically or assume they are available via context?
+      // We can import 'userService' and 'tokenStorage' at top level.
+
+      // 2. Change Password
+      const { tokenStorage } = await import('@/lib/token-storage')
+      const { userService } = await import('@/services/user.service')
+
+      const token = tokenStorage.getAccessToken()
+      if (!token) throw new Error("No access token")
+
+      await userService.changePassword(user.id, { currentPassword: oldPassword, newPassword }, token)
+
+      setResetSuccess('Password changed successfully. You can now login with your new password.')
+
+      // Optional: Sign out immediately so they have to log in again with new password?
+      // Or keep them logged in?
+      // "Allow to change password". Usually after changing password you might want to stay logged in or re-login.
+      // Let's signOut to be safe and force them to login with new creds, or effectively they are logged in.
+      // If we leave them logged in, they are on the login page... redirect?
+      // The modal is on the login page.
+      // Let's clear the form and close modal after a delay?
+
+      setTimeout(() => {
+        setShowChangePassword(false)
+        setResetEmail('')
+        setOldPassword('')
+        setNewPassword('')
+      }, 2000)
+
+    } catch (err: unknown) {
+      console.error('Error changing password:', err)
+      setResetError(err instanceof Error ? err.message : 'Failed to change password')
+    } finally {
+      setIsResetLoading(false)
     }
   }
 
@@ -52,37 +122,24 @@ export function LoginPage() {
               Будь ласка, введіть ваші дані для входу до вашого акаунту
             </p>
           </div>
-
-          {/* Decorative background elements could go here if needed, keeping it clean for now */}
         </div>
 
         {/* Right Column (Login Form) - 60% */}
         <div className="w-full md:w-[50%] bg-white p-8 md:p-12 lg:p-16 flex flex-col justify-center">
           <div className="w-full max-w-md mx-auto space-y-8">
 
-            {/* Social Login Buttons */}
+            {/* Social Login Buttons - Simplified for brevity in replace */}
             <div className="flex flex-col gap-4">
               <button
                 type="button"
                 className="flex items-center justify-center gap-3 w-full bg-white border border-[#1F2732] rounded-[20px] py-3 px-4 hover:bg-gray-50 transition-colors group"
               >
+                {/* Google Icon */}
                 <svg className="w-5 h-5" viewBox="0 0 24 24">
-                  <path
-                    d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                    fill="#4285F4"
-                  />
-                  <path
-                    d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                    fill="#34A853"
-                  />
-                  <path
-                    d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
-                    fill="#FBBC05"
-                  />
-                  <path
-                    d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-                    fill="#EA4335"
-                  />
+                  <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
+                  <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
+                  <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" />
+                  <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
                 </svg>
                 <span className="font-['Mulish'] font-bold text-black text-base">Увійти через Google</span>
               </button>
@@ -91,12 +148,14 @@ export function LoginPage() {
                 type="button"
                 className="flex items-center justify-center gap-3 w-full bg-white border border-[#1F2732] rounded-[20px] py-3 px-4 hover:bg-gray-50 transition-colors group"
               >
+                {/* Facebook Icon */}
                 <svg className="w-5 h-5 text-[#1877F2]" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.208h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
                 </svg>
                 <span className="font-['Mulish'] font-bold text-black text-base">Увійти через Facebook</span>
               </button>
             </div>
+
 
             {/* Divider */}
             <div className="relative flex items-center justify-center py-2">
@@ -124,7 +183,7 @@ export function LoginPage() {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-[8px] text-[#464646] font-['Mulish'] font-medium placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all hover:border-gray-300"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-[8px] text-[#464646] font-['Mulish'] font-medium placeholder-gray-400 focus:outline-none focus:ring-0 focus:border-[#1F2732] transition-all hover:border-gray-300"
                   placeholder="you@example.com"
                 />
               </div>
@@ -133,18 +192,17 @@ export function LoginPage() {
                 <label htmlFor="password" className="block text-sm font-['Mulish'] font-bold text-gray-700">
                   Пароль
                 </label>
-                <input
+                <PasswordInput
                   id="password"
-                  type="password"
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-[8px] text-[#464646] font-['Mulish'] font-medium placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all hover:border-gray-300"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-[8px] text-[#464646] font-['Mulish'] font-medium placeholder-gray-400 focus:outline-none focus:ring-0 focus:border-[#1F2732] transition-all hover:border-gray-300 h-auto"
                   placeholder="••••••••"
                 />
               </div>
 
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between mt-6">
                 <div className="flex items-center">
                   <input
                     id="remember-me"
@@ -159,9 +217,9 @@ export function LoginPage() {
                 </div>
 
                 <div className="text-sm">
-                  <a href="#" className="font-['Mulish'] font-medium text-[#E42556] hover:text-[#D44374] underline">
+                  <button type="button" onClick={() => setShowChangePassword(true)} className="font-['Mulish'] font-medium text-[#E42556] hover:text-[#D44374] underline bg-transparent border-0 p-0 cursor-pointer">
                     Проблеми з паролем
-                  </a>
+                  </button>
                 </div>
               </div>
 
@@ -186,6 +244,93 @@ export function LoginPage() {
           </div>
         </div>
       </div>
+
+      {/* Change Password Modal */}
+      {showChangePassword && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden relative animate-in fade-in zoom-in-95 duration-200">
+            {/* Dark Header */}
+            <div className="px-6 py-4 flex items-center justify-between">
+              <h2 className="text-xl font-semibold text-black font-heading">Зміна паролю</h2>
+              <button
+                onClick={() => setShowChangePassword(false)}
+                className="text-white/70 hover:text-white transition-colors p-1"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
+              </button>
+            </div>
+
+            <div className="p-6 flex flex-col gap-6">
+              <p className="text-sm text-gray-600 font-['Mulish']">
+                Введіть email, старий та новий пароль для зміни
+              </p>
+
+              {resetError && (
+                <div className="bg-red-50 text-red-700 p-3 rounded-lg text-sm flex items-center gap-2">
+                  <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                  {resetError}
+                </div>
+              )}
+
+              {resetSuccess && (
+                <div className="bg-green-50 text-green-700 p-3 rounded-lg text-sm flex items-center gap-2">
+                  <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" /></svg>
+                  {resetSuccess}
+                </div>
+              )}
+
+              {!resetSuccess && (
+                <form onSubmit={handleChangePassword} className="space-y-6">
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-2 font-['Mulish']">Email</label>
+                    <input
+                      type="email"
+                      required
+                      value={resetEmail}
+                      onChange={e => setResetEmail(e.target.value)}
+                      className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-0 focus:border-[#1F2732] transition-all font-['Mulish']"
+                      placeholder="you@example.com"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-2 font-['Mulish']">Старий пароль</label>
+                    <PasswordInput
+                      required
+                      value={oldPassword}
+                      onChange={e => setOldPassword(e.target.value)}
+                      className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-0 focus:border-[#1F2732] transition-all h-auto"
+                      placeholder="••••••••"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-2 font-['Mulish']">Новий пароль</label>
+                    <PasswordInput
+                      required
+                      minLength={6}
+                      value={newPassword}
+                      onChange={e => setNewPassword(e.target.value)}
+                      className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-0 focus:border-[#1F2732] transition-all h-auto"
+                      placeholder="••••••••"
+                    />
+                  </div>
+
+                  <div className="pt-6">
+                    <button
+                      type="submit"
+                      disabled={isResetLoading}
+                      className="w-full border-2 border-[#E42556] text-[#E42556] bg-transparent hover:bg-[#E42556] hover:text-white py-3 rounded-xl font-extrabold font-['Mulish'] uppercase tracking-wide transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed transform hover:-translate-y-0.5 active:translate-y-0"
+                    >
+                      {isResetLoading ? 'Змінюємо...' : 'Змінити'}
+                    </button>
+                  </div>
+                </form>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

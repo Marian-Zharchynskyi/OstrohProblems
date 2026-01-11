@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '@/contexts/auth-context'
+import { PasswordInput } from '@/components/ui/password-input'
 
 export function RegisterPage() {
   const [email, setEmail] = useState('')
@@ -37,15 +38,15 @@ export function RegisterPage() {
 
   return (
     <div className="min-h-screen w-full flex items-center justify-center bg-[#F5F5F5] p-4">
-      <div className="flex flex-col md:flex-row w-full max-w-[1100px] overflow-hidden rounded-2xl shadow-[0_20px_60px_-15px_rgba(0,0,0,0.3)] bg-white min-h-[700px]">
+      <div className="flex flex-col md:flex-row w-full max-w-[1100px] overflow-hidden rounded-2xl shadow-[0_20px_60px_-15px_rgba(0,0,0,0.3)] bg-white min-h-[360px]">
         {/* Left Column (Branding & Welcome) - 50% */}
-        <div className="w-full md:w-[50%] bg-[#1F2732] p-8 md:p-12 flex flex-col justify-center relative">
+        <div className="w-full md:w-[50%] bg-[#1F2732] p-6 md:p-8 flex flex-col justify-center relative">
           <div className="z-10">
             <h1 className="text-white text-4xl md:text-5xl font-semibold mb-6 font-['Sora'] leading-tight whitespace-nowrap">
               Ласкаво просимо
             </h1>
 
-            <div className="w-56 md:w-72 h-2.5 bg-[#C2C2C2] rounded-full mb-12"></div>
+            <div className="w-56 md:w-72 h-2 bg-[#C2C2C2] rounded-full mb-8"></div>
 
             <p className="text-[#EAEAEA] text-lg font-medium font-['Mulish'] leading-relaxed opacity-90">
               Будь ласка, введіть ваші дані для реєстрації вашого акаунту
@@ -54,8 +55,8 @@ export function RegisterPage() {
         </div>
 
         {/* Right Column (Register Form) - 50% */}
-        <div className="w-full md:w-[50%] bg-white p-8 md:p-12 lg:p-16 flex flex-col justify-center">
-          <div className="w-full max-w-md mx-auto space-y-8">
+        <div className="w-full md:w-[50%] bg-white p-6 md:p-8 lg:p-10 flex flex-col justify-center">
+          <div className="w-full max-w-md mx-auto space-y-5">
 
             {/* Social Login Buttons */}
             <div className="flex flex-col gap-4">
@@ -110,7 +111,7 @@ export function RegisterPage() {
             )}
 
             {/* Form */}
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-5">
               <div className="space-y-2">
                 <label htmlFor="email" className="block text-sm font-['Mulish'] font-bold text-gray-700">
                   Електронна пошта
@@ -121,22 +122,22 @@ export function RegisterPage() {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-[8px] text-[#464646] font-['Mulish'] font-medium placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all hover:border-gray-300"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-[8px] text-[#464646] font-['Mulish'] font-medium placeholder-gray-400 focus:outline-none focus:ring-0 focus:border-[#1F2732] transition-all hover:border-gray-300"
                   placeholder="you@example.com"
                 />
               </div>
 
               <div className="space-y-2">
+
                 <label htmlFor="password" className="block text-sm font-['Mulish'] font-bold text-gray-700">
                   Пароль
                 </label>
-                <input
+                <PasswordInput
                   id="password"
-                  type="password"
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-[8px] text-[#464646] font-['Mulish'] font-medium placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all hover:border-gray-300"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-[8px] text-[#464646] font-['Mulish'] font-medium placeholder-gray-400 focus:outline-none focus:ring-0 focus:border-[#1F2732] transition-all hover:border-gray-300 h-auto"
                   placeholder="••••••••"
                 />
               </div>
@@ -150,7 +151,7 @@ export function RegisterPage() {
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-[8px] text-[#464646] font-['Mulish'] font-medium placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all hover:border-gray-300"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-[8px] text-[#464646] font-['Mulish'] font-medium placeholder-gray-400 focus:outline-none focus:ring-0 focus:border-[#1F2732] transition-all hover:border-gray-300"
                   placeholder="Петро"
                 />
               </div>
@@ -164,15 +165,17 @@ export function RegisterPage() {
                   type="text"
                   value={surname}
                   onChange={(e) => setSurname(e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-[8px] text-[#464646] font-['Mulish'] font-medium placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all hover:border-gray-300"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-[8px] text-[#464646] font-['Mulish'] font-medium placeholder-gray-400 focus:outline-none focus:ring-0 focus:border-[#1F2732] transition-all hover:border-gray-300"
                   placeholder="Бурчак"
                 />
               </div>
 
+              <div className="pt-2"></div>
+
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full bg-[#E42556] hover:bg-[#D44374] text-white py-4 px-4 rounded-[20px] font-['Mulish'] font-extrabold text-base uppercase tracking-wide shadow-md hover:shadow-lg transition-all transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                className="w-full bg-[#E42556] hover:bg-[#D44374] text-white py-3.5 px-4 rounded-[20px] font-['Mulish'] font-extrabold text-base uppercase tracking-wide shadow-md hover:shadow-lg transition-all transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
               >
                 {isLoading ? 'РЕЄСТРАЦІЯ...' : 'ЗАРЕЄСТРУВАТИСЬ'}
               </button>

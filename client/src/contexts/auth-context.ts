@@ -6,7 +6,7 @@ export interface AuthContextType {
   tokens: JwtTokens | null
   isAuthenticated: boolean
   isLoading: boolean
-  signIn: (email: string, password: string) => Promise<User | null>
+  signIn: (email: string, password: string, rememberMe?: boolean) => Promise<User | null>
   signUp: (email: string, password: string, name?: string, surname?: string) => Promise<void>
   signOut: () => void
 }
