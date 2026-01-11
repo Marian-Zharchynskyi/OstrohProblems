@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
-import { Link, useLocation } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { LogOut, Plus, ChevronDown, User as UserIcon, FileText } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/contexts/auth-context'
@@ -31,6 +31,7 @@ const userNavItems = [
 
 export const Header = () => {
   const location = useLocation()
+  const navigate = useNavigate()
   const { isAuthenticated, user, signOut } = useAuth()
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
@@ -202,7 +203,7 @@ export const Header = () => {
                         <button
                           onClick={() => {
                             setIsDropdownOpen(false)
-                            signOut()
+                            signOut(navigate)
                           }}
                           className="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-red-50 text-red-600 transition-colors group mt-2 outline-none focus:outline-none bg-transparent border-none"
                         >

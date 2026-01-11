@@ -9,7 +9,6 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { User, FileText } from 'lucide-react'
 import { designSystem } from '@/lib/design-system'
-import { UserProblemsTab } from '@/features/problems/components/user-problems-tab'
 
 export function ProfilePage() {
   const { tokens, signOut } = useAuth()
@@ -32,7 +31,6 @@ export function ProfilePage() {
   const [passwordSuccess, setPasswordSuccess] = useState('')
   const [isBasicInfoEditing, setIsBasicInfoEditing] = useState(false)
   const [isSecurityEditing, setIsSecurityEditing] = useState(false)
-  const [activeTab, setActiveTab] = useState<'profile' | 'problems'>('profile')
 
   useEffect(() => {
     const loadUserDetails = async () => {
@@ -184,17 +182,17 @@ export function ProfilePage() {
         <div className="max-w-6xl mx-auto px-6">
           <div className="flex flex-wrap justify-center gap-4 mt-6">
             <button
-              onClick={() => setActiveTab('profile')}
+              onClick={() => {}}
               className="flex items-center gap-2 px-6 py-3 rounded-full border-2 font-bold text-base transition-all duration-200"
-              style={getTabStyles(activeTab === 'profile')}
+              style={getTabStyles(true)}
             >
               <User className="w-5 h-5" strokeWidth={2.5} />
               <span className="font-['Mulish']">Мій профіль</span>
             </button>
             <button
-              onClick={() => setActiveTab('problems')}
+              onClick={() => navigate('/problems/my')}
               className="flex items-center gap-2 px-6 py-3 rounded-full border-2 font-bold text-base transition-all duration-200"
-              style={getTabStyles(activeTab === 'problems')}
+              style={getTabStyles(false)}
             >
               <FileText className="w-5 h-5" strokeWidth={2.5} />
               <span className="font-['Mulish']">Подані проблеми</span>
@@ -213,8 +211,7 @@ export function ProfilePage() {
         </div>
       </div>
 
-      {activeTab === 'profile' ? (
-        <div className="max-w-6xl mx-auto px-6 py-8">
+      <div className="max-w-6xl mx-auto px-6 py-8">
           {/* Секція Аватара */}
           <div className="mb-6">
             <div className="flex flex-col md:flex-row items-center justify-center gap-6 text-center md:text-left md:items-center">
@@ -469,12 +466,7 @@ export function ProfilePage() {
               </div>
             </CardContent>
           </Card>
-        </div>
-      ) : (
-        <div className="max-w-6xl mx-auto px-6 py-8">
-          <UserProblemsTab />
-        </div>
-      )}
+      </div>
     </div>
   )
 }
