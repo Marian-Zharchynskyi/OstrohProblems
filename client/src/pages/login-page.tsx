@@ -54,53 +54,33 @@ export function LoginPage() {
     setIsResetLoading(true)
 
     try {
-      // 1. Try to login with old password to verify credentials and key user
-      // We use authService directly or signIn method, but we don't want to redirect.
-      // We'll use the existing signIn from context but we need to handle the state carefully.
-      // Actually, let's use authService directly to avoid global state changes if possible,
-      // OR better, use signIn, but if successful, we get the token, then do the change, then maybe signOut?
-      // The user says "Allow change".
+      const [{ authService }, { userService }, { toast }, { decodeToken }] = await Promise.all([
+        import('@/services/auth.service'),
+        import('@/services/user.service'),
+        import('@/lib/toast'),
+        import('@/lib/jwt-utils'),
+      ])
 
-      // Let's use the authToken we get from signIn.
-      const user = await signIn(resetEmail, oldPassword)
-      if (!user) throw new Error("Authentication failed")
+      const tokens = await authService.signIn({ email: resetEmail, password: oldPassword })
+      const user = decodeToken(tokens.accessToken)
+      if (!user?.id) throw new Error('Authentication failed')
 
-      // We need the token. signIn updates usage of tokenStorage.
-      // We can get token from tokenStorage.
-      // Wait, signIn inside context updates the state `user` and `tokens`.
+      await userService.changePassword(
+        user.id,
+        { currentPassword: oldPassword, newPassword },
+        tokens.accessToken
+      )
 
-      // Import userService and tokenStorage dynamically or assume they are available via context?
-      // We can import 'userService' and 'tokenStorage' at top level.
+      toast.success('Пароль успішно змінено')
 
-      // 2. Change Password
-      const { tokenStorage } = await import('@/lib/token-storage')
-      const { userService } = await import('@/services/user.service')
-
-      const token = tokenStorage.getAccessToken()
-      if (!token) throw new Error("No access token")
-
-      await userService.changePassword(user.id, { currentPassword: oldPassword, newPassword }, token)
-
-      setResetSuccess('Password changed successfully. You can now login with your new password.')
-
-      // Optional: Sign out immediately so they have to log in again with new password?
-      // Or keep them logged in?
-      // "Allow to change password". Usually after changing password you might want to stay logged in or re-login.
-      // Let's signOut to be safe and force them to login with new creds, or effectively they are logged in.
-      // If we leave them logged in, they are on the login page... redirect?
-      // The modal is on the login page.
-      // Let's clear the form and close modal after a delay?
-
-      setTimeout(() => {
-        setShowChangePassword(false)
-        setResetEmail('')
-        setOldPassword('')
-        setNewPassword('')
-      }, 2000)
+      setShowChangePassword(false)
+      setResetEmail('')
+      setOldPassword('')
+      setNewPassword('')
 
     } catch (err: unknown) {
       console.error('Error changing password:', err)
-      setResetError(err instanceof Error ? err.message : 'Failed to change password')
+      setResetError(err instanceof Error ? err.message : 'Не вдалося змінити пароль')
     } finally {
       setIsResetLoading(false)
     }
@@ -217,7 +197,7 @@ export function LoginPage() {
                 </div>
 
                 <div className="text-sm">
-                  <button type="button" onClick={() => setShowChangePassword(true)} className="font-['Mulish'] font-medium text-[#E42556] hover:text-[#D44374] underline bg-transparent border-0 p-0 cursor-pointer">
+                  <button type="button" onClick={() => setShowChangePassword(true)} className="font-['Mulish'] font-medium text-[#E42556] hover:text-[#D44374] underline bg-transparent border-0 p-0 cursor-pointer focus:outline-none focus-visible:outline-none focus:ring-0 focus-visible:ring-0">
                     Проблеми з паролем
                   </button>
                 </div>

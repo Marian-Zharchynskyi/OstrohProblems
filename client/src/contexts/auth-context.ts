@@ -8,7 +8,7 @@ export interface AuthContextType {
   isLoading: boolean
   signIn: (email: string, password: string, rememberMe?: boolean) => Promise<User | null>
   signUp: (email: string, password: string, name?: string, surname?: string) => Promise<void>
-  signOut: () => void
+  signOut: (navigate?: (path: string) => void) => void
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(

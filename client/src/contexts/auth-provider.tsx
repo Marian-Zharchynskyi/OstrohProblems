@@ -50,9 +50,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
     initAuth()
   }, [])
 
-  const signIn = async (email: string, password: string) => {
+  const signIn = async (email: string, password: string, rememberMe: boolean = false) => {
     const newTokens = await authService.signIn({ email, password })
-    tokenStorage.setTokens(newTokens)
+    tokenStorage.setTokens(newTokens, rememberMe)
     setTokens(newTokens)
 
     const decodedUser = decodeToken(newTokens.accessToken)
@@ -62,17 +62,20 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const signUp = async (email: string, password: string, name?: string, surname?: string) => {
     const newTokens = await authService.signUp({ email, password, name, surname })
-    tokenStorage.setTokens(newTokens)
+    tokenStorage.setTokens(newTokens, false)
     setTokens(newTokens)
 
     const decodedUser = decodeToken(newTokens.accessToken)
     setUser(decodedUser)
   }
 
-  const signOut = () => {
+  const signOut = (navigate?: (path: string) => void) => {
     tokenStorage.clearTokens()
     setTokens(null)
     setUser(null)
+    if (navigate) {
+      navigate('/login')
+    }
   }
 
   return (

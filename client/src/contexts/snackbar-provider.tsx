@@ -44,7 +44,7 @@ export function SnackbarProvider({ children }: { children: React.ReactNode }) {
 
     // Listen for global events from non-react code (legacy toast.ts)
     useEffect(() => {
-        const handleCustomEvent = (e: CustomEvent<any>) => {
+        const handleCustomEvent = (e: CustomEvent<{ message: string; type: SnackbarType; duration: number }>) => {
             addSnackbar(e.detail.message, e.detail.type, e.detail.duration)
         }
         window.addEventListener('show-snackbar', handleCustomEvent as EventListener)
@@ -76,7 +76,7 @@ export function SnackbarProvider({ children }: { children: React.ReactNode }) {
 
                         <button
                             onClick={() => removeSnackbar(snackbar.id)}
-                            className="p-1 hover:bg-white/20 rounded-full transition-colors shrink-0"
+                            className="p-1 hover:bg-white/20 rounded-full transition-colors shrink-0 bg-transparent border-0 outline-none focus:outline-none"
                         >
                             <X className="w-4 h-4" />
                         </button>
