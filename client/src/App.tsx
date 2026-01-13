@@ -1,6 +1,6 @@
 import { BrowserRouter } from 'react-router-dom'
 import { QueryProvider } from '@/lib/react-query'
-import { AuthProvider } from '@/contexts/auth-provider'
+import { ClerkAuthProvider } from '@/contexts/clerk-auth-provider'
 import { SignalRProvider } from '@/contexts/signalr-context.tsx'
 import { AppRoutes } from '@/routes/app-routes'
 import { SnackbarProvider } from '@/contexts/snackbar-provider'
@@ -8,7 +8,7 @@ import { SnackbarProvider } from '@/contexts/snackbar-provider'
 function App() {
   return (
     <QueryProvider>
-      <AuthProvider>
+      <ClerkAuthProvider>
         <SignalRProvider>
           <SnackbarProvider>
             <BrowserRouter>
@@ -16,7 +16,7 @@ function App() {
             </BrowserRouter>
           </SnackbarProvider>
         </SignalRProvider>
-      </AuthProvider>
+      </ClerkAuthProvider>
     </QueryProvider>
   )
 }
