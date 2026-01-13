@@ -4,8 +4,8 @@ import { ProtectedRoute } from '@/components/auth/protected-route'
 import { PublicRoute } from '@/components/auth/public-route'
 import { ErrorPage } from '@/pages/error-page'
 import { HomePage } from '@/pages/home-page'
-import { LoginPage } from '@/pages/login-page'
-import { RegisterPage } from '@/pages/register-page'
+import { ClerkLoginPage } from '@/pages/clerk-login-page'
+import { ClerkRegisterPage } from '@/pages/clerk-register-page'
 import { ProblemsPage } from '@/pages/problems-page'
 import { CommentsPage } from '@/pages/comments-page'
 import { RatingsPage } from '@/pages/ratings-page'
@@ -27,7 +27,7 @@ export function AppRoutes() {
         path="/login"
         element={
           <PublicRoute>
-            <LoginPage />
+            <ClerkLoginPage />
           </PublicRoute>
         }
       />
@@ -35,7 +35,7 @@ export function AppRoutes() {
         path="/register"
         element={
           <PublicRoute>
-            <RegisterPage />
+            <ClerkRegisterPage />
           </PublicRoute>
         }
       />

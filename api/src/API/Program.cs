@@ -13,7 +13,7 @@ builder.Services.AddApplication();
 builder.Services.SetupServices();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddSwaggerAuth();
-builder.Services.AddJwtTokenAuth(builder.Configuration);
+builder.Services.AddClerkAuth(builder.Configuration);
 
 builder.Configuration
     .SetBasePath(Directory.GetCurrentDirectory())
