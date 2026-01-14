@@ -170,6 +170,11 @@ namespace Infrastructure.Persistence.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
+                    b.Property<string>("ClerkId")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("clerk_id");
+
                     b.Property<string>("Email")
                         .IsRequired()
                         .HasMaxLength(255)
@@ -204,6 +209,10 @@ namespace Infrastructure.Persistence.Migrations
                     b.HasKey("Id")
                         .HasName("pk_users");
 
+                    b.HasIndex("ClerkId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_users_clerk_id");
+
                     b.HasIndex("RoleId")
                         .HasDatabaseName("ix_users_role_id");
 
@@ -213,6 +222,7 @@ namespace Infrastructure.Persistence.Migrations
                         new
                         {
                             Id = new Guid("00000000-0000-0000-0000-000000000010"),
+                            ClerkId = "user_38GDF8VSzp5vQGWOBgk0Kv3Td7W",
                             Email = "admin@ostroh.edu.ua",
                             Name = "Адміністратор",
                             PasswordHash = "31jGqnyNWeEpqqSOGrrFYA==:pt36JXYoIE3w8xtI8rEJU/h50muKgFwRs0p/h4am3A0=",
@@ -222,6 +232,7 @@ namespace Infrastructure.Persistence.Migrations
                         new
                         {
                             Id = new Guid("00000000-0000-0000-0000-000000000011"),
+                            ClerkId = "user_38GDs4xMAfETf7thv21MwyW72bh",
                             Email = "user@ostroh.edu.ua",
                             Name = "Звичайний",
                             PasswordHash = "OeuuWFIVglEfvDvcH349ow==:OXOk32vZFxUcodlJVPaLj/qOApIGP9SSVu9RBy+O4Sc=",
@@ -231,6 +242,7 @@ namespace Infrastructure.Persistence.Migrations
                         new
                         {
                             Id = new Guid("00000000-0000-0000-0000-000000000012"),
+                            ClerkId = "user_38GDlYzZ1LZNY3q4uFLBMyAYp4Y",
                             Email = "coordinator@ostroh.edu.ua",
                             Name = "Координатор",
                             PasswordHash = "DXIF+E53jMJS34YZkf0Jkw==:ccAPZCJbWy/stpuqDGYoAeNnHM5rABefB+bMZL+EaZY=",
