@@ -62,7 +62,8 @@ public class SyncClerkUserCommandHandler(
                 request.Surname, 
                 null, 
                 string.Empty,
-                role.Id);
+                role.Id,
+                request.ClerkUserId);
 
             await userRepository.Create(user, cancellationToken);
 

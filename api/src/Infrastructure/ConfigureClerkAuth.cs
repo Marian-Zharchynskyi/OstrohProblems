@@ -42,6 +42,50 @@ public static class ConfigureClerkAuth
                         }
                         
                         return Task.CompletedTask;
+                    },
+                    OnTokenValidated = context =>
+                    {
+                        if (context.Principal?.Identity is System.Security.Claims.ClaimsIdentity identity)
+                        {
+                            var publicMetadataClaim = context.Principal.FindFirst("public_metadata")?.Value;
+                            if (!string.IsNullOrEmpty(publicMetadataClaim))
+                            {
+                                try
+                                {
+                                    var metadata = System.Text.Json.JsonSerializer.Deserialize<System.Collections.Generic.Dictionary<string, object>>(publicMetadataClaim);
+                                    if (metadata != null && metadata.ContainsKey("role"))
+                                    {
+                                        var role = metadata["role"]?.ToString();
+                                        if (!string.IsNullOrEmpty(role))
+                                        {
+                                            identity.AddClaim(new System.Security.Claims.Claim(System.Security.Claims.ClaimTypes.Role, role));
+                                        }
+                                        else
+                                        {
+                                            // Default role for new users
+                                            identity.AddClaim(new System.Security.Claims.Claim(System.Security.Claims.ClaimTypes.Role, "User"));
+                                        }
+                                    }
+                                    else
+                                    {
+                                        // Default role if metadata exists but no role key
+                                        identity.AddClaim(new System.Security.Claims.Claim(System.Security.Claims.ClaimTypes.Role, "User"));
+                                    }
+                                }
+                                catch
+                                {
+                                    // Fallback if parsing fails
+                                    identity.AddClaim(new System.Security.Claims.Claim(System.Security.Claims.ClaimTypes.Role, "User"));
+                                }
+                            }
+                            else
+                            {
+                                // Default role if no metadata at all
+                                identity.AddClaim(new System.Security.Claims.Claim(System.Security.Claims.ClaimTypes.Role, "User"));
+                            }
+                        }
+                        
+                        return Task.CompletedTask;
                     }
                 };
             });

@@ -3,6 +3,7 @@ import { useState, useEffect, type ReactNode } from 'react'
 import { AuthContext } from './auth-context'
 import type { User } from '@/types/auth'
 import { axiosInstance } from '@/lib/axios-instance'
+import { ukUA } from '@/lib/clerk-uk-UA'
 
 interface ClerkAuthProviderProps {
   children: ReactNode
@@ -23,7 +24,8 @@ function ClerkAuthWrapper({ children }: ClerkAuthProviderProps) {
   useEffect(() => {
     const syncUser = async () => {
       if (isSignedIn && clerkUser) {
-        const token = await getToken()
+        // Use the custom template to get the token with public_metadata
+        const token = await getToken({ template: 'ostroh-problems-token' })
         
         if (token) {
           try {
@@ -33,13 +35,13 @@ function ClerkAuthWrapper({ children }: ClerkAuthProviderProps) {
               }
             })
             
+            const role = (clerkUser.publicMetadata?.role as string) || 'User'
+            
             const userData: User = {
               id: response.data.id,
               email: clerkUser.primaryEmailAddress?.emailAddress || '',
               name: clerkUser.firstName || undefined,
-              roles: clerkUser.publicMetadata?.role 
-                ? [clerkUser.publicMetadata.role as string]
-                : ['User']
+              roles: [role]
             }
             
             setUser(userData)
@@ -88,7 +90,10 @@ function ClerkAuthWrapper({ children }: ClerkAuthProviderProps) {
 
 export function ClerkAuthProvider({ children }: ClerkAuthProviderProps) {
   return (
-    <ClerkProvider publishableKey={PUBLISHABLE_KEY}>
+    <ClerkProvider 
+      publishableKey={PUBLISHABLE_KEY}
+      localization={ukUA}
+    >
       <ClerkAuthWrapper>{children}</ClerkAuthWrapper>
     </ClerkProvider>
   )

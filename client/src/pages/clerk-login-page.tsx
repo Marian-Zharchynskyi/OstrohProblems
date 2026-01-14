@@ -33,6 +33,8 @@ export function ClerkLoginPage() {
               routing="path"
               path="/login"
               signUpUrl="/register"
+              afterSignInUrl="/map"
+              forceRedirectUrl="/map"
               appearance={{
                 elements: {
                   rootBox: 'w-full',

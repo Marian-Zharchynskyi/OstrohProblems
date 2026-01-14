@@ -44,30 +44,33 @@ public static class DataSeed
         var coordinatorRoleId = roles[2];
 
         modelBuilder.Entity<User>().HasData(
-            // Password: Admin123!
+            // Password: Admin123!Ostroh
             new
             {
                 Id = new UserId(adminUserId),
+                ClerkId = "user_38GDF8VSzp5vQGWOBgk0Kv3Td7W",
                 Email = "admin@ostroh.edu.ua",
                 Name = "Адміністратор",
                 Surname = "Острога",
                 PasswordHash = "31jGqnyNWeEpqqSOGrrFYA==:pt36JXYoIE3w8xtI8rEJU/h50muKgFwRs0p/h4am3A0=",
                 RoleId = new RoleId(adminRoleId)
             },
-            // Password: User123!
+            // Password: User123!Ostroh
             new
             {
                 Id = new UserId(regularUserId),
+                ClerkId = "user_38GDs4xMAfETf7thv21MwyW72bh",
                 Email = "user@ostroh.edu.ua",
                 Name = "Звичайний",
                 Surname = "Користувач",
                 PasswordHash = "OeuuWFIVglEfvDvcH349ow==:OXOk32vZFxUcodlJVPaLj/qOApIGP9SSVu9RBy+O4Sc=",
                 RoleId = new RoleId(userRoleId)
             },
-            // Password: Coord123!
+            // Password: Coord123!Ostroh
             new
             {
                 Id = new UserId(coordinatorUserId),
+                ClerkId = "user_38GDlYzZ1LZNY3q4uFLBMyAYp4Y",
                 Email = "coordinator@ostroh.edu.ua",
                 Name = "Координатор",
                 Surname = "Острога",

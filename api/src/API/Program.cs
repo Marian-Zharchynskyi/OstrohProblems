@@ -42,6 +42,7 @@ app.UseCors(options => options
 
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseMiddleware<Infrastructure.Middleware.ClerkUserSyncMiddleware>();
 
 await app.InitialiseDb();
 

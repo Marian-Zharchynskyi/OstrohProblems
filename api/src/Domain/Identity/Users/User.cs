@@ -9,6 +9,7 @@ namespace Domain.Identity.Users;
 public class User
 {
     public UserId Id { get; }
+    public string? ClerkId { get; private set; }
     public string Email { get; private set; }
     public string? Name { get; private set; }
     public string? Surname { get; private set; }
@@ -22,9 +23,10 @@ public class User
     public Role? Role { get; set; }
     public ICollection<RefreshToken> RefreshTokens { get; private set; } = new List<RefreshToken>();
 
-    private User(UserId id, string email, string? name, string? surname, string? phoneNumber, string passwordHash, RoleId roleId)
+    private User(UserId id, string? clerkId, string email, string? name, string? surname, string? phoneNumber, string passwordHash, RoleId roleId)
     {
         Id = id;
+        ClerkId = clerkId;
         Email = email;
         Name = name;
         Surname = surname;
@@ -33,8 +35,8 @@ public class User
         RoleId = roleId;
     }
 
-    public static User New(UserId id, string email, string? name, string? surname, string? phoneNumber, string passwordHash, RoleId roleId)
-        => new(id, email, name, surname, phoneNumber, passwordHash, roleId);
+    public static User New(UserId id, string email, string? name, string? surname, string? phoneNumber, string passwordHash, RoleId roleId, string? clerkId = null)
+        => new(id, clerkId, email, name, surname, phoneNumber, passwordHash, roleId);
 
     public void UpdateUser(string email, string? name, string? surname, string? phoneNumber)
     {

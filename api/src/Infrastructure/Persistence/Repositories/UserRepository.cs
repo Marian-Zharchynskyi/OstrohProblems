@@ -63,6 +63,13 @@ public class UserRepository(ApplicationDbContext context) : IUserRepository, IUs
         return entity == null ? Option.None<User>() : Option.Some(entity);
     }
 
+    public async Task<Option<User>> SearchByClerkId(string clerkId, CancellationToken cancellationToken)
+    {
+        var entity = await GetUserAsync(x => x.ClerkId == clerkId, cancellationToken);
+
+        return entity == null ? Option.None<User>() : Option.Some(entity);
+    }
+
     public async Task<User> SetRole(UserId userId, RoleId roleId, CancellationToken cancellationToken)
     {
         var entity = await GetUserAsync(x => x.Id == userId, cancellationToken);
