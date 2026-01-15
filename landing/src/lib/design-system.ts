@@ -15,8 +15,8 @@ export const designSystem = {
     hero: {
       background: '#FAFBFD',
       backgroundGradient: 'linear-gradient(135deg, #FFFFFF 0%, #F0F4F8 50%, #E8F0F7 100%)',
-      headingText: 'rgba(26, 26, 26, 0.8)', // fill 80%
-      bodyText: 'rgba(74, 85, 104, 0.8)', // fill 80%
+      headingText: 'rgba(0, 0, 0, 0.8)', // fill 80%
+      bodyText: 'rgba(0, 0, 0, 0.8)', // fill 80%
       ctaButton: 'rgba(228, 37, 86, 0.8)', // #E42556 with 80% opacity
       ctaButtonHover: 'rgba(228, 37, 86, 0.9)', // slightly more opaque on hover
       ctaButtonText: '#EAEAEA',

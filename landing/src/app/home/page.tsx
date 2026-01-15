@@ -108,12 +108,12 @@ export default function HomePage() {
             </div>
 
             {/* Ілюстрація (справа) */}
-            <div className="relative w-full h-[250px] md:h-[320px] lg:h-[400px]">
+            <div className="relative w-full h-[320px] md:h-[420px] lg:h-[450px] place-self-center lg:self-end lg:justify-self-end">
               <Image
                 src="/images/hero_section_cover.png"
                 alt="Острозька академія - архітектурний ансамбль"
                 fill
-                className="object-contain"
+                className="object-cover"
                 priority
               />
             </div>
@@ -345,11 +345,11 @@ export default function HomePage() {
         </div>
 
         {/* Support Button */}
-        <div className="text-center">
+        <div className="text-center mt-18">
           <Dialog open={isSupportDialogOpen} onOpenChange={setIsSupportDialogOpen}>
             <DialogTrigger asChild>
               <button
-                className="transition-all duration-300 hover:opacity-90"
+                className="transition-all duration-300 hover:scale-105"
                 style={{
                   width: '340px',
                   height: '65px',
@@ -358,24 +358,69 @@ export default function HomePage() {
                   color: designSystem.colors.partnerships.buttonText,
                   backgroundColor: designSystem.colors.partnerships.buttonBackground,
                   borderRadius: designSystem.borderRadius.button,
+                  cursor: 'pointer',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.opacity = '0.95'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.opacity = '1'
                 }}
               >
                 Підтримати
               </button>
             </DialogTrigger>
-            <DialogContent>
+            <DialogContent
+              className="max-w-2xl"
+              style={{
+                borderRadius: designSystem.borderRadius.card,
+                padding: '2.5rem',
+                backgroundColor: designSystem.colors.partnerships.cardBackground,
+                boxShadow: designSystem.shadows.card,
+              }}
+            >
               <DialogHeader>
-                <DialogTitle>Підтримати проєкт</DialogTitle>
-                <DialogDescription>
+                <DialogTitle
+                  style={{
+                    fontFamily: designSystem.typography.fontFamily.heading,
+                    fontWeight: designSystem.typography.weights.bold,
+                    fontSize: '1.75rem',
+                    color: designSystem.colors.partnerships.cardTitle,
+                    marginBottom: '0.5rem',
+                  }}
+                >
+                  Підтримати проєкт
+                </DialogTitle>
+                <DialogDescription
+                  style={{
+                    fontFamily: designSystem.typography.fontFamily.body,
+                    fontSize: '1rem',
+                    color: designSystem.colors.hero.bodyText,
+                    lineHeight: '1.6',
+                  }}
+                >
                   Дякуємо за вашу підтримку! Ви можете підтримати наш проєкт
                   наступними способами:
                 </DialogDescription>
               </DialogHeader>
-              <div className="space-y-2 text-sm text-muted-foreground">
-                <ul className="list-disc pl-5 space-y-1">
-                  <li>Переказ коштів на рахунок: 1234567890</li>
-                  <li>Зв&apos;язатися з нами за телефоном: +380 362 554 123</li>
-                  <li>Написати на email: support@ostroh.ua</li>
+              <div
+                className="space-y-4 mt-6"
+                style={{
+                  fontFamily: designSystem.typography.fontFamily.body,
+                  color: designSystem.colors.hero.bodyText,
+                }}
+              >
+                <ul
+                  className="list-disc pl-5 space-y-2"
+                  style={{
+                    backgroundColor: designSystem.colors.hero.background,
+                    borderRadius: designSystem.borderRadius.card,
+                    padding: '1.25rem 1.5rem',
+                  }}
+                >
+                  <li className="pl-2">Переказ коштів на рахунок: 1234567890</li>
+                  <li className="pl-2">Зв&apos;язатися з нами за телефоном: +380 362 554 123</li>
+                  <li className="pl-2">Написати на email: support@ostroh.ua</li>
                 </ul>
               </div>
             </DialogContent>
@@ -384,7 +429,7 @@ export default function HomePage() {
       </section>
 
       {/* Services Section */}
-      <section className="space-y-12 py-16">
+      <section className="space-y-12 py-4">
         {/* Header */}
         <div className="space-y-3">
           <p
@@ -417,7 +462,7 @@ export default function HomePage() {
           {services.map((service) => (
             <div
               key={service.title}
-              className="flex items-center justify-between px-8 transition-all duration-200 hover:shadow-md cursor-pointer"
+              className="flex items-center justify-between px-8 transition-all duration-200 hover:shadow-md"
               style={{
                 height: '117px',
                 backgroundColor: designSystem.colors.services.cardBackground,
@@ -440,7 +485,7 @@ export default function HomePage() {
               {/* Action Link */}
               <button
                 type="button"
-                className="flex items-center gap-2 uppercase tracking-wide transition-opacity hover:opacity-70"
+                className="flex items-center gap-2 uppercase tracking-wide transition-all duration-300 hover:scale-105 cursor-pointer"
                 style={{
                   fontSize: '15px',
                   fontFamily: designSystem.typography.fontFamily.body,
@@ -463,11 +508,34 @@ export default function HomePage() {
 
         {/* Dialog */}
         <Dialog open={isServiceDialogOpen} onOpenChange={setIsServiceDialogOpen}>
-          <DialogContent>
+          <DialogContent
+            style={{
+              borderRadius: designSystem.borderRadius.card,
+              padding: '2.5rem',
+            }}
+          >
             <DialogHeader>
-              <DialogTitle>{selectedService?.title}</DialogTitle>
+              <DialogTitle
+                style={{
+                  fontFamily: designSystem.typography.fontFamily.heading,
+                  fontWeight: designSystem.typography.weights.bold,
+                  fontSize: '1.75rem',
+                  color: designSystem.colors.services.headingText,
+                  marginBottom: '1rem',
+                }}
+              >
+                {selectedService?.title}
+              </DialogTitle>
               {selectedService && (
-                <DialogDescription className="whitespace-pre-line">
+                <DialogDescription
+                  className="whitespace-pre-line"
+                  style={{
+                    fontFamily: designSystem.typography.fontFamily.body,
+                    fontSize: '1rem',
+                    color: designSystem.colors.hero.bodyText,
+                    lineHeight: '1.6',
+                  }}
+                >
                   {selectedService.body}
                 </DialogDescription>
               )}
