@@ -9,6 +9,7 @@ export interface AuthContextType {
   signIn: (email: string, password: string, rememberMe?: boolean) => Promise<User | null>
   signUp: (email: string, password: string, name?: string, surname?: string) => Promise<void>
   signOut: (navigate?: (path: string) => void) => void
+  getClerkToken?: () => Promise<string | null>
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(

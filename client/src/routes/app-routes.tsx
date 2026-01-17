@@ -24,7 +24,7 @@ export function AppRoutes() {
     <Routes>
       {/* Public routes - landing pages moved to Next.js landing project */}
       <Route
-        path="/login"
+        path="/login/*"
         element={
           <PublicRoute>
             <ClerkLoginPage />
@@ -32,7 +32,7 @@ export function AppRoutes() {
         }
       />
       <Route
-        path="/register"
+        path="/register/*"
         element={
           <PublicRoute>
             <ClerkRegisterPage />
@@ -126,7 +126,7 @@ export function AppRoutes() {
       <Route
         path="/problems/my"
         element={
-          <ProtectedRoute allowedRoles={['User']}>
+          <ProtectedRoute allowedRoles={['User']} redirectTo="/map">
             <Layout>
               <MySubmittedProblemsPageWithTabs />
             </Layout>

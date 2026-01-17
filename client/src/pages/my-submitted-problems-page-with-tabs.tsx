@@ -33,7 +33,7 @@ export function MySubmittedProblemsPageWithTabs() {
     <div>
       <div
         className="py-2"
-        style={{ backgroundColor: designSystem.colors.profile.headerBackground}}
+        style={{ backgroundColor: designSystem.colors.profile.headerBackground }}
       >
         <div className="max-w-6xl mx-auto px-6">
           <div className="flex flex-wrap justify-center gap-4 mt-6">
