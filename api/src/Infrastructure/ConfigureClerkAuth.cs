@@ -43,45 +43,79 @@ public static class ConfigureClerkAuth
                         
                         return Task.CompletedTask;
                     },
+                    OnAuthenticationFailed = context =>
+                    {
+                        Console.WriteLine($"Authentication failed: {context.Exception.Message}");
+                        if (context.Exception.InnerException != null)
+                        {
+                            Console.WriteLine($"Inner exception: {context.Exception.InnerException.Message}");
+                        }
+                        return Task.CompletedTask;
+                    },
                     OnTokenValidated = context =>
                     {
+                        Console.WriteLine("Token validated successfully");
+                        
                         if (context.Principal?.Identity is System.Security.Claims.ClaimsIdentity identity)
                         {
-                            var publicMetadataClaim = context.Principal.FindFirst("public_metadata")?.Value;
-                            if (!string.IsNullOrEmpty(publicMetadataClaim))
+                            // Log all claims for debugging
+                            foreach (var claim in identity.Claims)
                             {
-                                try
+                                Console.WriteLine($"Claim: {claim.Type} = {claim.Value}");
+                            }
+                            
+                            // First check if role claim already exists (from Clerk session token template)
+                            // Your Clerk template uses: "http://schemas.microsoft.com/ws/2008/06/identity/claims/role": "{{user.public_metadata.role}}"
+                            var existingRoleClaim = context.Principal.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value;
+                            
+                            // Check if role is empty, null, or whitespace
+                            if (string.IsNullOrWhiteSpace(existingRoleClaim))
+                            {
+                                Console.WriteLine("Role claim is empty or null, checking public_metadata...");
+                                
+                                // Try to extract from public_metadata claim
+                                var publicMetadataClaim = context.Principal.FindFirst("public_metadata")?.Value;
+                                if (!string.IsNullOrEmpty(publicMetadataClaim) && publicMetadataClaim != "{}")
                                 {
-                                    var metadata = System.Text.Json.JsonSerializer.Deserialize<System.Collections.Generic.Dictionary<string, object>>(publicMetadataClaim);
-                                    if (metadata != null && metadata.ContainsKey("role"))
+                                    try
                                     {
-                                        var role = metadata["role"]?.ToString();
-                                        if (!string.IsNullOrEmpty(role))
+                                        var metadata = System.Text.Json.JsonSerializer.Deserialize<System.Collections.Generic.Dictionary<string, object>>(publicMetadataClaim);
+                                        if (metadata != null && metadata.ContainsKey("role"))
                                         {
-                                            identity.AddClaim(new System.Security.Claims.Claim(System.Security.Claims.ClaimTypes.Role, role));
+                                            var role = metadata["role"]?.ToString();
+                                            if (!string.IsNullOrEmpty(role))
+                                            {
+                                                identity.AddClaim(new System.Security.Claims.Claim(System.Security.Claims.ClaimTypes.Role, role));
+                                                Console.WriteLine($"Added role from public_metadata: {role}");
+                                            }
+                                            else
+                                            {
+                                                identity.AddClaim(new System.Security.Claims.Claim(System.Security.Claims.ClaimTypes.Role, "User"));
+                                                Console.WriteLine("Role in metadata is empty, defaulting to User");
+                                            }
                                         }
                                         else
                                         {
-                                            // Default role for new users
                                             identity.AddClaim(new System.Security.Claims.Claim(System.Security.Claims.ClaimTypes.Role, "User"));
+                                            Console.WriteLine("No role key in metadata, defaulting to User");
                                         }
                                     }
-                                    else
+                                    catch
                                     {
-                                        // Default role if metadata exists but no role key
                                         identity.AddClaim(new System.Security.Claims.Claim(System.Security.Claims.ClaimTypes.Role, "User"));
+                                        Console.WriteLine("Failed to parse metadata, defaulting to User");
                                     }
                                 }
-                                catch
+                                else
                                 {
-                                    // Fallback if parsing fails
+                                    // Default role if no metadata at all or metadata is empty object
                                     identity.AddClaim(new System.Security.Claims.Claim(System.Security.Claims.ClaimTypes.Role, "User"));
+                                    Console.WriteLine("No public_metadata or empty object, defaulting to User");
                                 }
                             }
                             else
                             {
-                                // Default role if no metadata at all
-                                identity.AddClaim(new System.Security.Claims.Claim(System.Security.Claims.ClaimTypes.Role, "User"));
+                                Console.WriteLine($"Role from Clerk template: {existingRoleClaim}");
                             }
                         }
                         

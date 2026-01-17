@@ -1,17 +1,6 @@
-import { SignIn, useSignIn } from '@clerk/clerk-react'
-import { useNavigate } from 'react-router-dom'
-import { useEffect } from 'react'
+import { SignIn } from '@clerk/clerk-react'
 
 export function ClerkLoginPage() {
-  const { isLoaded, signIn } = useSignIn()
-  const navigate = useNavigate()
-
-  useEffect(() => {
-    if (isLoaded && signIn?.status === 'complete') {
-      navigate('/')
-    }
-  }, [isLoaded, signIn, navigate])
-
   return (
     <div className="min-h-screen w-full flex items-center justify-center bg-[#F5F5F5] p-4">
       <div className="flex flex-col md:flex-row w-full max-w-[1100px] overflow-hidden rounded-2xl shadow-[0_20px_60px_-15px_rgba(0,0,0,0.3)] bg-white min-h-[700px]">
@@ -28,13 +17,10 @@ export function ClerkLoginPage() {
         </div>
 
         <div className="w-full md:w-[50%] bg-white p-8 md:p-12 lg:p-16 flex flex-col justify-center">
-          <div className="w-full max-w-md mx-auto">
-            <SignIn 
-              routing="path"
-              path="/login"
+          <div className="w-full max-w-md mx-auto" style={{ transform: 'scale(1.15)', transformOrigin: 'center' }}>
+            <SignIn
               signUpUrl="/register"
-              afterSignInUrl="/map"
-              forceRedirectUrl="/map"
+              fallbackRedirectUrl="/map"
               appearance={{
                 elements: {
                   rootBox: 'w-full',
@@ -60,3 +46,4 @@ export function ClerkLoginPage() {
     </div>
   )
 }
+
