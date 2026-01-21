@@ -15,7 +15,7 @@ namespace API.Controllers;
 [Route("ratings")]
 [ApiController]
 [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-[Authorize(Roles = $"{RoleNames.Admin}, {RoleNames.User}")]
+[Authorize(Roles = $"{RoleNames.Admin}, {RoleNames.User}, {RoleNames.Coordinator}")]
 public class RatingsController(ISender sender, IRatingQueries ratingQueries) : ControllerBase
 {
     [HttpGet("paged")]
@@ -53,6 +53,7 @@ public class RatingsController(ISender sender, IRatingQueries ratingQueries) : C
             () => NotFound());
     }
 
+    [AllowAnonymous]
     [HttpGet("average/{problemId:guid}")]
     public async Task<ActionResult<double>> GetAverageByProblemId([FromRoute] Guid problemId, CancellationToken cancellationToken)
     {

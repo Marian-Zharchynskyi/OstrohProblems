@@ -1,4 +1,4 @@
-import { ClerkProvider, useAuth as useClerkAuth, useUser } from '@clerk/clerk-react'
+import { ClerkProvider, useAuth as useClerkAuth, useUser, useClerk } from '@clerk/clerk-react'
 import { useState, useEffect, type ReactNode } from 'react'
 import { AuthContext } from './auth-context'
 import type { User } from '@/types/auth'
@@ -39,9 +39,6 @@ function ClerkAuthWrapper({ children }: ClerkAuthProviderProps) {
         // Use the session token (not custom template) - this is validated by the API
         const token = await getToken()
 
-        console.log('Clerk user signed in:', clerkUser.id)
-        console.log('Token available:', !!token)
-
         if (token) {
           try {
             const response = await axiosInstance.get('/users/current', {
@@ -50,14 +47,10 @@ function ClerkAuthWrapper({ children }: ClerkAuthProviderProps) {
               }
             })
 
-            console.log('User sync successful:', response.data)
-            console.log('Role from database:', response.data.role)
-
             // Get role from database response, not from Clerk metadata
             // The database has the correct role assigned
             // Note: API returns "Name" with capital N, not "name"
             const role = response.data.role?.Name || response.data.role?.name || 'User'
-            console.log('Extracted role name:', role)
 
             const userData: User = {
               id: response.data.id,
@@ -66,22 +59,12 @@ function ClerkAuthWrapper({ children }: ClerkAuthProviderProps) {
               roles: [role]
             }
 
-            console.log('Final userData object:', userData)
-            console.log('User roles array:', userData.roles)
-
             setUser(userData)
           } catch (error: unknown) {
             console.error('Failed to sync user:', error)
-            // Log more details about the error
-            if (error && typeof error === 'object' && 'response' in error) {
-              const axiosError = error as { response?: { status?: number; data?: unknown } }
-              console.error('Response status:', axiosError.response?.status)
-              console.error('Response data:', axiosError.response?.data)
-            }
             setUser(null)
           }
         } else {
-          console.warn('No token available from Clerk')
           setUser(null)
         }
       } else {
@@ -93,6 +76,8 @@ function ClerkAuthWrapper({ children }: ClerkAuthProviderProps) {
     syncUser()
   }, [isSignedIn, clerkUser, getToken])
 
+  const { signOut: clerkSignOut } = useClerk()
+
   const signIn = async () => {
     throw new Error('Use Clerk sign-in methods')
   }
@@ -101,7 +86,8 @@ function ClerkAuthWrapper({ children }: ClerkAuthProviderProps) {
     throw new Error('Use Clerk sign-up methods')
   }
 
-  const signOut = () => {
+  const signOut = async () => {
+    await clerkSignOut()
     setUser(null)
   }
 
@@ -136,6 +122,9 @@ export function ClerkAuthProvider({ children }: ClerkAuthProviderProps) {
     <ClerkProvider
       publishableKey={PUBLISHABLE_KEY}
       localization={ukUA}
+      afterSignOutUrl="/map"
+      signInUrl="/login"
+      signUpUrl="/register"
     >
       <ClerkAuthWrapper>{children}</ClerkAuthWrapper>
     </ClerkProvider>

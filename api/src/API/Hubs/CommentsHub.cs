@@ -6,7 +6,7 @@ using Domain.Identity.Roles;
 namespace API.Hubs;
 
 [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-[Authorize(Roles = $"{RoleNames.Admin}, {RoleNames.User}")]
+[Authorize(Roles = $"{RoleNames.Admin}, {RoleNames.User}, {RoleNames.Coordinator}")]
 public class CommentsHub : Hub
 {
     public async Task JoinProblemGroup(string problemId)

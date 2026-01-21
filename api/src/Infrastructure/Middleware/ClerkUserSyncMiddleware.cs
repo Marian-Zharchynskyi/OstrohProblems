@@ -5,26 +5,23 @@ using Domain.Identity.Roles;
 using Domain.Identity.Users;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Optional.Unsafe;
 
 namespace Infrastructure.Middleware;
 
-public class ClerkUserSyncMiddleware(RequestDelegate next)
+public class ClerkUserSyncMiddleware(RequestDelegate next, ILogger<ClerkUserSyncMiddleware> logger)
 {
     public async Task InvokeAsync(HttpContext context, IServiceProvider serviceProvider)
     {
-        Console.WriteLine($"ClerkUserSyncMiddleware: IsAuthenticated = {context.User.Identity?.IsAuthenticated}");
-        
         if (context.User.Identity?.IsAuthenticated == true)
         {
             var clerkId = context.User.FindFirstValue(ClaimTypes.NameIdentifier);
-            Console.WriteLine($"ClerkUserSyncMiddleware: ClerkId from NameIdentifier = {clerkId}");
             
             // Also try "sub" claim
             if (string.IsNullOrEmpty(clerkId))
             {
                 clerkId = context.User.FindFirstValue("sub");
-                Console.WriteLine($"ClerkUserSyncMiddleware: ClerkId from sub = {clerkId}");
             }
             
             if (!string.IsNullOrEmpty(clerkId))
@@ -34,14 +31,12 @@ public class ClerkUserSyncMiddleware(RequestDelegate next)
                 var roleQueries = scope.ServiceProvider.GetRequiredService<IRoleQueries>();
                 
                 var existingUser = await userRepository.SearchByClerkId(clerkId, context.RequestAborted);
-                Console.WriteLine($"ClerkUserSyncMiddleware: User exists in DB = {existingUser.HasValue}");
                 
                 if (!existingUser.HasValue)
                 {
                     // User exists in Clerk but not in our DB - create them (JIT provisioning)
                     var email = context.User.FindFirstValue(ClaimTypes.Email) ?? 
                                 context.User.FindFirstValue("email");
-                    Console.WriteLine($"ClerkUserSyncMiddleware: Email = {email}");
                                 
                     if (!string.IsNullOrEmpty(email))
                     {
@@ -55,38 +50,24 @@ public class ClerkUserSyncMiddleware(RequestDelegate next)
                             
                         if (createdUser != null)
                         {
-                            Console.WriteLine($"ClerkUserSyncMiddleware: Created user with ID = {createdUser.Id.Value}");
+                            logger.LogInformation("JIT provisioned user with ID {UserId} for ClerkId {ClerkId}", createdUser.Id.Value, clerkId);
                             if (context.User.Identity is ClaimsIdentity identity)
                             {
                                 identity.AddClaim(new Claim("user_id", createdUser.Id.Value.ToString()));
                             }
                         }
-                        else
-                        {
-                            Console.WriteLine("ClerkUserSyncMiddleware: Failed to create user");
-                        }
-                    }
-                    else
-                    {
-                        Console.WriteLine("ClerkUserSyncMiddleware: No email found, cannot create user");
                     }
                 }
                 else
                 {
                     // User exists, add internal ID to claims for IdentityService to use
                     var user = existingUser.ValueOrFailure();
-                    Console.WriteLine($"ClerkUserSyncMiddleware: Found existing user with ID = {user.Id.Value}");
                     
                     if (context.User.Identity is ClaimsIdentity identity && !identity.HasClaim(c => c.Type == "user_id"))
                     {
                         identity.AddClaim(new Claim("user_id", user.Id.Value.ToString()));
-                        Console.WriteLine($"ClerkUserSyncMiddleware: Added user_id claim");
                     }
                 }
-            }
-            else
-            {
-                Console.WriteLine("ClerkUserSyncMiddleware: No ClerkId found");
             }
         }
 

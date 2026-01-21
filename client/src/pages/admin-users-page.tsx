@@ -26,7 +26,7 @@ import {
 import { Users, Trash2, Shield, Plus, Pencil } from 'lucide-react'
 
 export function AdminUsersPage() {
-  const { tokens } = useAuth()
+  const { tokens, getClerkToken } = useAuth()
   const [users, setUsers] = useState<UserDto[]>([])
   const [roles, setRoles] = useState<Role[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -58,13 +58,14 @@ export function AdminUsersPage() {
 
   useEffect(() => {
     const loadData = async () => {
-      if (!tokens?.accessToken) return
+      const token = getClerkToken ? await getClerkToken() : tokens?.accessToken
+      if (!token) return
 
       try {
         setIsLoading(true)
         const [usersData, rolesData] = await Promise.all([
-          userService.getAllUsers(tokens.accessToken),
-          rolesApi.getAll(),
+          userService.getAllUsers(token),
+          rolesApi.getAll(token),
         ])
         setUsers(usersData)
         setRoles(rolesData)
@@ -76,7 +77,7 @@ export function AdminUsersPage() {
     }
 
     loadData()
-  }, [tokens?.accessToken])
+  }, [tokens?.accessToken, getClerkToken])
 
   const handleOpenDeleteDialog = (user: UserDto) => {
     setUserToDelete(user)
@@ -84,11 +85,12 @@ export function AdminUsersPage() {
   }
 
   const handleDeleteUser = async () => {
-    if (!tokens?.accessToken || !userToDelete) return
+    const token = getClerkToken ? await getClerkToken() : tokens?.accessToken
+    if (!token || !userToDelete) return
 
     try {
       setDeletingUserId(userToDelete.id)
-      await userService.deleteUser(userToDelete.id, tokens.accessToken)
+      await userService.deleteUser(userToDelete.id, token)
       setUsers(users.filter((u) => u.id !== userToDelete.id))
       setDeleteDialogOpen(false)
       setUserToDelete(null)
@@ -102,7 +104,8 @@ export function AdminUsersPage() {
   }
 
   const handleCreateUser = async () => {
-    if (!tokens?.accessToken) return
+    const token = getClerkToken ? await getClerkToken() : tokens?.accessToken
+    if (!token) return
     if (!createForm.email || !createForm.password || !createForm.roleId) {
       alert('Заповніть всі обов\'язкові поля')
       return
@@ -110,7 +113,7 @@ export function AdminUsersPage() {
 
     try {
       setIsCreating(true)
-      const newUser = await userService.createUser(createForm, tokens.accessToken)
+      const newUser = await userService.createUser(createForm, token)
       setUsers([...users, newUser])
       setIsCreateDialogOpen(false)
       setCreateForm({ email: '', password: '', name: '', surname: '', roleId: '' })
@@ -134,7 +137,8 @@ export function AdminUsersPage() {
   }
 
   const handleEditUser = async () => {
-    if (!tokens?.accessToken || !editingUser) return
+    const token = getClerkToken ? await getClerkToken() : tokens?.accessToken
+    if (!token || !editingUser) return
 
     try {
       setIsEditing(true)
@@ -143,14 +147,14 @@ export function AdminUsersPage() {
       await userService.updateUser(
         editingUser.id,
         { email: editForm.email, name: editForm.userName, surname: editForm.userSurname },
-        tokens.accessToken
+        token
       )
 
       // Update role
       const updatedUser = await userService.updateUserRoles(
         editingUser.id,
         editForm.roleId,
-        tokens.accessToken
+        token
       )
 
       setUsers(users.map((u) => (u.id === editingUser.id ? updatedUser : u)))
