@@ -20,7 +20,7 @@ namespace API.Controllers;
 [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
 public class UsersController(ISender sender, IUserQueries userQueries, IIdentityService identityService, IImageService imageService) : ControllerBase
 {
-    [Authorize(Roles = $"{RoleNames.Admin},{RoleNames.User}")]
+    [Authorize(Roles = $"{RoleNames.Admin},{RoleNames.User},{RoleNames.Coordinator}")]
     [HttpGet("current")]
     public async Task<ActionResult<UserDto>> GetCurrentUser(CancellationToken cancellationToken)
     {
@@ -99,7 +99,7 @@ public class UsersController(ISender sender, IUserQueries userQueries, IIdentity
             () => NotFound());
     }
     
-    [Authorize(Roles = $"{RoleNames.Admin},{RoleNames.User}")]
+    [Authorize(Roles = $"{RoleNames.Admin},{RoleNames.User},{RoleNames.Coordinator}")]
     [HttpDelete("delete/{userId:guid}")]
     public async Task<ActionResult<UserDto>>
         Delete([FromRoute] Guid userId, CancellationToken cancellationToken)
@@ -150,7 +150,7 @@ public class UsersController(ISender sender, IUserQueries userQueries, IIdentity
             error => error.ToObjectResult());
     }
 
-    [Authorize(Roles = $"{RoleNames.Admin},{RoleNames.User}")]
+    [Authorize(Roles = $"{RoleNames.Admin},{RoleNames.User},{RoleNames.Coordinator}")]
     [HttpPut("image/{userId}")]
     public async Task<ActionResult<UserDto>> Upload(
         [FromRoute] Guid userId,
@@ -170,7 +170,7 @@ public class UsersController(ISender sender, IUserQueries userQueries, IIdentity
             e => e.ToObjectResult());
     }
 
-    [Authorize(Roles = $"{RoleNames.Admin},{RoleNames.User}")]
+    [Authorize(Roles = $"{RoleNames.Admin},{RoleNames.User},{RoleNames.Coordinator}")]
     [HttpDelete("image/{userId}")]
     public async Task<ActionResult<UserDto>> DeleteImage(
         [FromRoute] Guid userId,
@@ -188,7 +188,7 @@ public class UsersController(ISender sender, IUserQueries userQueries, IIdentity
             e => e.ToObjectResult());
     }
 
-    [Authorize(Roles = $"{RoleNames.Admin},{RoleNames.User}")]
+    [Authorize(Roles = $"{RoleNames.Admin},{RoleNames.User},{RoleNames.Coordinator}")]
     [HttpPut("update/{userId:guid}")]
     public async Task<ActionResult<UserDto>> UpdateUser(
         [FromRoute] Guid userId,
@@ -211,7 +211,7 @@ public class UsersController(ISender sender, IUserQueries userQueries, IIdentity
             e => e.ToObjectResult());
     }
 
-    [Authorize(Roles = $"{RoleNames.Admin},{RoleNames.User}")]
+    [Authorize(Roles = $"{RoleNames.Admin},{RoleNames.User},{RoleNames.Coordinator}")]
     [HttpPut("change-password/{userId:guid}")]
     public async Task<ActionResult<UserDto>> ChangePassword(
         [FromRoute] Guid userId,

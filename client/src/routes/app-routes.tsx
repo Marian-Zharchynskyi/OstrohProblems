@@ -1,4 +1,4 @@
-import { Routes, Route } from 'react-router-dom'
+import { Routes, Route, Navigate } from 'react-router-dom'
 import { Layout } from '@/components/shared/layout'
 import { ProtectedRoute } from '@/components/auth/protected-route'
 import { PublicRoute } from '@/components/auth/public-route'
@@ -22,6 +22,9 @@ import CoordinatorUpdatePage from '@/pages/coordinator-update-page'
 export function AppRoutes() {
   return (
     <Routes>
+      {/* Root redirect */}
+      <Route path="/" element={<Navigate to="/map" replace />} />
+
       {/* Public routes - landing pages moved to Next.js landing project */}
       <Route
         path="/login/*"

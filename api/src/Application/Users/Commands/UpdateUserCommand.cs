@@ -1,4 +1,5 @@
 using Application.Common;
+using Application.Common.Interfaces;
 using Application.Common.Interfaces.Repositories;
 using Application.Services;
 using Application.Services.TokenService;
@@ -18,7 +19,9 @@ public record UpdateUserCommand : IRequest<Result<User, UserException>>
     public string? PhoneNumber { get; init; }
 }
 
-public class UpdateUserCommandHandle(IUserRepository userRepository)
+public class UpdateUserCommandHandle(
+    IUserRepository userRepository,
+    IClerkApiService clerkApiService)
     : IRequestHandler<UpdateUserCommand, Result<User, UserException>>
 {
     public async Task<Result<User, UserException>> Handle(UpdateUserCommand request,
@@ -55,6 +58,13 @@ public class UpdateUserCommandHandle(IUserRepository userRepository)
             user.UpdateUser(email, name, surname, phoneNumber);
 
             var updatedUser = await userRepository.Update(user, cancellationToken);
+            
+            // Sync with Clerk if user has a ClerkId
+            if (!string.IsNullOrEmpty(user.ClerkId))
+            {
+                await clerkApiService.UpdateUserAsync(user.ClerkId, name, surname, email);
+            }
+            
             return updatedUser;
         }
         catch (Exception exception)

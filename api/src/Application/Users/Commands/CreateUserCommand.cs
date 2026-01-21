@@ -1,4 +1,5 @@
 using Application.Common;
+using Application.Common.Interfaces;
 using Application.Common.Interfaces.Queries;
 using Application.Common.Interfaces.Repositories;
 using Application.Services.HashPasswordService;
@@ -21,7 +22,8 @@ public record CreateUserCommand : IRequest<Result<User, UserException>>
 public class CreateUserCommandHandler(
     IUserRepository userRepository,
     IRoleQueries roleQueries,
-    IHashPasswordService hashPasswordService)
+    IHashPasswordService hashPasswordService,
+    IClerkApiService clerkApiService)
     : IRequestHandler<CreateUserCommand, Result<User, UserException>>
 {
     public async Task<Result<User, UserException>> Handle(
@@ -48,9 +50,25 @@ public class CreateUserCommandHandler(
             return await existingRole.Match<Task<Result<User, UserException>>>(
                 async role =>
                 {
+                    // First, create user in Clerk
+                    var clerkId = await clerkApiService.CreateUserAsync(
+                        request.Email, 
+                        request.Password, 
+                        request.Name, 
+                        request.Surname, 
+                        role.Name);
+                    
                     var passwordHash = hashPasswordService.HashPassword(request.Password);
                     var userId = UserId.New();
-                    var user = User.New(userId, request.Email, request.Name, request.Surname, null, passwordHash, role.Id);
+                    var user = User.New(
+                        userId, 
+                        request.Email, 
+                        request.Name, 
+                        request.Surname, 
+                        null, 
+                        passwordHash, 
+                        role.Id,
+                        clerkId); // Pass the Clerk ID if available
 
                     var createdUser = await userRepository.Create(user, cancellationToken);
                     return createdUser;
@@ -64,3 +82,4 @@ public class CreateUserCommandHandler(
         }
     }
 }
+

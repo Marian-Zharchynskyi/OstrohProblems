@@ -93,7 +93,7 @@ public class ProblemsController(ISender sender, IProblemQueries problemQueries, 
         return entities.Select(p => ProblemDto.FromDomainModel(p, imageService.GetImageUrl)).ToList();
     }
 
-    [Authorize(Roles = $"{RoleNames.Admin}, {RoleNames.User}, {RoleNames.Coordinator}")]
+    [AllowAnonymous]
     [HttpGet("get-by-id/{problemId:guid}")]
     public async Task<ActionResult<ProblemDto>> Get([FromRoute] Guid problemId,
         CancellationToken cancellationToken)

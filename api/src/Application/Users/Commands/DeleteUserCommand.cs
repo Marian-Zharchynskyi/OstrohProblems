@@ -1,4 +1,5 @@
 using Application.Common;
+using Application.Common.Interfaces;
 using Application.Common.Interfaces.Repositories;
 using Application.Services.ImageService;
 using Application.Users.Exceptions;
@@ -18,7 +19,8 @@ public class DeleteUserCommandHandler(
     IProblemRepository problemRepository,
     ICommentRepository commentRepository,
     IRatingRepository ratingRepository,
-    IImageService imageService)
+    IImageService imageService,
+    IClerkApiService clerkApiService)
     : IRequestHandler<DeleteUserCommand, Result<User, UserException>>
 {
     public async Task<Result<User, UserException>> Handle(
@@ -50,6 +52,12 @@ public class DeleteUserCommandHandler(
             await DeleteUserProblems(user.Id, cancellationToken);
             await DeleteUserComments(user.Id, cancellationToken);
             await DeleteUserRatings(user.Id, cancellationToken);
+            
+            // Delete user from Clerk if they have a ClerkId
+            if (!string.IsNullOrEmpty(user.ClerkId))
+            {
+                await clerkApiService.DeleteUserAsync(user.ClerkId);
+            }
             
             return await userRepository.Delete(user, cancellationToken);
         }
