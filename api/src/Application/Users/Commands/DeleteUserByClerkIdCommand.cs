@@ -9,27 +9,24 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Application.Users.Commands;
 
-public record DeleteUserCommand : IRequest<Result<User, UserException>>
+public record DeleteUserByClerkIdCommand : IRequest<Result<User, UserException>>
 {
-    public required Guid UserId { get; init; }
+    public required string ClerkUserId { get; init; }
 }
 
-public class DeleteUserCommandHandler(
+public class DeleteUserByClerkIdCommandHandler(
     IUserRepository userRepository,
     IProblemRepository problemRepository,
     ICommentRepository commentRepository,
     IRatingRepository ratingRepository,
-    IImageService imageService,
-    IClerkApiService clerkApiService)
-    : IRequestHandler<DeleteUserCommand, Result<User, UserException>>
+    IImageService imageService)
+    : IRequestHandler<DeleteUserByClerkIdCommand, Result<User, UserException>>
 {
     public async Task<Result<User, UserException>> Handle(
-        DeleteUserCommand request,
+        DeleteUserByClerkIdCommand request,
         CancellationToken cancellationToken)
     {
-        var userId = new UserId(request.UserId);
-        if (userId == null) throw new ArgumentNullException(nameof(userId));
-        var existingUser = await userRepository.GetById(userId, cancellationToken);
+        var existingUser = await userRepository.SearchByClerkId(request.ClerkUserId, cancellationToken);
 
         return await existingUser.Match<Task<Result<User, UserException>>>(
             async user =>
@@ -38,7 +35,7 @@ public class DeleteUserCommandHandler(
                 return await DeleteEntity(user, cancellationToken);
             },
             () => Task.FromResult<Result<User, UserException>>
-                (new UserNotFoundException(userId)));
+                (new UserNotFoundException(UserId.Empty)));
     }
 
     private async Task<Result<User, UserException>> DeleteEntity(
@@ -49,19 +46,9 @@ public class DeleteUserCommandHandler(
         
         try
         {
-            // Delete user's problems and all related data
-            // Order is important: first delete related data, then problems, then user
             await DeleteUserProblems(user.Id, cancellationToken);
-            
-            // Delete any remaining comments and ratings (in case they're not cascade deleted)
             await DeleteUserComments(user.Id, cancellationToken);
             await DeleteUserRatings(user.Id, cancellationToken);
-            
-            // Delete user from Clerk if they have a ClerkId
-            if (!string.IsNullOrEmpty(user.ClerkId))
-            {
-                await clerkApiService.DeleteUserAsync(user.ClerkId);
-            }
             
             return await userRepository.Delete(user, cancellationToken);
         }
@@ -83,16 +70,6 @@ public class DeleteUserCommandHandler(
         
         foreach (var problem in userProblems)
         {
-            // Delete problem images from file system
-            foreach (var image in problem.Images)
-            {
-                if (!string.IsNullOrEmpty(image.FilePath))
-                {
-                    await imageService.DeleteImageAsync(image.FilePath);
-                }
-            }
-
-            // Delete the problem - EF Core will cascade delete comments and ratings
             await problemRepository.Delete(problem, cancellationToken);
         }
     }

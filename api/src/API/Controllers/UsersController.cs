@@ -231,4 +231,24 @@ public class UsersController(ISender sender, IUserQueries userQueries, IIdentity
             u => UserDto.FromDomainModel(u, imageService.GetImageUrl),
             e => e.ToObjectResult());
     }
+
+    [Authorize(Roles = $"{RoleNames.Admin},{RoleNames.User},{RoleNames.Coordinator}")]
+    [HttpPut("set-password/{userId:guid}")]
+    public async Task<ActionResult<UserDto>> SetPassword(
+        [FromRoute] Guid userId,
+        [FromBody] SetPasswordDto request,
+        CancellationToken cancellationToken)
+    {
+        var input = new SetPasswordCommand
+        {
+            UserId = userId,
+            NewPassword = request.NewPassword
+        };
+
+        var result = await sender.Send(input, cancellationToken);
+
+        return result.Match<ActionResult<UserDto>>(
+            u => UserDto.FromDomainModel(u, imageService.GetImageUrl),
+            e => e.ToObjectResult());
+    }
 }

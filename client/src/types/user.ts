@@ -16,6 +16,7 @@ export interface UserDto {
   phoneNumber?: string
   image?: UserImage
   role?: Role
+  hasPassword?: boolean
 }
 
 export interface UpdateUserDto {
@@ -35,5 +36,9 @@ export interface CreateUserDto {
 
 export interface ChangePasswordDto {
   currentPassword: string
+  newPassword: string
+}
+
+export interface SetPasswordDto {
   newPassword: string
 }

@@ -46,7 +46,7 @@ public class CreateCommentCommandHandler : IRequestHandler<CreateCommentCommand,
 
         try
         {
-            var userIdClaim = _httpContextAccessor.HttpContext?.User.Claims.FirstOrDefault(c => c.Type == "id");
+            var userIdClaim = _httpContextAccessor.HttpContext?.User.Claims.FirstOrDefault(c => c.Type == "user_id");
 
             if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userIdGuid))
             {

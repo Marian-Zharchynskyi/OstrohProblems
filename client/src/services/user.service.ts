@@ -1,6 +1,6 @@
 import axios from 'axios'
 import type { PagedResult } from '@/types'
-import type { UserDto, UpdateUserDto, CreateUserDto, ChangePasswordDto } from '@/types/user'
+import type { UserDto, UpdateUserDto, CreateUserDto, ChangePasswordDto, SetPasswordDto } from '@/types/user'
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5146'
 
@@ -14,6 +14,7 @@ interface BackendUserDto {
   image?: { id?: string; url?: string };
   Role?: { Id?: string; id?: string; Name?: string; name?: string };
   role?: { id?: string; name?: string };
+  HasPassword?: boolean; hasPassword?: boolean;
 }
 
 interface BackendPagedResponse<T> {
@@ -29,21 +30,22 @@ interface BackendPagedResponse<T> {
 // Helper to map PascalCase response to camelCase UserDto
 const mapUserToDto = (data: BackendUserDto): UserDto => {
   if (!data) return { id: '', email: '' } as UserDto
-  
+
   return {
     id: data.Id || data.id || '',
     email: data.Email || data.email || '',
     name: data.Name || data.name,
     surname: data.Surname || data.surname,
     phoneNumber: data.PhoneNumber || data.phoneNumber,
-    image: (data.Image || data.image) ? { 
-      id: data.Image?.Id || data.Image?.id || data.image?.id || '', 
-      url: data.Image?.Url || data.Image?.url || data.image?.url || '' 
+    image: (data.Image || data.image) ? {
+      id: data.Image?.Id || data.Image?.id || data.image?.id || '',
+      url: data.Image?.Url || data.Image?.url || data.image?.url || ''
     } : undefined,
-    role: (data.Role || data.role) ? { 
-      id: data.Role?.Id || data.Role?.id || data.role?.id || '', 
-      name: data.Role?.Name || data.Role?.name || data.role?.name || '' 
-    } : undefined
+    role: (data.Role || data.role) ? {
+      id: data.Role?.Id || data.Role?.id || data.role?.id || '',
+      name: data.Role?.Name || data.Role?.name || data.role?.name || ''
+    } : undefined,
+    hasPassword: data.HasPassword ?? data.hasPassword ?? true
   }
 }
 
@@ -71,7 +73,7 @@ export const userService = {
         },
       }
     )
-    
+
     return {
       items: (response.data.Items || response.data.items || []).map(mapUserToDto),
       totalCount: response.data.TotalCount || response.data.totalCount || 0,
@@ -205,6 +207,23 @@ export const userService = {
   ): Promise<UserDto> {
     const response = await axios.put<BackendUserDto>(
       `${API_URL}/users/change-password/${userId}`,
+      data,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    )
+    return mapUserToDto(response.data)
+  },
+
+  async setPassword(
+    userId: string,
+    data: SetPasswordDto,
+    token: string
+  ): Promise<UserDto> {
+    const response = await axios.put<BackendUserDto>(
+      `${API_URL}/users/set-password/${userId}`,
       data,
       {
         headers: {

@@ -3,6 +3,7 @@ using Application.Identity.Commands;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
+using Application.Users.Commands;
 
 namespace API.Controllers;
 
@@ -30,6 +31,9 @@ public class ClerkWebhookController(ISender sender) : ControllerBase
                 case "user.created":
                 case "user.updated":
                     await HandleUserSync(webhookEvent, cancellationToken);
+                    break;
+                case "user.deleted":
+                    await HandleUserDeletion(webhookEvent, cancellationToken);
                     break;
             }
 
@@ -67,6 +71,21 @@ public class ClerkWebhookController(ISender sender) : ControllerBase
             Name = firstName,
             Surname = lastName,
             Role = role
+        };
+
+        await sender.Send(command, cancellationToken);
+    }
+
+    private async Task HandleUserDeletion(ClerkWebhookEvent webhookEvent, CancellationToken cancellationToken)
+    {
+        if (webhookEvent.Data == null) return;
+
+        var clerkUserId = webhookEvent.Data.Id;
+        if (string.IsNullOrEmpty(clerkUserId)) return;
+
+        var command = new DeleteUserByClerkIdCommand
+        {
+            ClerkUserId = clerkUserId
         };
 
         await sender.Send(command, cancellationToken);

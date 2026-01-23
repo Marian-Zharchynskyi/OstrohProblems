@@ -8,41 +8,32 @@ using MediatR;
 
 namespace Application.Users.Commands;
 
-public record ChangePasswordCommand : IRequest<Result<User, UserException>>
+public record SetPasswordCommand : IRequest<Result<User, UserException>>
 {
     public required Guid UserId { get; init; }
-    public required string CurrentPassword { get; init; }
     public required string NewPassword { get; init; }
 }
 
-public class ChangePasswordCommandHandler(
+public class SetPasswordCommandHandler(
     IUserRepository userRepository,
     IHashPasswordService hashPasswordService,
     IClerkApiService clerkApiService)
-    : IRequestHandler<ChangePasswordCommand, Result<User, UserException>>
+    : IRequestHandler<SetPasswordCommand, Result<User, UserException>>
 {
     public async Task<Result<User, UserException>> Handle(
-        ChangePasswordCommand request,
+        SetPasswordCommand request,
         CancellationToken cancellationToken)
     {
         var userId = new UserId(request.UserId);
         var existingUser = await userRepository.GetById(userId, cancellationToken);
 
         return await existingUser.Match(
-            async user =>
-            {
-                if (!hashPasswordService.VerifyPassword(request.CurrentPassword, user.PasswordHash))
-                {
-                    return new InvalidPasswordException(userId);
-                }
-
-                return await UpdatePassword(user, request.NewPassword, cancellationToken);
-            },
+            async user => await SetPassword(user, request.NewPassword, cancellationToken),
             () => Task.FromResult<Result<User, UserException>>(
                 new UserNotFoundException(userId)));
     }
 
-    private async Task<Result<User, UserException>> UpdatePassword(
+    private async Task<Result<User, UserException>> SetPassword(
         User user,
         string newPassword,
         CancellationToken cancellationToken)
