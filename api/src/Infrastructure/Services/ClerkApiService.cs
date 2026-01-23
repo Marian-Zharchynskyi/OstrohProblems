@@ -41,16 +41,25 @@ public class ClerkApiService : IClerkApiService
 
         try
         {
+            // Update email first if provided
+            if (!string.IsNullOrEmpty(email))
+            {
+                var emailUpdateSuccess = await UpdateUserEmailAsync(clerkId, email);
+                if (!emailUpdateSuccess)
+                {
+                    _logger.LogWarning("Failed to update email for Clerk user {ClerkId}, continuing with other updates", clerkId);
+                }
+            }
+            
+            // Update other fields
             var updateData = new Dictionary<string, object?>();
             
             if (firstName != null) updateData["first_name"] = firstName;
             if (lastName != null) updateData["last_name"] = lastName;
-            // Note: Clerk requires primary_email_address_id to update email, which is more complex
-            // For email updates, consider using Clerk's email management endpoints
             
             if (updateData.Count == 0)
             {
-                _logger.LogDebug("No fields to update for Clerk user {ClerkId}", clerkId);
+                _logger.LogDebug("No additional fields to update for Clerk user {ClerkId}", clerkId);
                 return true;
             }
 
@@ -76,6 +85,160 @@ public class ClerkApiService : IClerkApiService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error updating Clerk user {ClerkId}", clerkId);
+            return false;
+        }
+    }
+
+    private async Task<bool> UpdateUserEmailAsync(string clerkId, string newEmail)
+    {
+        try
+        {
+            // First, get the user to find their current primary email address
+            var getUserResponse = await _httpClient.GetAsync($"users/{clerkId}");
+            if (!getUserResponse.IsSuccessStatusCode)
+            {
+                _logger.LogError("Failed to get Clerk user {ClerkId} for email update", clerkId);
+                return false;
+            }
+
+            var userContent = await getUserResponse.Content.ReadAsStringAsync();
+            using var userDoc = JsonDocument.Parse(userContent);
+            
+            // Get current primary email
+            var primaryEmailAddress = userDoc.RootElement.GetProperty("primary_email_address_id").GetString();
+            var emailAddresses = userDoc.RootElement.GetProperty("email_addresses");
+            
+            string? currentEmail = null;
+            bool isLinkedToOAuth = false;
+            
+            foreach (var emailAddr in emailAddresses.EnumerateArray())
+            {
+                var emailId = emailAddr.GetProperty("id").GetString();
+                if (emailId == primaryEmailAddress)
+                {
+                    currentEmail = emailAddr.GetProperty("email_address").GetString();
+                    
+                    // Check if email is linked to OAuth provider
+                    if (emailAddr.TryGetProperty("linked_to", out var linkedTo) && linkedTo.GetArrayLength() > 0)
+                    {
+                        isLinkedToOAuth = true;
+                        _logger.LogInformation("Primary email {Email} is linked to OAuth provider for user {ClerkId}", currentEmail, clerkId);
+                    }
+                    break;
+                }
+            }
+
+            // If email is the same, no need to update
+            if (currentEmail == newEmail)
+            {
+                _logger.LogDebug("Email is the same, no update needed for Clerk user {ClerkId}", clerkId);
+                return true;
+            }
+
+            _logger.LogInformation("Updating email for Clerk user {ClerkId} from {OldEmail} to {NewEmail}", clerkId, currentEmail, newEmail);
+
+            // For OAuth-linked emails, we cannot change the primary email directly
+            if (isLinkedToOAuth)
+            {
+                _logger.LogWarning("Cannot update OAuth-linked email for user {ClerkId}. OAuth email must be updated through the OAuth provider.", clerkId);
+                // Return a special error code that we can catch
+                throw new InvalidOperationException("OAUTH_EMAIL_CANNOT_BE_CHANGED");
+            }
+
+            // For non-OAuth users, we need to create a new email address and set it as primary
+            // Step 1: Create new email address
+            var createEmailData = new Dictionary<string, object>
+            {
+                ["user_id"] = clerkId,
+                ["email_address"] = newEmail,
+                ["verified"] = true
+            };
+            
+            var createEmailContent = new StringContent(
+                JsonSerializer.Serialize(createEmailData),
+                Encoding.UTF8,
+                "application/json"
+            );
+
+            var createEmailResponse = await _httpClient.PostAsync(
+                $"email_addresses", 
+                createEmailContent
+            );
+
+            if (!createEmailResponse.IsSuccessStatusCode)
+            {
+                var errorContent = await createEmailResponse.Content.ReadAsStringAsync();
+                _logger.LogError("Failed to create new email address. Status: {Status}, Error: {Error}", 
+                    createEmailResponse.StatusCode, errorContent);
+                return false;
+            }
+
+            // Get the new email ID from response
+            var createResponseContent = await createEmailResponse.Content.ReadAsStringAsync();
+            using var emailDoc = JsonDocument.Parse(createResponseContent);
+            var newEmailId = emailDoc.RootElement.GetProperty("id").GetString();
+
+            if (string.IsNullOrEmpty(newEmailId))
+            {
+                _logger.LogError("Failed to get new email ID from response");
+                return false;
+            }
+
+            _logger.LogInformation("Created new email address {EmailId} with value {Email}", newEmailId, newEmail);
+
+            // Step 2: Update user to set the new email as primary
+            var updateUserData = new Dictionary<string, object>
+            {
+                ["primary_email_address_id"] = newEmailId
+            };
+            
+            var updateUserContent = new StringContent(
+                JsonSerializer.Serialize(updateUserData),
+                Encoding.UTF8,
+                "application/json"
+            );
+
+            var updateUserResponse = await _httpClient.PatchAsync($"users/{clerkId}", updateUserContent);
+
+            if (!updateUserResponse.IsSuccessStatusCode)
+            {
+                var errorContent = await updateUserResponse.Content.ReadAsStringAsync();
+                _logger.LogError("Failed to set new email as primary for Clerk user {ClerkId}. Status: {Status}, Error: {Error}", 
+                    clerkId, updateUserResponse.StatusCode, errorContent);
+                
+                // Try to clean up the created email
+                await _httpClient.DeleteAsync($"email_addresses/{newEmailId}");
+                return false;
+            }
+
+            _logger.LogInformation("Successfully set email {EmailId} as primary for user {ClerkId}", newEmailId, clerkId);
+
+            // Step 3: Delete the old email address
+            if (!string.IsNullOrEmpty(primaryEmailAddress))
+            {
+                var deleteResponse = await _httpClient.DeleteAsync($"email_addresses/{primaryEmailAddress}");
+                if (!deleteResponse.IsSuccessStatusCode)
+                {
+                    // Not critical, just log warning
+                    _logger.LogWarning("Failed to delete old email {OldEmailId} for user {ClerkId}", primaryEmailAddress, clerkId);
+                }
+                else
+                {
+                    _logger.LogInformation("Successfully deleted old email {OldEmailId}", primaryEmailAddress);
+                }
+            }
+
+            _logger.LogInformation("Successfully updated email for Clerk user {ClerkId} to {NewEmail}", clerkId, newEmail);
+            return true;
+        }
+        catch (InvalidOperationException ex) when (ex.Message == "OAUTH_EMAIL_CANNOT_BE_CHANGED")
+        {
+            // Re-throw this specific exception so it can be caught by the caller
+            throw;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error updating email for Clerk user {ClerkId}", clerkId);
             return false;
         }
     }
@@ -203,6 +366,44 @@ public class ClerkApiService : IClerkApiService
         {
             _logger.LogError(ex, "Error creating Clerk user with email {Email}", email);
             return null;
+        }
+    }
+
+    public async Task<bool> UpdateUserPasswordAsync(string clerkId, string newPassword)
+    {
+        if (string.IsNullOrEmpty(_secretKey))
+        {
+            _logger.LogWarning("Clerk API is not configured. Skipping password update.");
+            return false;
+        }
+
+        try
+        {
+            var updateData = new { password = newPassword };
+            
+            var content = new StringContent(
+                JsonSerializer.Serialize(updateData),
+                Encoding.UTF8,
+                "application/json"
+            );
+
+            var response = await _httpClient.PatchAsync($"users/{clerkId}", content);
+            
+            if (response.IsSuccessStatusCode)
+            {
+                _logger.LogInformation("Successfully updated password for Clerk user {ClerkId}", clerkId);
+                return true;
+            }
+            
+            var errorContent = await response.Content.ReadAsStringAsync();
+            _logger.LogError("Failed to update password for Clerk user {ClerkId}. Status: {Status}, Error: {Error}", 
+                clerkId, response.StatusCode, errorContent);
+            return false;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error updating password for Clerk user {ClerkId}", clerkId);
+            return false;
         }
     }
 }

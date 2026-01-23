@@ -9,7 +9,8 @@ public record UserDto(
     string? Surname,
     string? PhoneNumber,
     UserImageDto? Image,
-    RoleDto? Role)
+    RoleDto? Role,
+    bool HasPassword)
 {
     public static UserDto FromDomainModel(User user, Func<string, string>? getImageUrl = null)
         => new(
@@ -21,5 +22,6 @@ public record UserDto(
             user.UserImage != null && getImageUrl != null 
                 ? UserImageDto.FromDomainModel(user.UserImage, getImageUrl) 
                 : null,
-            user.Role != null ? RoleDto.FromDomainModel(user.Role) : null);
+            user.Role != null ? RoleDto.FromDomainModel(user.Role) : null,
+            !string.IsNullOrEmpty(user.PasswordHash));
 }

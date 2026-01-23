@@ -49,7 +49,11 @@ public class DeleteUserCommandHandler(
         
         try
         {
+            // Delete user's problems and all related data
+            // Order is important: first delete related data, then problems, then user
             await DeleteUserProblems(user.Id, cancellationToken);
+            
+            // Delete any remaining comments and ratings (in case they're not cascade deleted)
             await DeleteUserComments(user.Id, cancellationToken);
             await DeleteUserRatings(user.Id, cancellationToken);
             
@@ -79,6 +83,16 @@ public class DeleteUserCommandHandler(
         
         foreach (var problem in userProblems)
         {
+            // Delete problem images from file system
+            foreach (var image in problem.Images)
+            {
+                if (!string.IsNullOrEmpty(image.FilePath))
+                {
+                    await imageService.DeleteImageAsync(image.FilePath);
+                }
+            }
+
+            // Delete the problem - EF Core will cascade delete comments and ratings
             await problemRepository.Delete(problem, cancellationToken);
         }
     }

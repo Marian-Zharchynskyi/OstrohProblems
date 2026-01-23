@@ -116,7 +116,7 @@ export function CreateIssuePage() {
   const isSubmitting = createMutation.isPending || uploadImagesMutation.isPending
 
   // Input styles
-  const inputBaseClasses = "w-full bg-[#F5F6F7] border-[3px] border-[#E5E5E5] rounded-[10px] px-4 text-sm focus:border-[#B0B0B0] focus:ring-0 transition-all outline-none placeholder:text-gray-400"
+  const inputBaseClasses = "w-full bg-[#F5F6F7] border-none rounded-[10px] px-4 text-sm focus:ring-0 transition-all outline-none placeholder:text-gray-400"
 
   return (
     <div className="w-full max-w-[1600px] mx-auto py-8 px-4 md:px-8 font-sans">

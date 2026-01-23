@@ -1,4 +1,5 @@
 using Application.Common;
+using Application.Common.Interfaces;
 using Application.Common.Interfaces.Repositories;
 using Application.Services.HashPasswordService;
 using Application.Users.Exceptions;
@@ -16,7 +17,8 @@ public record ChangePasswordCommand : IRequest<Result<User, UserException>>
 
 public class ChangePasswordCommandHandler(
     IUserRepository userRepository,
-    IHashPasswordService hashPasswordService)
+    IHashPasswordService hashPasswordService,
+    IClerkApiService clerkApiService)
     : IRequestHandler<ChangePasswordCommand, Result<User, UserException>>
 {
     public async Task<Result<User, UserException>> Handle(
@@ -50,6 +52,13 @@ public class ChangePasswordCommandHandler(
             var newPasswordHash = hashPasswordService.HashPassword(newPassword);
             user.UpdatePassword(newPasswordHash);
             var updatedUser = await userRepository.Update(user, cancellationToken);
+            
+            // Sync password with Clerk if user has a ClerkId
+            if (!string.IsNullOrEmpty(user.ClerkId))
+            {
+                await clerkApiService.UpdateUserPasswordAsync(user.ClerkId, newPassword);
+            }
+            
             return updatedUser;
         }
         catch (Exception exception)

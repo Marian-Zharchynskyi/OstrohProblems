@@ -28,6 +28,7 @@ import { Users, Trash2, Shield, Plus, Pencil } from 'lucide-react'
 export function AdminUsersPage() {
   const { tokens, getClerkToken } = useAuth()
   const [users, setUsers] = useState<UserDto[]>([])
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null)
   const [roles, setRoles] = useState<Role[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [deletingUserId, setDeletingUserId] = useState<string | null>(null)
@@ -63,11 +64,14 @@ export function AdminUsersPage() {
 
       try {
         setIsLoading(true)
-        const [usersData, rolesData] = await Promise.all([
+        const [currentUser, usersData, rolesData] = await Promise.all([
+          userService.getCurrentUser(token),
           userService.getAllUsers(token),
           rolesApi.getAll(token),
         ])
-        setUsers(usersData)
+        setCurrentUserId(currentUser.id)
+        // Filter out current user from the list
+        setUsers(usersData.filter(u => u.id !== currentUser.id))
         setRoles(rolesData)
       } catch (error) {
         console.error('Failed to load data:', error)
@@ -91,6 +95,7 @@ export function AdminUsersPage() {
     try {
       setDeletingUserId(userToDelete.id)
       await userService.deleteUser(userToDelete.id, token)
+      // Filter maintains exclusion of current user
       setUsers(users.filter((u) => u.id !== userToDelete.id))
       setDeleteDialogOpen(false)
       setUserToDelete(null)
@@ -114,7 +119,10 @@ export function AdminUsersPage() {
     try {
       setIsCreating(true)
       const newUser = await userService.createUser(createForm, token)
-      setUsers([...users, newUser])
+      // Only add if not current user (shouldn't happen, but for safety)
+      if (newUser.id !== currentUserId) {
+        setUsers([...users, newUser])
+      }
       setIsCreateDialogOpen(false)
       setCreateForm({ email: '', password: '', name: '', surname: '', roleId: '' })
     } catch (error) {
@@ -295,14 +303,14 @@ export function AdminUsersPage() {
                             <Pencil className="w-4 h-4 text-[#292929]" />
                           </Button>
                           <Button
-                            variant="destructive"
+                            variant="outline"
                             size="icon"
-                            className="h-9 w-9 bg-[#E42556] hover:bg-[#E42556]/90 text-white disabled:bg-[#E42556]/80 disabled:text-white"
+                            className="h-9 w-9 border border-red-200 bg-white hover:bg-red-50 disabled:bg-white"
                             onClick={() => handleOpenDeleteDialog(user)}
                             disabled={deletingUserId === user.id}
                             title="Видалити"
                           >
-                            <Trash2 className="w-4 h-4 text-white" />
+                            <Trash2 className="w-4 h-4 text-red-600" />
                           </Button>
                         </div>
                       </TableCell>

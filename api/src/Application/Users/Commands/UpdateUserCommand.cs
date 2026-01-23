@@ -55,14 +55,31 @@ public class UpdateUserCommandHandle(
     {
         try
         {
+            // Check if email is being changed and if user has ClerkId
+            bool emailChanged = user.Email != email;
+            
+            // If email is being changed and user has Clerk account, try to update Clerk first
+            if (emailChanged && !string.IsNullOrEmpty(user.ClerkId))
+            {
+                try
+                {
+                    await clerkApiService.UpdateUserAsync(user.ClerkId, name, surname, email);
+                }
+                catch (InvalidOperationException ex) when (ex.Message == "OAUTH_EMAIL_CANNOT_BE_CHANGED")
+                {
+                    // OAuth email cannot be changed - return error without updating DB
+                    return new OAuthEmailCannotBeChangedException(user.Id);
+                }
+            }
+            
+            // Update user in database
             user.UpdateUser(email, name, surname, phoneNumber);
-
             var updatedUser = await userRepository.Update(user, cancellationToken);
             
-            // Sync with Clerk if user has a ClerkId
-            if (!string.IsNullOrEmpty(user.ClerkId))
+            // If email wasn't changed but other fields were, still sync with Clerk
+            if (!emailChanged && !string.IsNullOrEmpty(user.ClerkId))
             {
-                await clerkApiService.UpdateUserAsync(user.ClerkId, name, surname, email);
+                await clerkApiService.UpdateUserAsync(user.ClerkId, name, surname, null);
             }
             
             return updatedUser;

@@ -1,4 +1,4 @@
-import { useState, useEffect, type CSSProperties } from 'react'
+import { useState, useEffect, useRef, type CSSProperties } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '@/contexts/auth-context'
 import { userService } from '@/services/user.service'
@@ -7,8 +7,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { User, FileText } from 'lucide-react'
+import { User, FileText, Eye, EyeOff } from 'lucide-react'
 import { designSystem } from '@/lib/design-system'
+import { toast } from '@/lib/toast'
 
 export function ProfilePage() {
   const { getClerkToken, signOut } = useAuth()
@@ -26,15 +27,19 @@ export function ProfilePage() {
     currentPassword: '',
     newPassword: '',
   })
+  const [hasPassword, setHasPassword] = useState(true)
   const [deleteConfirmation, setDeleteConfirmation] = useState(false)
   const [passwordError, setPasswordError] = useState('')
   const [passwordSuccess, setPasswordSuccess] = useState('')
   const [isBasicInfoEditing, setIsBasicInfoEditing] = useState(false)
   const [isSecurityEditing, setIsSecurityEditing] = useState(false)
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false)
+  const [showNewPassword, setShowNewPassword] = useState(false)
+  const hasLoadedRef = useRef(false)
 
   useEffect(() => {
     const loadUserDetails = async () => {
-      if (!getClerkToken) return
+      if (!getClerkToken || hasLoadedRef.current) return
 
       try {
         setIsLoading(true)
@@ -52,8 +57,13 @@ export function ProfilePage() {
           surname: data.surname || '',
           phoneNumber: data.phoneNumber || '',
         })
+
+        // Set hasPassword from API response - OAuth users may not have one
+        setHasPassword(data.hasPassword ?? true)
+        hasLoadedRef.current = true
       } catch (error) {
         console.error('Failed to load user details:', error)
+        toast.error('Не вдалося завантажити дані профілю')
       } finally {
         setIsLoading(false)
       }
@@ -77,8 +87,21 @@ export function ProfilePage() {
       )
       setUserDetails(updated)
       setIsBasicInfoEditing(false)
-    } catch (error) {
+      toast.success('Профіль успішно оновлено')
+    } catch (error: any) {
       console.error('Failed to update user:', error)
+
+      // Parse error message
+      const errorMessage = error?.response?.data?.title || error?.message || 'Не вдалося оновити профіль'
+
+      // Check for specific errors
+      if (errorMessage.includes('OAuth') || errorMessage.includes('linked to OAuth provider')) {
+        toast.error('Email пов\'язаний з OAuth провайдером (Google, Facebook) і не може бути змінений через додаток. Оновіть його через налаштування вашого облікового запису провайдера.')
+      } else if (errorMessage.includes('already exists')) {
+        toast.error('Користувач з такою поштою вже існує')
+      } else {
+        toast.error(errorMessage)
+      }
     } finally {
       setIsSaving(false)
     }
@@ -86,8 +109,9 @@ export function ProfilePage() {
 
   const handlePasswordChange = async () => {
     if (!userDetails || !getClerkToken) return
-    if (!passwordData.currentPassword || !passwordData.newPassword) {
-      setPasswordError('Заповніть обидва поля паролю')
+
+    if (!passwordData.newPassword) {
+      setPasswordError('Введіть новий пароль')
       return
     }
     if (passwordData.newPassword.length < 8) {
@@ -102,17 +126,51 @@ export function ProfilePage() {
       const token = await getClerkToken()
       if (!token) return
 
-      await userService.changePassword(
-        userDetails.id,
-        {
-          currentPassword: passwordData.currentPassword,
-          newPassword: passwordData.newPassword,
-        },
-        token
-      )
-      setPasswordSuccess('Пароль успішно змінено')
-      setPasswordData({ currentPassword: '', newPassword: '' })
-      setIsSecurityEditing(false)
+      // Try to change password first (for users with existing password)
+      if (passwordData.currentPassword) {
+        try {
+          await userService.changePassword(
+            userDetails.id,
+            {
+              currentPassword: passwordData.currentPassword,
+              newPassword: passwordData.newPassword,
+            },
+            token
+          )
+          setPasswordSuccess('Пароль успішно змінено')
+          setPasswordData({ currentPassword: '', newPassword: '' })
+          setHasPassword(true)
+          setIsSecurityEditing(false)
+        } catch (error: unknown) {
+          // If error indicates invalid password, user might not have a password set
+          const axiosError = error as { response?: { status: number } };
+          if (axiosError.response?.status === 400 || axiosError.response?.status === 404) {
+            // Try setting password instead
+            await userService.setPassword(
+              userDetails.id,
+              { newPassword: passwordData.newPassword },
+              token
+            )
+            setPasswordSuccess('Пароль успішно створено')
+            setPasswordData({ currentPassword: '', newPassword: '' })
+            setHasPassword(true)
+            setIsSecurityEditing(false)
+          } else {
+            throw error
+          }
+        }
+      } else {
+        // No current password provided, try to set password (for OAuth users)
+        await userService.setPassword(
+          userDetails.id,
+          { newPassword: passwordData.newPassword },
+          token
+        )
+        setPasswordSuccess('Пароль успішно створено')
+        setPasswordData({ currentPassword: '', newPassword: '' })
+        setHasPassword(true)
+        setIsSecurityEditing(false)
+      }
     } catch (error) {
       setPasswordError('Не вдалося змінити пароль. Перевірте поточний пароль.')
       console.error('Failed to change password:', error)
@@ -286,7 +344,7 @@ export function ProfilePage() {
                 }
                 setIsBasicInfoEditing(!isBasicInfoEditing)
               }}
-              className={`p-0 bg-transparent border-none shadow-none transition-opacity ${isBasicInfoEditing ? 'opacity-100 brightness-75' : 'opacity-100 hover:opacity-80'}`}
+              className={`p-0 bg-transparent border-none shadow-none outline-none focus:outline-none transition-opacity ${isBasicInfoEditing ? 'opacity-100 brightness-75' : 'opacity-100 hover:opacity-80'}`}
             >
               <img src="/icons/pen.png" alt="Edit" className="w-5 h-5 cursor-pointer" />
             </button>
@@ -378,45 +436,71 @@ export function ProfilePage() {
                   setPasswordData({ currentPassword: '', newPassword: '' })
                   setPasswordError('')
                   setPasswordSuccess('')
+                  setShowCurrentPassword(false)
+                  setShowNewPassword(false)
                 }
                 setIsSecurityEditing(!isSecurityEditing)
               }}
-              className={`p-0 bg-transparent border-none shadow-none transition-opacity ${isSecurityEditing ? 'opacity-100 brightness-75' : 'opacity-100 hover:opacity-80'}`}
+              className={`p-0 bg-transparent border-none shadow-none outline-none focus:outline-none transition-opacity ${isSecurityEditing ? 'opacity-100 brightness-75' : 'opacity-100 hover:opacity-80'}`}
             >
               <img src="/icons/pen.png" alt="Edit" className="w-5 h-5 cursor-pointer" />
             </button>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 gap-x-4 gap-y-8 mb-8">
-              <div>
-                <Label htmlFor="currentPassword" className="block text-sm font-medium text-gray-700 mb-3">
-                  Поточний пароль <span className="text-[#E42556]">*</span>
-                </Label>
-                <Input
-                  id="currentPassword"
-                  type="password"
-                  autoComplete="new-password"
-                  value={passwordData.currentPassword}
-                  onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
-                  className="bg-[#F0F1F2] border-none rounded-lg placeholder-[#8C8C8C] placeholder:font-['Mulish'] placeholder:font-medium"
-                  disabled={!isSecurityEditing || isSaving}
-                  placeholder="Введіть тут"
-                />
-              </div>
-              <div>
+              {hasPassword && (
+                <div>
+                  <Label htmlFor="currentPassword" className="block text-sm font-medium text-gray-700 mb-3">
+                    Поточний пароль <span className="text-[#E42556]">*</span>
+                  </Label>
+                  <div className="relative">
+                    <Input
+                      id="currentPassword"
+                      type={showCurrentPassword ? "text" : "password"}
+                      autoComplete="current-password"
+                      value={passwordData.currentPassword}
+                      onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
+                      className="bg-[#F0F1F2] border-none rounded-lg placeholder-[#8C8C8C] placeholder:font-['Mulish'] placeholder:font-medium pr-10"
+                      disabled={!isSecurityEditing || isSaving}
+                      placeholder="Введіть тут"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none bg-transparent border-none p-0"
+                      disabled={!isSecurityEditing || isSaving}
+                      tabIndex={-1}
+                    >
+                      {showCurrentPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
+                  </div>
+                </div>
+              )}
+              <div className={hasPassword ? '' : 'col-span-2'}>
                 <Label htmlFor="newPassword" className="block text-sm font-medium text-gray-700 mb-3">
-                  Новий пароль <span className="text-[#E42556]">*</span>
+                  {hasPassword ? 'Новий пароль' : 'Створіть пароль'} <span className="text-[#E42556]">*</span>
                 </Label>
-                <Input
-                  id="newPassword"
-                  type="password"
-                  autoComplete="new-password"
-                  value={passwordData.newPassword}
-                  onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
-                  className="bg-[#F0F1F2] border-none rounded-lg placeholder-[#8C8C8C] placeholder:font-['Mulish'] placeholder:font-medium"
-                  disabled={!isSecurityEditing || isSaving}
-                  placeholder="Введіть тут"
-                />
+                <div className="relative">
+                  <Input
+                    id="newPassword"
+                    type={showNewPassword ? "text" : "password"}
+                    autoComplete="new-password"
+                    value={passwordData.newPassword}
+                    onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
+                    className="bg-[#F0F1F2] border-none rounded-lg placeholder-[#8C8C8C] placeholder:font-['Mulish'] placeholder:font-medium pr-10"
+                    disabled={!isSecurityEditing || isSaving}
+                    placeholder="Введіть тут"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowNewPassword(!showNewPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none bg-transparent border-none p-0"
+                    disabled={!isSecurityEditing || isSaving}
+                    tabIndex={-1}
+                  >
+                    {showNewPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -433,7 +517,9 @@ export function ProfilePage() {
 
             <div className="flex justify-between items-center mt-6">
               <p className="text-sm font-extrabold text-[#1F2732] font-['Mulish']">
-                Введіть існуючий пароль, щоб створити новий
+                {hasPassword
+                  ? 'Введіть існуючий пароль, щоб створити новий'
+                  : 'Створіть пароль для можливості входу через email'}
               </p>
               {isSecurityEditing && (
                 <Button
