@@ -1,6 +1,26 @@
 import { SignIn } from '@clerk/clerk-react'
+import { useNavigate } from 'react-router-dom'
+import { useEffect } from 'react'
+import { useAuth } from '@/contexts/auth-context'
 
 export function ClerkLoginPage() {
+  const navigate = useNavigate()
+  const { user, isAuthenticated, isLoading } = useAuth()
+
+  useEffect(() => {
+    if (isAuthenticated && user && !isLoading) {
+      const userRole = user.roles?.[0]
+
+      if (userRole === 'Administrator') {
+        navigate('/dashboard', { replace: true })
+      } else if (userRole === 'Coordinator') {
+        navigate('/coordinator', { replace: true })
+      } else {
+        navigate('/map', { replace: true })
+      }
+    }
+  }, [isAuthenticated, user, isLoading, navigate])
+
   return (
     <div className="min-h-screen w-full flex items-center justify-center bg-[#F5F5F5] p-4">
       <div className="flex flex-col md:flex-row w-full max-w-[1100px] overflow-hidden rounded-2xl shadow-[0_20px_60px_-15px_rgba(0,0,0,0.3)] bg-white min-h-[700px]">
@@ -22,7 +42,7 @@ export function ClerkLoginPage() {
           <div className="w-full max-w-md">
             <SignIn
               signUpUrl="/register"
-              fallbackRedirectUrl="/map"
+              forceRedirectUrl="/map"
               appearance={{
                 layout: {
                   socialButtonsPlacement: 'top',
