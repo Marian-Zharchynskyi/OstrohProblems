@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import type { Problem, CreateProblem } from '@/types'
+import { PriorityConstants } from '@/types'
 import { FormField } from '@/components/shared/form-field'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
@@ -10,7 +11,15 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+import { Info } from 'lucide-react'
 import { CATEGORIES } from '@/constants/categories'
+
+const PRIORITIES = [
+  { value: PriorityConstants.Low, label: 'Низький' },
+  { value: PriorityConstants.Medium, label: 'Середній' },
+  { value: PriorityConstants.High, label: 'Високий' },
+  { value: PriorityConstants.Critical, label: 'Критичний' },
+]
 
 interface ProblemFormProps {
   open: boolean
@@ -33,6 +42,7 @@ export function ProblemForm({
     longitude: 0,
     description: '',
     categoryNames: [],
+    priority: PriorityConstants.Medium,
   })
 
   useEffect(() => {
@@ -43,6 +53,7 @@ export function ProblemForm({
         longitude: initialData.longitude,
         description: initialData.description,
         categoryNames: initialData.categories || [],
+        priority: initialData.priority || PriorityConstants.Medium,
       })
     } else {
       setFormData({
@@ -51,6 +62,7 @@ export function ProblemForm({
         longitude: 0,
         description: '',
         categoryNames: [],
+        priority: PriorityConstants.Medium,
       })
     }
   }, [initialData, open])
@@ -74,58 +86,87 @@ export function ProblemForm({
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
-            {initialData ? 'Edit Problem' : 'Create Problem'}
+            {initialData ? 'Редагувати проблему' : 'Створити проблему'}
           </DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit}>
           <div className="space-y-4 py-4">
-            <FormField
-              label="Title"
-              name="title"
-              value={formData.title}
-              onChange={(value) =>
-                setFormData({ ...formData, title: value as string })
-              }
-              required
-              placeholder="Enter problem title"
-            />
-
-            <FormField
-              label="Description"
-              name="description"
-              type="textarea"
-              value={formData.description}
-              onChange={(value) =>
-                setFormData({ ...formData, description: value as string })
-              }
-              required
-              placeholder="Enter problem description"
-            />
-
-            <div className="grid grid-cols-2 gap-4">
+            <div className="mt-6">
               <FormField
-                label="Latitude"
-                name="latitude"
-                type="number"
-                value={formData.latitude}
+                label="Заголовок"
+                name="title"
+                value={formData.title}
                 onChange={(value) =>
-                  setFormData({ ...formData, latitude: value as number })
+                  setFormData({ ...formData, title: value as string })
                 }
                 required
-                placeholder="Enter latitude"
+                placeholder="Введіть заголовок проблеми"
               />
+            </div>
 
+            <div className="mt-6">
               <FormField
-                label="Longitude"
-                name="longitude"
-                type="number"
-                value={formData.longitude}
+                label="Опис"
+                name="description"
+                type="textarea"
+                value={formData.description}
                 onChange={(value) =>
-                  setFormData({ ...formData, longitude: value as number })
+                  setFormData({ ...formData, description: value as string })
                 }
                 required
-                placeholder="Enter longitude"
+                placeholder="Введіть опис проблеми"
               />
+            </div>
+
+            {!initialData && (
+              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  label="Широта"
+                  name="latitude"
+                  type="number"
+                  value={formData.latitude}
+                  onChange={(value) =>
+                    setFormData({ ...formData, latitude: value as number })
+                  }
+                  required
+                  placeholder="Введіть широту"
+                />
+
+                <FormField
+                  label="Довгота"
+                  name="longitude"
+                  type="number"
+                  value={formData.longitude}
+                  onChange={(value) =>
+                    setFormData({ ...formData, longitude: value as number })
+                  }
+                  required
+                  placeholder="Введіть довготу"
+                />
+              </div>
+            )}
+
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <Label>Пріоритет</Label>
+                <span
+                  title="Пріоритет може бути змінений координатором під час валідації проблеми"
+                  className="cursor-help"
+                >
+                  <Info className="h-4 w-4 text-gray-400" />
+                </span>
+              </div>
+              <select
+                value={formData.priority || PriorityConstants.Medium}
+                onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
+                className="w-full border rounded-md p-2 bg-white"
+              >
+                {PRIORITIES.map((priority) => (
+                  <option key={priority.value} value={priority.value}>
+                    {priority.label}
+                  </option>
+                ))}
+              </select>
             </div>
 
             <div className="space-y-2">
@@ -157,11 +198,12 @@ export function ProblemForm({
               variant="outline"
               onClick={() => onOpenChange(false)}
               disabled={isLoading}
+              className="border border-[#D0D5DD] text-[#292929] bg-transparent hover:bg-[#F5F5F5] hover:text-[#292929] focus:outline-none focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0"
             >
-              Cancel
+              Скасувати
             </Button>
             <Button type="submit" disabled={isLoading}>
-              {isLoading ? 'Saving...' : 'Save'}
+              {isLoading ? 'Збереження...' : 'Зберегти'}
             </Button>
           </DialogFooter>
         </form>

@@ -9,6 +9,7 @@ public interface IRatingRepository
 {
     Task<Option<Rating>> GetById(RatingId id, CancellationToken cancellationToken);
     Task<Option<Rating>> GetByUserAndProblem(UserId userId, ProblemId problemId, CancellationToken cancellationToken);
+    Task<IReadOnlyList<Rating>> GetByCreatedBy(UserId userId, CancellationToken cancellationToken);
     Task<Rating> Add(Rating rating, CancellationToken cancellationToken);
     Task<Rating> Update(Rating rating, CancellationToken cancellationToken);
     Task<Rating> Delete(Rating rating, CancellationToken cancellationToken);

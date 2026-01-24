@@ -13,4 +13,5 @@ public interface IUserRepository
     Task<Option<User>> GetById(UserId id, CancellationToken cancellationToken);
     Task<Option<User>> SearchByEmail(string email, CancellationToken cancellationToken);
     Task<Option<User>> SearchByEmailForUpdate(UserId userId, string email, CancellationToken cancellationToken);
+    Task<Option<User>> SearchByClerkId(string clerkId, CancellationToken cancellationToken);
 }

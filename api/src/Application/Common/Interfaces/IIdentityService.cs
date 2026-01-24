@@ -9,4 +9,5 @@ public interface IIdentityService
     Option<string> GetUserEmail();
     Option<string> GetUserName();
     Option<string[]> GetUserRoles();
+    bool IsUserInRole(string role);
 }

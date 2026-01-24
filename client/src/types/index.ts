@@ -3,6 +3,10 @@ export interface PagedResult<T> {
   totalCount: number
   page: number
   pageSize: number
+  currentPage?: number
+  totalPages?: number
+  hasNextPage?: boolean
+  hasPreviousPage?: boolean
 }
 
 
@@ -14,6 +18,30 @@ export const ProblemStatusConstants = {
 } as const
 
 export type ProblemStatusType = (typeof ProblemStatusConstants)[keyof typeof ProblemStatusConstants]
+
+export const PriorityConstants = {
+  Low: 'Низький',
+  Medium: 'Середній',
+  High: 'Високий',
+  Critical: 'Критичний',
+} as const
+
+export type PriorityType = (typeof PriorityConstants)[keyof typeof PriorityConstants]
+
+export const CategoryConstants = {
+  Roads: 'Дороги',
+  Lighting: 'Освітлення',
+  Garbage: 'Сміття',
+  Water: 'Водопостачання',
+  PublicTransport: 'Громадський транспорт',
+  Parks: 'Парки та зелені зони',
+  Safety: 'Безпека',
+  Noise: 'Шум',
+  Animals: 'Тварини',
+  Other: 'Інше',
+} as const
+
+export type CategoryType = (typeof CategoryConstants)[keyof typeof CategoryConstants]
 
 export interface Comment {
   id: string | null
@@ -52,6 +80,24 @@ export interface CoordinatorImage {
   url: string
 }
 
+export interface ProblemSummary {
+  id: string | null
+  title: string
+  latitude: number
+  longitude: number
+  description: string
+  status: string
+  priority: string
+  createdBy: User | null
+  categories: string[] | null
+  createdAt: string
+  updatedAt: string
+  currentState?: string | null
+  rejectionReason?: string | null
+  coordinatorComment?: string | null
+  coordinator?: User | null
+}
+
 export interface Problem {
   id: string | null
   title: string
@@ -59,6 +105,7 @@ export interface Problem {
   longitude: number
   description: string
   status: string
+  priority: string
   createdBy: User | null
   coordinator: User | null
   rejectionReason: string | null
@@ -78,6 +125,7 @@ export interface CreateProblem {
   longitude: number
   description: string
   categoryNames: string[]
+  priority?: string
 }
 
 export interface CreateProblemResponse {
@@ -92,8 +140,8 @@ export interface CreateProblemResponse {
 export interface User {
   id: string | null
   email: string
-  firstName: string
-  lastName: string
+  name: string
+  surname: string
   userImage: UserImage | null
 }
 

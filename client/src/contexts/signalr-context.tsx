@@ -5,7 +5,7 @@ import type { Notification, Comment } from '@/types'
 import { SignalRContext } from './signalr-context'
 
 export function SignalRProvider({ children }: { children: ReactNode }) {
-  const { user, tokens } = useAuth()
+  const { user, getClerkToken } = useAuth()
   const [isConnected, setIsConnected] = useState(false)
   const [notifications, setNotifications] = useState<Notification[]>([])
   const problemsUpdatedCallbackRef = useRef<(() => void) | null>(null)
@@ -15,19 +15,31 @@ export function SignalRProvider({ children }: { children: ReactNode }) {
   )
 
   useEffect(() => {
-    if (user && tokens?.accessToken) {
+    if (user && getClerkToken) {
       const initializeConnections = async () => {
         try {
+          // Get Clerk token
+          const token = await getClerkToken()
+          if (!token) {
+            console.error('No Clerk token available')
+            return
+          }
+
+          console.log('Initializing SignalR connections...')
+
           // Initialize both hubs
-          await signalRService.initializeCommentsHub(tokens.accessToken)
-          await signalRService.initializeNotificationsHub(tokens.accessToken)
+          await signalRService.initializeCommentsHub(token)
+          await signalRService.initializeNotificationsHub(token)
 
           // Join user group for notifications
-          if (!isCoordinatorOrAdmin && user.id) {
+          if (user.id) {
+            console.log('Joining user group:', user.id)
             await signalRService.joinUserGroup(user.id)
           }
+
           // Subscribe to notifications (only for regular users)
           signalRService.onNotificationReceived((notification) => {
+            console.log('Notification received:', notification)
             if (!isCoordinatorOrAdmin) {
               setNotifications((prev) => [notification, ...prev])
             }
@@ -41,6 +53,7 @@ export function SignalRProvider({ children }: { children: ReactNode }) {
           })
 
           setIsConnected(true)
+          console.log('SignalR connections established successfully')
         } catch (error) {
           console.error('Failed to initialize SignalR:', error)
           setIsConnected(false)
@@ -54,7 +67,7 @@ export function SignalRProvider({ children }: { children: ReactNode }) {
         setIsConnected(false)
       }
     }
-  }, [user, tokens, isCoordinatorOrAdmin])
+  }, [user, getClerkToken, isCoordinatorOrAdmin])
 
   const joinProblemGroup = useCallback(async (problemId: string) => {
     await signalRService.joinProblemGroup(problemId)
@@ -84,6 +97,11 @@ export function SignalRProvider({ children }: { children: ReactNode }) {
       prev.map((n) => (n.id === notificationId ? { ...n, isRead: true } : n))
     )
   }, [])
+  const markAllAsRead = useCallback(() => {
+    setNotifications((prev) =>
+      prev.map((n) => ({ ...n, isRead: true }))
+    )
+  }, [])
 
   const clearNotifications = useCallback(() => {
     setNotifications([])
@@ -102,6 +120,7 @@ export function SignalRProvider({ children }: { children: ReactNode }) {
         notifications,
         unreadCount,
         markAsRead,
+        markAllAsRead,
         clearNotifications,
       }}
     >

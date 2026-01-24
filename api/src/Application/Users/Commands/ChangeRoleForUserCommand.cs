@@ -1,4 +1,5 @@
 using Application.Common;
+using Application.Common.Interfaces;
 using Application.Common.Interfaces.Queries;
 using Application.Common.Interfaces.Repositories;
 using Application.Users.Exceptions;
@@ -16,7 +17,8 @@ public record ChangeRoleForUserCommand : IRequest<Result<User, UserException>>
 
 public class ChangeRolesForUserCommandHandler(
     IUserRepository userRepository,
-    IRoleQueries roleQueries)
+    IRoleQueries roleQueries,
+    IClerkApiService clerkApiService)
     : IRequestHandler<ChangeRoleForUserCommand, Result<User, UserException>>
 {
     public async Task<Result<User, UserException>> Handle(
@@ -49,7 +51,18 @@ public class ChangeRolesForUserCommandHandler(
         try
         {
             user.SetRole(role.Id);
-            return await userRepository.Update(user, cancellationToken);
+            var updatedUser = await userRepository.Update(user, cancellationToken);
+            
+            // Sync role with Clerk if user has a ClerkId
+            if (!string.IsNullOrEmpty(user.ClerkId))
+            {
+                await clerkApiService.UpdateUserMetadataAsync(user.ClerkId, new Dictionary<string, object>
+                {
+                    { "role", role.Name }
+                });
+            }
+            
+            return updatedUser;
         }
         catch (Exception exception)
         {

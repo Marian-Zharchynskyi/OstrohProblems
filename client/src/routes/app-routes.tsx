@@ -1,14 +1,11 @@
-import { Routes, Route } from 'react-router-dom'
+import { Routes, Route, Navigate } from 'react-router-dom'
 import { Layout } from '@/components/shared/layout'
 import { ProtectedRoute } from '@/components/auth/protected-route'
 import { PublicRoute } from '@/components/auth/public-route'
-import { PublicHomePage } from '@/pages/public-home-page'
-import { AboutPage } from '@/pages/about-page'
-import { ContactPage } from '@/pages/contact-page'
 import { ErrorPage } from '@/pages/error-page'
 import { HomePage } from '@/pages/home-page'
-import { LoginPage } from '@/pages/login-page'
-import { RegisterPage } from '@/pages/register-page'
+import { ClerkLoginPage } from '@/pages/clerk-login-page'
+import { ClerkRegisterPage } from '@/pages/clerk-register-page'
 import { ProblemsPage } from '@/pages/problems-page'
 import { CommentsPage } from '@/pages/comments-page'
 import { RatingsPage } from '@/pages/ratings-page'
@@ -17,50 +14,31 @@ import { ProfilePage } from '@/pages/profile-page'
 import { AdminUsersPage } from '@/pages/admin-users-page'
 import { CreateIssuePage } from '@/pages/create-issue-page'
 import { ProblemDetailPage } from '@/pages/problem-detail-page'
-import { MyProblemsPage } from '@/pages/my-problems-page'
+import { ProblemCommentsPage } from '@/pages/problem-comments-page'
+import { MySubmittedProblemsPageWithTabs } from '@/pages/my-submitted-problems-page-with-tabs'
 import CoordinatorPage from '@/pages/coordinator-page'
+import CoordinatorUpdatePage from '@/pages/coordinator-update-page'
 
 export function AppRoutes() {
   return (
     <Routes>
-      {/* Public routes with layout */}
+      {/* Root redirect */}
+      <Route path="/" element={<Navigate to="/map" replace />} />
+
+      {/* Public routes - landing pages moved to Next.js landing project */}
       <Route
-        path="/"
-        element={
-          <Layout>
-            <PublicHomePage />
-          </Layout>
-        }
-      />
-      <Route
-        path="/about"
-        element={
-          <Layout>
-            <AboutPage />
-          </Layout>
-        }
-      />
-      <Route
-        path="/contact"
-        element={
-          <Layout>
-            <ContactPage />
-          </Layout>
-        }
-      />
-      <Route
-        path="/login"
+        path="/login/*"
         element={
           <PublicRoute>
-            <LoginPage />
+            <ClerkLoginPage />
           </PublicRoute>
         }
       />
       <Route
-        path="/register"
+        path="/register/*"
         element={
           <PublicRoute>
-            <RegisterPage />
+            <ClerkRegisterPage />
           </PublicRoute>
         }
       />
@@ -136,14 +114,24 @@ export function AppRoutes() {
           </ProtectedRoute>
         }
       />
+      <Route
+        path="/coordinator/problems/:id/update"
+        element={
+          <ProtectedRoute allowedRoles={['Coordinator']}>
+            <Layout>
+              <CoordinatorUpdatePage />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
 
       {/* User routes */}
       <Route
-        path="/my-problems"
+        path="/problems/my"
         element={
-          <ProtectedRoute allowedRoles={['User']}>
+          <ProtectedRoute allowedRoles={['User']} redirectTo="/map">
             <Layout>
-              <MyProblemsPage />
+              <MySubmittedProblemsPageWithTabs />
             </Layout>
           </ProtectedRoute>
         }
@@ -166,6 +154,16 @@ export function AppRoutes() {
           <ProtectedRoute>
             <Layout>
               <ProblemDetailPage />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/problems/:id/comments"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <ProblemCommentsPage />
             </Layout>
           </ProtectedRoute>
         }

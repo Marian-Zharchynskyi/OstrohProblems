@@ -20,7 +20,7 @@ namespace API.Controllers;
 [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
 public class UsersController(ISender sender, IUserQueries userQueries, IIdentityService identityService, IImageService imageService) : ControllerBase
 {
-    [Authorize(Roles = $"{RoleNames.Admin},{RoleNames.User}")]
+    [Authorize(Roles = $"{RoleNames.Admin},{RoleNames.User},{RoleNames.Coordinator}")]
     [HttpGet("current")]
     public async Task<ActionResult<UserDto>> GetCurrentUser(CancellationToken cancellationToken)
     {
@@ -76,7 +76,8 @@ public class UsersController(ISender sender, IUserQueries userQueries, IIdentity
         {
             Email = createUserDto.Email,
             Password = createUserDto.Password,
-            FullName = createUserDto.FullName,
+            Name = createUserDto.Name,
+            Surname = createUserDto.Surname,
             RoleId = createUserDto.RoleId
         };
 
@@ -98,21 +99,35 @@ public class UsersController(ISender sender, IUserQueries userQueries, IIdentity
             () => NotFound());
     }
     
-    [Authorize(Roles = RoleNames.Admin)]
+    [Authorize(Roles = $"{RoleNames.Admin},{RoleNames.User},{RoleNames.Coordinator}")]
     [HttpDelete("delete/{userId:guid}")]
     public async Task<ActionResult<UserDto>>
         Delete([FromRoute] Guid userId, CancellationToken cancellationToken)
     {
-        var input = new DeleteUserCommand()
-        {
-            UserId = userId
-        };
+        var currentUserIdOption = identityService.GetUserId();
+        
+        return await currentUserIdOption.Match(
+            async currentUserId =>
+            {
+                var isAdmin = identityService.IsUserInRole(RoleNames.Admin);
+                if (!isAdmin && currentUserId.Value != userId)
+                {
+                    return Forbid();
+                }
+                
+                var input = new DeleteUserCommand()
+                {
+                    UserId = userId
+                };
 
-        var result = await sender.Send(input, cancellationToken);
+                var result = await sender.Send(input, cancellationToken);
 
-        return result.Match<ActionResult<UserDto>>(
-            c => UserDto.FromDomainModel(c, imageService.GetImageUrl),
-            e => e.ToObjectResult());
+                return result.Match<ActionResult<UserDto>>(
+                    c => UserDto.FromDomainModel(c, imageService.GetImageUrl),
+                    e => e.ToObjectResult());
+            },
+            () => Task.FromResult<ActionResult<UserDto>>(Unauthorized())
+        );
     }
     
     [Authorize(Roles = RoleNames.Admin)]
@@ -135,7 +150,7 @@ public class UsersController(ISender sender, IUserQueries userQueries, IIdentity
             error => error.ToObjectResult());
     }
 
-    [Authorize(Roles = $"{RoleNames.Admin},{RoleNames.User}")]
+    [Authorize(Roles = $"{RoleNames.Admin},{RoleNames.User},{RoleNames.Coordinator}")]
     [HttpPut("image/{userId}")]
     public async Task<ActionResult<UserDto>> Upload(
         [FromRoute] Guid userId,
@@ -155,7 +170,7 @@ public class UsersController(ISender sender, IUserQueries userQueries, IIdentity
             e => e.ToObjectResult());
     }
 
-    [Authorize(Roles = $"{RoleNames.Admin},{RoleNames.User}")]
+    [Authorize(Roles = $"{RoleNames.Admin},{RoleNames.User},{RoleNames.Coordinator}")]
     [HttpDelete("image/{userId}")]
     public async Task<ActionResult<UserDto>> DeleteImage(
         [FromRoute] Guid userId,
@@ -173,7 +188,7 @@ public class UsersController(ISender sender, IUserQueries userQueries, IIdentity
             e => e.ToObjectResult());
     }
 
-    [Authorize(Roles = $"{RoleNames.Admin},{RoleNames.User}")]
+    [Authorize(Roles = $"{RoleNames.Admin},{RoleNames.User},{RoleNames.Coordinator}")]
     [HttpPut("update/{userId:guid}")]
     public async Task<ActionResult<UserDto>> UpdateUser(
         [FromRoute] Guid userId,
@@ -183,8 +198,51 @@ public class UsersController(ISender sender, IUserQueries userQueries, IIdentity
         var input = new UpdateUserCommand
         {
             UserId = userId,
-            UserName = user.UserName,
-            Email = user.Email
+            Email = user.Email,
+            Name = user.Name,
+            Surname = user.Surname,
+            PhoneNumber = user.PhoneNumber
+        };
+
+        var result = await sender.Send(input, cancellationToken);
+
+        return result.Match<ActionResult<UserDto>>(
+            u => UserDto.FromDomainModel(u, imageService.GetImageUrl),
+            e => e.ToObjectResult());
+    }
+
+    [Authorize(Roles = $"{RoleNames.Admin},{RoleNames.User},{RoleNames.Coordinator}")]
+    [HttpPut("change-password/{userId:guid}")]
+    public async Task<ActionResult<UserDto>> ChangePassword(
+        [FromRoute] Guid userId,
+        [FromBody] ChangePasswordDto request,
+        CancellationToken cancellationToken)
+    {
+        var input = new ChangePasswordCommand
+        {
+            UserId = userId,
+            CurrentPassword = request.CurrentPassword,
+            NewPassword = request.NewPassword
+        };
+
+        var result = await sender.Send(input, cancellationToken);
+
+        return result.Match<ActionResult<UserDto>>(
+            u => UserDto.FromDomainModel(u, imageService.GetImageUrl),
+            e => e.ToObjectResult());
+    }
+
+    [Authorize(Roles = $"{RoleNames.Admin},{RoleNames.User},{RoleNames.Coordinator}")]
+    [HttpPut("set-password/{userId:guid}")]
+    public async Task<ActionResult<UserDto>> SetPassword(
+        [FromRoute] Guid userId,
+        [FromBody] SetPasswordDto request,
+        CancellationToken cancellationToken)
+    {
+        var input = new SetPasswordCommand
+        {
+            UserId = userId,
+            NewPassword = request.NewPassword
         };
 
         var result = await sender.Send(input, cancellationToken);

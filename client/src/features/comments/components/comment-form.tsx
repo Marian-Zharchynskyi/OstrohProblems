@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import type { Comment, CreateComment } from '@/types'
 import { FormField } from '@/components/shared/form-field'
 import { Button } from '@/components/ui/button'
+import { Textarea } from '@/components/ui/textarea'
 import {
   Dialog,
   DialogContent,
@@ -16,6 +17,7 @@ interface CommentFormProps {
   onSubmit: (data: CreateComment, id?: string) => void
   initialData?: Comment | null
   isLoading?: boolean
+  problemId?: string | null
 }
 
 export function CommentForm({
@@ -24,6 +26,7 @@ export function CommentForm({
   onSubmit,
   initialData,
   isLoading,
+  problemId,
 }: CommentFormProps) {
   const [formData, setFormData] = useState<CreateComment>({
     content: '',
@@ -37,9 +40,9 @@ export function CommentForm({
         problemId: initialData.problemId,
       })
     } else {
-      setFormData({ content: '', problemId: '' })
+      setFormData({ content: '', problemId: problemId || '' })
     }
-  }, [initialData, open])
+  }, [initialData, open, problemId])
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -48,36 +51,34 @@ export function CommentForm({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent className="max-w-xl w-full [&>button]:focus:outline-none [&>button]:focus:ring-0 [&>button]:focus-visible:ring-0 [&>button]:focus-visible:ring-offset-0 [&>button]:border-0">
         <DialogHeader>
           <DialogTitle>
-            {initialData ? 'Edit Comment' : 'Create Comment'}
+            {initialData ? 'Редагувати коментар' : 'Створити коментар'}
           </DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit}>
           <div className="space-y-4 py-4">
             <FormField
-              label="Problem ID"
-              name="problemId"
-              value={formData.problemId}
-              onChange={(value) =>
-                setFormData({ ...formData, problemId: value as string })
-              }
-              required
-              placeholder="Enter problem ID"
-              disabled={!!initialData}
-            />
-            <FormField
-              label="Content"
+              label=""
               name="content"
               type="textarea"
               value={formData.content}
               onChange={(value) =>
                 setFormData({ ...formData, content: value as string })
               }
-              required
-              placeholder="Enter comment content"
-            />
+              placeholder="Введіть текст коментаря"
+            >
+              <Textarea
+                value={formData.content}
+                onChange={(e) =>
+                  setFormData({ ...formData, content: e.target.value })
+                }
+                placeholder="Введіть текст коментаря"
+                required
+                className="min-h-[140px] bg-white border border-[#D0D5DD] rounded-lg text-sm text-[#1F2732] placeholder:text-gray-400 focus-visible:ring-0 focus-visible:border-[#1F2732]"
+              />
+            </FormField>
           </div>
           <DialogFooter>
             <Button
@@ -85,11 +86,16 @@ export function CommentForm({
               variant="outline"
               onClick={() => onOpenChange(false)}
               disabled={isLoading}
+              className="border border-[#D0D5DD] text-[#292929] bg-transparent hover:bg-[#F5F5F5] hover:text-[#292929] focus:outline-none focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0"
             >
-              Cancel
+              Скасувати
             </Button>
-            <Button type="submit" disabled={isLoading}>
-              {isLoading ? 'Saving...' : 'Save'}
+            <Button 
+              type="submit" 
+              disabled={isLoading}
+              className="bg-[#E42556] hover:bg-[#E42556]/90 focus:outline-none focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+            >
+              {isLoading ? 'Оновлення...' : 'Оновити'}
             </Button>
           </DialogFooter>
         </form>

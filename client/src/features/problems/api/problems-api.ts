@@ -1,16 +1,16 @@
 import { apiClient } from '@/lib/api-client'
-import type { CreateProblem, CreateProblemResponse, Problem, PagedResult } from '@/types'
+import type { CreateProblem, CreateProblemResponse, Problem, ProblemSummary, PagedResult } from '@/types'
 
 const BASE_URL = '/problems'
 
 export const problemsApi = {
   getAll: async () => {
-    const response = await apiClient.get<Problem[]>(`${BASE_URL}/get-all`)
+    const response = await apiClient.get<ProblemSummary[]>(`${BASE_URL}/get-all`)
     return response.data
   },
 
   getForMap: async () => {
-    const response = await apiClient.get<Problem[]>(`${BASE_URL}/for-map`)
+    const response = await apiClient.get<ProblemSummary[]>(`${BASE_URL}/for-map`)
     return response.data
   },
 
@@ -62,10 +62,10 @@ export const problemsApi = {
     return response.data
   },
 
-  assignCoordinator: async (problemId: string, coordinatorId: string) => {
+  assignCoordinator: async (problemId: string, coordinatorId: string, priority?: string) => {
     const response = await apiClient.put<Problem>(
       `${BASE_URL}/assign-coordinator/${problemId}`,
-      coordinatorId
+      { coordinatorId, priority }
     )
     return response.data
   },
@@ -121,6 +121,33 @@ export const problemsApi = {
     return response.data
   },
 
+  getByUserFiltered: async (
+    userId: string,
+    filter: {
+      searchTerm?: string
+      status?: string
+      category?: string
+      priority?: string
+      sortBy?: string
+      sortDescending?: boolean
+      dateFilter?: string
+    }
+  ): Promise<Problem[]> => {
+    const params = new URLSearchParams()
+    if (filter.searchTerm) params.append('searchTerm', filter.searchTerm)
+    if (filter.status) params.append('status', filter.status)
+    if (filter.category) params.append('category', filter.category)
+    if (filter.priority) params.append('priority', filter.priority)
+    if (filter.sortBy) params.append('sortBy', filter.sortBy)
+    if (filter.sortDescending !== undefined) params.append('sortDescending', filter.sortDescending.toString())
+    if (filter.dateFilter) params.append('dateFilter', filter.dateFilter)
+
+    const queryString = params.toString()
+    const url = `${BASE_URL}/by-user-filtered/${userId}${queryString ? `?${queryString}` : ''}`
+    const response = await apiClient.get<Problem[]>(url)
+    return response.data
+  },
+
   uploadCoordinatorImages: async (id: string, files: FileList) => {
     const formData = new FormData()
     Array.from(files).forEach((file) => {
@@ -137,6 +164,30 @@ export const problemsApi = {
     const response = await apiClient.put<Problem>(
       `${BASE_URL}/delete-coordinator-image/${problemId}`,
       { coordinatorImageId: imageId }
+    )
+    return response.data
+  },
+
+  updateDescription: async (problemId: string, description: string) => {
+    const response = await apiClient.put<Problem>(
+      `${BASE_URL}/update-description/${problemId}`,
+      { description }
+    )
+    return response.data
+  },
+
+  updateTitleAndCategories: async (problemId: string, title: string, categoryNames?: string[]) => {
+    const response = await apiClient.put<Problem>(
+      `${BASE_URL}/update-title-and-categories/${problemId}`,
+      { title, categoryNames }
+    )
+    return response.data
+  },
+
+  updateLocation: async (problemId: string, latitude: number, longitude: number) => {
+    const response = await apiClient.put<Problem>(
+      `${BASE_URL}/update-location/${problemId}`,
+      { latitude, longitude }
     )
     return response.data
   },

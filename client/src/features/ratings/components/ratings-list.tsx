@@ -26,20 +26,19 @@ export function RatingsList() {
     {
       header: 'ID',
       accessor: 'id',
-      cell: (value) => String(value).substring(0, 8) + '...',
     },
     {
-      header: 'Points',
+      header: 'Бали',
       accessor: 'points',
     },
     {
-      header: 'User',
+      header: 'Користувач',
       accessor: (item) => item.user?.email || 'N/A',
     },
     {
-      header: 'Created At',
+      header: 'Створено',
       accessor: 'createdAt',
-      cell: (value) => new Date(String(value)).toLocaleDateString(),
+      cell: (value) => new Date(String(value)).toLocaleDateString('uk-UA'),
     },
   ]
 
@@ -62,14 +61,14 @@ export function RatingsList() {
     try {
       if (id) {
         await updateMutation.mutateAsync({ id, data })
-        toast.success('Rating updated successfully')
+        toast.success('Рейтинг успішно оновлено')
       } else {
         await createMutation.mutateAsync(data)
-        toast.success('Rating created successfully')
+        toast.success('Рейтинг успішно створено')
       }
       setIsFormOpen(false)
     } catch (error) {
-      toast.error('An error occurred: ' + error)
+      toast.error('Виникла помилка: ' + error)
     }
   }
 
@@ -78,20 +77,20 @@ export function RatingsList() {
 
     try {
       await deleteMutation.mutateAsync(selectedRating.id)
-      toast.success('Rating deleted successfully')
+      toast.success('Рейтинг успішно видалено')
       setIsDeleteOpen(false)
     } catch (error) {
-      toast.error('An error occurred: ' + error)
+      toast.error('Виникла помилка: ' + error)
     }
   }
 
   return (
     <div>
       <PageHeader
-        title="Ratings"
-        description="Manage problem ratings"
+        title="Рейтинги"
+        description="Управління рейтингами проблем"
         action={{
-          label: 'New Rating',
+          label: 'Новий рейтинг',
           onClick: handleCreate,
         }}
       />
@@ -102,7 +101,7 @@ export function RatingsList() {
         onEdit={handleEdit}
         onDelete={handleDelete}
         isLoading={isLoading}
-        emptyMessage="No ratings found"
+        emptyMessage="Рейтингів не знайдено"
       />
 
       <RatingForm
@@ -117,8 +116,8 @@ export function RatingsList() {
         open={isDeleteOpen}
         onOpenChange={setIsDeleteOpen}
         onConfirm={handleConfirmDelete}
-        title="Delete Rating"
-        description="Are you sure you want to delete this rating? This action cannot be undone."
+        title="Видалити рейтинг"
+        description="Ви впевнені, що хочете видалити цей рейтинг? Цю дію неможливо скасувати."
         isLoading={deleteMutation.isPending}
       />
     </div>

@@ -115,3 +115,21 @@ export function useProblemsByStatus(status: string) {
     enabled: !!status,
   })
 }
+
+export interface UserProblemsFilter {
+  searchTerm?: string
+  status?: string
+  category?: string
+  priority?: string
+  sortBy?: string
+  sortDescending?: boolean
+  dateFilter?: string
+}
+
+export function useProblemsByUserFiltered(userId: string, filter: UserProblemsFilter) {
+  return useQuery({
+    queryKey: [PROBLEMS_QUERY_KEY, 'by-user-filtered', userId, filter],
+    queryFn: () => problemsApi.getByUserFiltered(userId, filter),
+    enabled: !!userId,
+  })
+}

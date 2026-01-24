@@ -16,6 +16,7 @@ public record CreateProblemCommand : IRequest<Result<Problem, ProblemException>>
     public required double Longitude { get; init; }
     public required string Description { get; init; }
     public required List<string> CategoryNames { get; init; }
+    public string? Priority { get; init; }
 }
 
 public class CreateProblemCommandHandler : IRequestHandler<CreateProblemCommand, Result<Problem, ProblemException>>
@@ -48,6 +49,7 @@ public class CreateProblemCommandHandler : IRequestHandler<CreateProblemCommand,
                 request.Longitude,
                 request.Description,
                 request.CategoryNames,
+                request.Priority,
                 cancellationToken));
     }
 
@@ -57,13 +59,14 @@ public class CreateProblemCommandHandler : IRequestHandler<CreateProblemCommand,
         double longitude,
         string description,
         List<string> categoryNames,
+        string? priority,
         CancellationToken cancellationToken)
     {
         var problemId = ProblemId.New();
 
         try
         {
-            var userIdClaim = _httpContextAccessor.HttpContext?.User.Claims.FirstOrDefault(c => c.Type == "id");
+            var userIdClaim = _httpContextAccessor.HttpContext?.User.Claims.FirstOrDefault(c => c.Type == "user_id");
 
             if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userIdGuid))
             {
@@ -71,6 +74,7 @@ public class CreateProblemCommandHandler : IRequestHandler<CreateProblemCommand,
             }
 
             var userId = new UserId(userIdGuid);
+            var problemPriority = string.IsNullOrEmpty(priority) ? null : Priority.From(priority);
 
             var problem = Problem.New(
                 problemId,
@@ -78,7 +82,8 @@ public class CreateProblemCommandHandler : IRequestHandler<CreateProblemCommand,
                 latitude,
                 longitude,
                 description,
-                userId
+                userId,
+                problemPriority
             );
 
             if (categoryNames.Any())
