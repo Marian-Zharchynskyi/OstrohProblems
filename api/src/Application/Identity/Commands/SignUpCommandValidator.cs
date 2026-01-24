@@ -16,6 +16,10 @@ public class SignUpCommandValidator : AbstractValidator<SignUpCommand>
 
         RuleFor(u => u.Name)
             .NotEmpty().WithMessage("Enter your name")
-            .Must(name => name.Trim().Length > 0).WithMessage("Name cannot be empty or whitespace");
+            .WithMessage("Name cannot be empty or whitespace");
+            
+        RuleFor(u => u.Surname)
+            .NotEmpty().WithMessage("Enter your name")
+            .WithMessage("Name cannot be empty or whitespace");
     }
 }

@@ -73,4 +73,11 @@ public class CommentRepository(ApplicationDbContext context) : ICommentQueries, 
         await context.SaveChangesAsync(cancellationToken);
         return comment;
     }
+
+    public async Task<IReadOnlyList<Comment>> GetByCreatedBy(Domain.Identity.Users.UserId userId, CancellationToken cancellationToken)
+    {
+        return await context.Comments
+            .Where(x => x.UserId == userId)
+            .ToListAsync(cancellationToken);
+    }
 }

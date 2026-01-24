@@ -1,9 +1,11 @@
 using Application.Common;
+using Application.Common.Interfaces;
 using Application.Common.Interfaces.Repositories;
 using Application.Services.ImageService;
 using Application.Users.Exceptions;
 using Domain.Identity.Users;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 
 namespace Application.Users.Commands;
 
@@ -14,7 +16,11 @@ public record DeleteUserCommand : IRequest<Result<User, UserException>>
 
 public class DeleteUserCommandHandler(
     IUserRepository userRepository,
-    IImageService imageService)
+    IProblemRepository problemRepository,
+    ICommentRepository commentRepository,
+    IRatingRepository ratingRepository,
+    IImageService imageService,
+    IClerkApiService clerkApiService)
     : IRequestHandler<DeleteUserCommand, Result<User, UserException>>
 {
     public async Task<Result<User, UserException>> Handle(
@@ -43,11 +49,71 @@ public class DeleteUserCommandHandler(
         
         try
         {
+            // Delete user's problems and all related data
+            // Order is important: first delete related data, then problems, then user
+            await DeleteUserProblems(user.Id, cancellationToken);
+            
+            // Delete any remaining comments and ratings (in case they're not cascade deleted)
+            await DeleteUserComments(user.Id, cancellationToken);
+            await DeleteUserRatings(user.Id, cancellationToken);
+            
+            // Delete user from Clerk if they have a ClerkId
+            if (!string.IsNullOrEmpty(user.ClerkId))
+            {
+                await clerkApiService.DeleteUserAsync(user.ClerkId);
+            }
+            
             return await userRepository.Delete(user, cancellationToken);
+        }
+        catch (DbUpdateException dbEx)
+        {
+            return new UserUnknownException(user.Id, new Exception(
+                "Не вдалося видалити користувача через зв'язки з іншими сутностями. " +
+                "Можливо, користувач призначений координатором до проблем.", dbEx));
         }
         catch (Exception exception)
         {
             return new UserUnknownException(user.Id, exception);
+        }
+    }
+
+    private async Task DeleteUserProblems(UserId userId, CancellationToken cancellationToken)
+    {
+        var userProblems = await problemRepository.GetByCreatedBy(userId, cancellationToken);
+        
+        foreach (var problem in userProblems)
+        {
+            // Delete problem images from file system
+            foreach (var image in problem.Images)
+            {
+                if (!string.IsNullOrEmpty(image.FilePath))
+                {
+                    await imageService.DeleteImageAsync(image.FilePath);
+                }
+            }
+
+            // Delete the problem - EF Core will cascade delete comments and ratings
+            await problemRepository.Delete(problem, cancellationToken);
+        }
+    }
+
+    private async Task DeleteUserComments(UserId userId, CancellationToken cancellationToken)
+    {
+        var userComments = await commentRepository.GetByCreatedBy(userId, cancellationToken);
+        
+        foreach (var comment in userComments)
+        {
+            await commentRepository.Delete(comment, cancellationToken);
+        }
+    }
+
+    private async Task DeleteUserRatings(UserId userId, CancellationToken cancellationToken)
+    {
+        var userRatings = await ratingRepository.GetByCreatedBy(userId, cancellationToken);
+        
+        foreach (var rating in userRatings)
+        {
+            await ratingRepository.Delete(rating, cancellationToken);
         }
     }
 

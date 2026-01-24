@@ -170,16 +170,21 @@ namespace Infrastructure.Persistence.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
+                    b.Property<string>("ClerkId")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("clerk_id");
+
                     b.Property<string>("Email")
                         .IsRequired()
                         .HasMaxLength(255)
                         .HasColumnType("character varying(255)")
                         .HasColumnName("email");
 
-                    b.Property<string>("FullName")
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)")
-                        .HasColumnName("full_name");
+                    b.Property<string>("Name")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("name");
 
                     b.Property<string>("PasswordHash")
                         .IsRequired()
@@ -187,12 +192,26 @@ namespace Infrastructure.Persistence.Migrations
                         .HasColumnType("character varying(255)")
                         .HasColumnName("password_hash");
 
+                    b.Property<string>("PhoneNumber")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("phone_number");
+
                     b.Property<Guid>("RoleId")
                         .HasColumnType("uuid")
                         .HasColumnName("role_id");
 
+                    b.Property<string>("Surname")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("surname");
+
                     b.HasKey("Id")
                         .HasName("pk_users");
+
+                    b.HasIndex("ClerkId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_users_clerk_id");
 
                     b.HasIndex("RoleId")
                         .HasDatabaseName("ix_users_role_id");
@@ -203,26 +222,32 @@ namespace Infrastructure.Persistence.Migrations
                         new
                         {
                             Id = new Guid("00000000-0000-0000-0000-000000000010"),
+                            ClerkId = "user_38GDF8VSzp5vQGWOBgk0Kv3Td7W",
                             Email = "admin@ostroh.edu.ua",
-                            FullName = "Адміністратор Острога",
+                            Name = "Адміністратор",
                             PasswordHash = "31jGqnyNWeEpqqSOGrrFYA==:pt36JXYoIE3w8xtI8rEJU/h50muKgFwRs0p/h4am3A0=",
-                            RoleId = new Guid("00000000-0000-0000-0000-000000000001")
+                            RoleId = new Guid("00000000-0000-0000-0000-000000000001"),
+                            Surname = "Острога"
                         },
                         new
                         {
                             Id = new Guid("00000000-0000-0000-0000-000000000011"),
+                            ClerkId = "user_38GDs4xMAfETf7thv21MwyW72bh",
                             Email = "user@ostroh.edu.ua",
-                            FullName = "Звичайний Користувач",
+                            Name = "Звичайний",
                             PasswordHash = "OeuuWFIVglEfvDvcH349ow==:OXOk32vZFxUcodlJVPaLj/qOApIGP9SSVu9RBy+O4Sc=",
-                            RoleId = new Guid("00000000-0000-0000-0000-000000000002")
+                            RoleId = new Guid("00000000-0000-0000-0000-000000000002"),
+                            Surname = "Користувач"
                         },
                         new
                         {
                             Id = new Guid("00000000-0000-0000-0000-000000000012"),
+                            ClerkId = "user_38GDlYzZ1LZNY3q4uFLBMyAYp4Y",
                             Email = "coordinator@ostroh.edu.ua",
-                            FullName = "Координатор Острога",
+                            Name = "Координатор",
                             PasswordHash = "DXIF+E53jMJS34YZkf0Jkw==:ccAPZCJbWy/stpuqDGYoAeNnHM5rABefB+bMZL+EaZY=",
-                            RoleId = new Guid("00000000-0000-0000-0000-000000000003")
+                            RoleId = new Guid("00000000-0000-0000-0000-000000000003"),
+                            Surname = "Острога"
                         });
                 });
 
@@ -319,6 +344,11 @@ namespace Infrastructure.Persistence.Migrations
                         .HasColumnType("double precision")
                         .HasColumnName("longitude");
 
+                    b.Property<string>("Priority")
+                        .IsRequired()
+                        .HasColumnType("varchar(50)")
+                        .HasColumnName("priority");
+
                     b.Property<string>("RejectionReason")
                         .HasColumnType("text")
                         .HasColumnName("rejection_reason");
@@ -358,6 +388,7 @@ namespace Infrastructure.Persistence.Migrations
                             Description = "Велика яма на дорозі біля будинку №15. Потребує термінового ремонту.",
                             Latitude = 50.3294,
                             Longitude = 26.514399999999998,
+                            Priority = "Високий",
                             Status = "Нова",
                             Title = "Розбита дорога на вул. Академічна",
                             UpdatedAt = new DateTime(2024, 1, 15, 10, 0, 0, 0, DateTimeKind.Utc)
@@ -371,6 +402,7 @@ namespace Infrastructure.Persistence.Migrations
                             Description = "Вже тиждень не світять ліхтарі на ділянці від будинку №5 до №15.",
                             Latitude = 50.328499999999998,
                             Longitude = 26.512499999999999,
+                            Priority = "Середній",
                             Status = "Нова",
                             Title = "Не працює вуличне освітлення на вул. Семінарська",
                             UpdatedAt = new DateTime(2024, 1, 15, 10, 0, 0, 0, DateTimeKind.Utc)
@@ -384,6 +416,7 @@ namespace Infrastructure.Persistence.Migrations
                             Description = "Сміттєві контейнери не вивозяться вже 3 дні, сміття розкидане навколо.",
                             Latitude = 50.330100000000002,
                             Longitude = 26.5167,
+                            Priority = "Високий",
                             Status = "Нова",
                             Title = "Переповнені сміттєві баки біля ринку",
                             UpdatedAt = new DateTime(2024, 1, 15, 10, 0, 0, 0, DateTimeKind.Utc)
@@ -397,6 +430,7 @@ namespace Infrastructure.Persistence.Migrations
                             Description = "Старе дерево нахилилося і може впасти на дорогу. Небезпечно для пішоходів.",
                             Latitude = 50.331200000000003,
                             Longitude = 26.509799999999998,
+                            Priority = "Критичний",
                             Status = "В роботі",
                             Title = "Аварійне дерево на вул. Луцька",
                             UpdatedAt = new DateTime(2024, 1, 15, 10, 0, 0, 0, DateTimeKind.Utc)
@@ -410,6 +444,7 @@ namespace Infrastructure.Persistence.Migrations
                             Description = "Пішохідний перехід біля школи №2 без розмітки, небезпечно для дітей.",
                             Latitude = 50.328899999999997,
                             Longitude = 26.515599999999999,
+                            Priority = "Високий",
                             Status = "В роботі",
                             Title = "Відсутня розмітка на пішохідному переході",
                             UpdatedAt = new DateTime(2024, 1, 15, 10, 0, 0, 0, DateTimeKind.Utc)
@@ -423,6 +458,7 @@ namespace Infrastructure.Persistence.Migrations
                             Description = "Великі тріщини на тротуарі, небезпечно для пішоходів та велосипедистів.",
                             Latitude = 50.330500000000001,
                             Longitude = 26.513400000000001,
+                            Priority = "Середній",
                             Status = "Нова",
                             Title = "Тріщина на тротуарі вул. Папаніна",
                             UpdatedAt = new DateTime(2024, 1, 15, 10, 0, 0, 0, DateTimeKind.Utc)
@@ -436,6 +472,7 @@ namespace Infrastructure.Persistence.Migrations
                             Description = "Гойдалки та гірка на дитячому майданчику в аварійному стані.",
                             Latitude = 50.328200000000002,
                             Longitude = 26.514199999999999,
+                            Priority = "Високий",
                             Status = "В роботі",
                             Title = "Потребує ремонту дитячий майданчик",
                             UpdatedAt = new DateTime(2024, 1, 15, 10, 0, 0, 0, DateTimeKind.Utc)
@@ -449,6 +486,7 @@ namespace Infrastructure.Persistence.Migrations
                             Description = "Витік води з водопровідної труби, вода заливає дорогу.",
                             Latitude = 50.329099999999997,
                             Longitude = 26.517099999999999,
+                            Priority = "Критичний",
                             Status = "Нова",
                             Title = "Прорив водопроводу на вул. Замкова",
                             UpdatedAt = new DateTime(2024, 1, 15, 10, 0, 0, 0, DateTimeKind.Utc)
@@ -462,6 +500,7 @@ namespace Infrastructure.Persistence.Migrations
                             Description = "Клумби біля центральної площі не доглядаються, заросли бур'яном.",
                             Latitude = 50.329599999999999,
                             Longitude = 26.514900000000001,
+                            Priority = "Низький",
                             Status = "Нова",
                             Title = "Зарослі бур'яном клумби в центрі",
                             UpdatedAt = new DateTime(2024, 1, 15, 10, 0, 0, 0, DateTimeKind.Utc)
@@ -475,6 +514,7 @@ namespace Infrastructure.Persistence.Migrations
                             Description = "Світлофор на перехресті не працює вже другий день, створює аварійну ситуацію.",
                             Latitude = 50.331499999999998,
                             Longitude = 26.510200000000001,
+                            Priority = "Критичний",
                             Status = "Відхилено",
                             Title = "Не працює світлофор на вул. Луцька",
                             UpdatedAt = new DateTime(2024, 1, 15, 10, 0, 0, 0, DateTimeKind.Utc)

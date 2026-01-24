@@ -24,3 +24,9 @@ public class RoleNotFoundException(Guid role)
 
 public class UserUnknownException(UserId id, Exception innerException)
     : UserException(id, $"Unknown exception for the user under id: {id}", innerException);
+
+public class InvalidPasswordException(UserId id)
+    : UserException(id, "Current password is incorrect!");
+
+public class OAuthEmailCannotBeChangedException(UserId id)
+    : UserException(id, "Email is linked to OAuth provider and cannot be changed through this application. Please update it through your OAuth provider (Google, Facebook, etc.).");

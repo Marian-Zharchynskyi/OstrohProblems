@@ -58,6 +58,13 @@ public class ProblemConfiguration : IEntityTypeConfiguration<Problem>
             .IsRequired()
             .HasColumnType("varchar(50)");
 
+        builder.Property(p => p.Priority)
+            .HasConversion(
+                priority => priority.Value,
+                value => Priority.From(value))
+            .IsRequired()
+            .HasColumnType("varchar(50)");
+
         builder.Property(p => p.CurrentState)
             .HasColumnType("varchar(2000)");
 

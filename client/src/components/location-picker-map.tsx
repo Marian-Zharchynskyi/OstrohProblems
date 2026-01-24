@@ -48,10 +48,10 @@ function LocationMarker({
   useMapEvents({
     click: async (e) => {
       if (readonly) return
-      
+
       const { lat, lng } = e.latlng
       setMarkerPosition([lat, lng])
-      
+
       // Reverse geocoding to get street name
       try {
         const response = await fetch(
@@ -59,10 +59,10 @@ function LocationMarker({
         )
         const data = await response.json()
         const address = data.address || {}
-        const streetName = address.road || address.pedestrian || address.footway || 
-                          address.street || address.suburb || address.neighbourhood || 
-                          address.city || 'Невідома вулиця'
-        
+        const streetName = address.road || address.pedestrian || address.footway ||
+          address.street || address.suburb || address.neighbourhood ||
+          address.city || 'Невідома вулиця'
+
         onLocationChange?.(lat, lng, streetName)
       } catch {
         onLocationChange?.(lat, lng, 'Невідома вулиця')
@@ -81,7 +81,7 @@ export function LocationPickerMap({
   height = '300px',
 }: LocationPickerMapProps) {
   const hasValidCoords = latitude !== 0 && longitude !== 0
-  
+
   const center = useMemo(() => {
     if (hasValidCoords) {
       return [latitude, longitude] as [number, number]
@@ -89,12 +89,12 @@ export function LocationPickerMap({
     return OSTROH_CENTER
   }, [latitude, longitude, hasValidCoords])
 
-  const position: [number, number] = hasValidCoords 
-    ? [latitude, longitude] 
+  const position: [number, number] = hasValidCoords
+    ? [latitude, longitude]
     : OSTROH_CENTER
 
   return (
-    <div className="rounded-lg overflow-hidden border" style={{ height }}>
+    <div className="rounded-lg overflow-hidden border relative z-0" style={{ height }}>
       <MapContainer
         center={center}
         zoom={15}

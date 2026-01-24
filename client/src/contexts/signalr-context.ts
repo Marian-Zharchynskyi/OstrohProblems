@@ -10,6 +10,7 @@ export interface SignalRContextType {
   notifications: Notification[]
   unreadCount: number
   markAsRead: (notificationId: string) => void
+  markAllAsRead: () => void
   clearNotifications: () => void
 }
 

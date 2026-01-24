@@ -9,20 +9,34 @@ const API_BASE_URL =
 class ApiClient {
   private client: AxiosInstance
 
+  private getToken: (() => Promise<string | null>) | null = null
+
   constructor() {
     this.client = axios.create({
       baseURL: API_BASE_URL,
       headers: {
         'Content-Type': 'application/json',
       },
+      // Increase timeout just in case
+      timeout: 30000,
     })
 
     // Request interceptor for adding auth token
     this.client.interceptors.request.use(
-      (config) => {
-        const token = tokenStorage.getAccessToken()
-        if (token) {
-          config.headers.Authorization = `Bearer ${token}`
+      async (config) => {
+        // Try to use the configured token provider (Clerk)
+        if (this.getToken) {
+          const token = await this.getToken()
+          if (token) {
+            config.headers.Authorization = `Bearer ${token}`
+          }
+        }
+        // Fallback to old token storage (if needed, or remove)
+        else {
+          const token = tokenStorage.getAccessToken()
+          if (token) {
+            config.headers.Authorization = `Bearer ${token}`
+          }
         }
         return config
       },
@@ -35,14 +49,20 @@ class ApiClient {
     this.client.interceptors.response.use(
       (response) => response,
       (error) => {
+        // Log error for debugging
         if (error.response?.status === 401) {
-          // Handle unauthorized access
-          localStorage.removeItem('authToken')
-          window.location.href = '/login'
+          console.warn('Unauthorized access (401)', error.config?.url)
+          // Do NOT automatically redirect here, let the React components handle it
+          // window.location.href = '/login' 
         }
         return Promise.reject(error)
       }
     )
+  }
+
+  // Method to set the token provider function
+  setTokenProvider(getToken: () => Promise<string | null>) {
+    this.getToken = getToken
   }
 
   get<T>(url: string, params?: Record<string, unknown>) {

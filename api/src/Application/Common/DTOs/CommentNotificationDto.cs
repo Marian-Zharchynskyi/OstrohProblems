@@ -7,13 +7,13 @@ public record CommentNotificationDto(
     string Content,
     Guid ProblemId,
     Guid UserId,
-    string FullName,
+    string Name,
     DateTime CreatedAt)
 {
-    public static CommentNotificationDto FromDomainModel(Comment comment)
+    public static CommentNotificationDto FromDomainModel(Comment comment, string? userName = null)
     {
         var userId = comment.User?.Id.Value ?? comment.UserId.Value;
-        var fullName = comment.User?.FullName ?? "Хтось";
+        var fullName = comment.User?.Name ?? userName ?? "Хтось";
 
         return new CommentNotificationDto(
             comment.Id.Value,

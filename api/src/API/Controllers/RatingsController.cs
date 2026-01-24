@@ -15,7 +15,7 @@ namespace API.Controllers;
 [Route("ratings")]
 [ApiController]
 [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-[Authorize(Roles = $"{RoleNames.Admin}, {RoleNames.User}")]
+[Authorize(Roles = $"{RoleNames.Admin}, {RoleNames.User}, {RoleNames.Coordinator}")]
 public class RatingsController(ISender sender, IRatingQueries ratingQueries) : ControllerBase
 {
     [HttpGet("paged")]
@@ -47,6 +47,32 @@ public class RatingsController(ISender sender, IRatingQueries ratingQueries) : C
     public async Task<ActionResult<RatingDto>> Get([FromRoute] Guid ratingId, CancellationToken cancellationToken)
     {
         var entity = await ratingQueries.GetById(new RatingId(ratingId), cancellationToken);
+
+        return entity.Match<ActionResult<RatingDto>>(
+            r => RatingDto.FromDomainModel(r),
+            () => NotFound());
+    }
+
+    [AllowAnonymous]
+    [HttpGet("average/{problemId:guid}")]
+    public async Task<ActionResult<double>> GetAverageByProblemId([FromRoute] Guid problemId, CancellationToken cancellationToken)
+    {
+        var average = await ratingQueries.GetAverageByProblemId(new Domain.Problems.ProblemId(problemId), cancellationToken);
+        return Ok(average);
+    }
+
+    [HttpGet("user-rating/{problemId:guid}")]
+    public async Task<ActionResult<RatingDto>> GetUserRatingForProblem([FromRoute] Guid problemId, CancellationToken cancellationToken)
+    {
+        var userIdClaim = HttpContext.User.Claims.FirstOrDefault(c => c.Type == "user_id");
+        
+        if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userIdGuid))
+        {
+            return Unauthorized();
+        }
+
+        var userId = new Domain.Identity.Users.UserId(userIdGuid);
+        var entity = await ratingQueries.GetByUserAndProblem(userId, new Domain.Problems.ProblemId(problemId), cancellationToken);
 
         return entity.Match<ActionResult<RatingDto>>(
             r => RatingDto.FromDomainModel(r),

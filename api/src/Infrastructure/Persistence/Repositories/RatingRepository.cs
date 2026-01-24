@@ -77,4 +77,23 @@ public class RatingRepository(ApplicationDbContext context) : IRatingQueries, IR
         await context.SaveChangesAsync(cancellationToken);
         return rating;
     }
+
+    public async Task<IReadOnlyList<Rating>> GetByCreatedBy(UserId userId, CancellationToken cancellationToken)
+    {
+        return await context.Ratings
+            .Where(x => x.UserId == userId)
+            .ToListAsync(cancellationToken);
+    }
+
+    public async Task<double> GetAverageByProblemId(ProblemId problemId, CancellationToken cancellationToken)
+    {
+        var ratings = await context.Ratings
+            .Where(x => x.ProblemId == problemId)
+            .ToListAsync(cancellationToken);
+
+        if (ratings.Count == 0)
+            return 0;
+
+        return ratings.Average(x => x.Points);
+    }
 }

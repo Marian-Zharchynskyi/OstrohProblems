@@ -15,7 +15,7 @@ namespace API.Controllers;
 [Route("comments")]
 [ApiController]
 [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-[Authorize(Roles = $"{RoleNames.Admin}, {RoleNames.User}")]
+[Authorize(Roles = $"{RoleNames.Admin}, {RoleNames.User}, {RoleNames.Coordinator}")]
 public class CommentsController(ISender sender, ICommentQueries commentQueries) : ControllerBase
 {
     [HttpGet("paged")]

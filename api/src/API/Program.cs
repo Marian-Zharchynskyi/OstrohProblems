@@ -13,7 +13,7 @@ builder.Services.AddApplication();
 builder.Services.SetupServices();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddSwaggerAuth();
-builder.Services.AddJwtTokenAuth(builder.Configuration);
+builder.Services.AddClerkAuth(builder.Configuration);
 
 builder.Configuration
     .SetBasePath(Directory.GetCurrentDirectory())
@@ -41,6 +41,7 @@ app.UseCors(options => options
 );
 
 app.UseAuthentication();
+app.UseMiddleware<Infrastructure.Middleware.ClerkUserSyncMiddleware>();
 app.UseAuthorization();
 
 await app.InitialiseDb();

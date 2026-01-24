@@ -26,11 +26,14 @@ import {
 import { Users, Trash2, Shield, Plus, Pencil } from 'lucide-react'
 
 export function AdminUsersPage() {
-  const { tokens } = useAuth()
+  const { tokens, getClerkToken } = useAuth()
   const [users, setUsers] = useState<UserDto[]>([])
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null)
   const [roles, setRoles] = useState<Role[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [deletingUserId, setDeletingUserId] = useState<string | null>(null)
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [userToDelete, setUserToDelete] = useState<UserDto | null>(null)
 
   // Create user dialog state
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
@@ -38,7 +41,8 @@ export function AdminUsersPage() {
   const [createForm, setCreateForm] = useState<CreateUserDto>({
     email: '',
     password: '',
-    fullName: '',
+    name: '',
+    surname: '',
     roleId: '',
   })
 
@@ -49,20 +53,25 @@ export function AdminUsersPage() {
   const [editForm, setEditForm] = useState({
     email: '',
     userName: '',
+    userSurname: '',
     roleId: '',
   })
 
   useEffect(() => {
     const loadData = async () => {
-      if (!tokens?.accessToken) return
+      const token = getClerkToken ? await getClerkToken() : tokens?.accessToken
+      if (!token) return
 
       try {
         setIsLoading(true)
-        const [usersData, rolesData] = await Promise.all([
-          userService.getAllUsers(tokens.accessToken),
-          rolesApi.getAll(),
+        const [currentUser, usersData, rolesData] = await Promise.all([
+          userService.getCurrentUser(token),
+          userService.getAllUsers(token),
+          rolesApi.getAll(token),
         ])
-        setUsers(usersData)
+        setCurrentUserId(currentUser.id)
+        // Filter out current user from the list
+        setUsers(usersData.filter(u => u.id !== currentUser.id))
         setRoles(rolesData)
       } catch (error) {
         console.error('Failed to load data:', error)
@@ -72,26 +81,36 @@ export function AdminUsersPage() {
     }
 
     loadData()
-  }, [tokens?.accessToken])
+  }, [tokens?.accessToken, getClerkToken])
 
-  const handleDeleteUser = async (userId: string) => {
-    if (!tokens?.accessToken) return
-    if (!confirm('Ви впевнені, що хочете видалити цього користувача?')) return
+  const handleOpenDeleteDialog = (user: UserDto) => {
+    setUserToDelete(user)
+    setDeleteDialogOpen(true)
+  }
+
+  const handleDeleteUser = async () => {
+    const token = getClerkToken ? await getClerkToken() : tokens?.accessToken
+    if (!token || !userToDelete) return
 
     try {
-      setDeletingUserId(userId)
-      await userService.deleteUser(userId, tokens.accessToken)
-      setUsers(users.filter((u) => u.id !== userId))
+      setDeletingUserId(userToDelete.id)
+      await userService.deleteUser(userToDelete.id, token)
+      // Filter maintains exclusion of current user
+      setUsers(users.filter((u) => u.id !== userToDelete.id))
+      setDeleteDialogOpen(false)
+      setUserToDelete(null)
     } catch (error) {
       console.error('Failed to delete user:', error)
-      alert('Не вдалося видалити користувача')
+      const errorMessage = error instanceof Error ? error.message : 'Не вдалося видалити користувача'
+      alert(errorMessage)
     } finally {
       setDeletingUserId(null)
     }
   }
 
   const handleCreateUser = async () => {
-    if (!tokens?.accessToken) return
+    const token = getClerkToken ? await getClerkToken() : tokens?.accessToken
+    if (!token) return
     if (!createForm.email || !createForm.password || !createForm.roleId) {
       alert('Заповніть всі обов\'язкові поля')
       return
@@ -99,10 +118,13 @@ export function AdminUsersPage() {
 
     try {
       setIsCreating(true)
-      const newUser = await userService.createUser(createForm, tokens.accessToken)
-      setUsers([...users, newUser])
+      const newUser = await userService.createUser(createForm, token)
+      // Only add if not current user (shouldn't happen, but for safety)
+      if (newUser.id !== currentUserId) {
+        setUsers([...users, newUser])
+      }
       setIsCreateDialogOpen(false)
-      setCreateForm({ email: '', password: '', fullName: '', roleId: '' })
+      setCreateForm({ email: '', password: '', name: '', surname: '', roleId: '' })
     } catch (error) {
       console.error('Failed to create user:', error)
       alert('Не вдалося створити користувача')
@@ -115,14 +137,16 @@ export function AdminUsersPage() {
     setEditingUser(user)
     setEditForm({
       email: user.email,
-      userName: user.fullName || '',
+      userName: user.name || '',
+      userSurname: user.surname || '',
       roleId: user.role?.id || '',
     })
     setIsEditDialogOpen(true)
   }
 
   const handleEditUser = async () => {
-    if (!tokens?.accessToken || !editingUser) return
+    const token = getClerkToken ? await getClerkToken() : tokens?.accessToken
+    if (!token || !editingUser) return
 
     try {
       setIsEditing(true)
@@ -130,15 +154,15 @@ export function AdminUsersPage() {
       // Update user info
       await userService.updateUser(
         editingUser.id,
-        { email: editForm.email, userName: editForm.userName },
-        tokens.accessToken
+        { email: editForm.email, name: editForm.userName, surname: editForm.userSurname },
+        token
       )
 
       // Update role
       const updatedUser = await userService.updateUserRoles(
         editingUser.id,
         editForm.roleId,
-        tokens.accessToken
+        token
       )
 
       setUsers(users.map((u) => (u.id === editingUser.id ? updatedUser : u)))
@@ -215,9 +239,9 @@ export function AdminUsersPage() {
                 <TableHeader>
                   <TableRow>
                     <TableHead>Email</TableHead>
-                    <TableHead>Повне ім'я</TableHead>
-                    <TableHead>Ролі</TableHead>
-                    <TableHead>Зображення</TableHead>
+                    <TableHead>Ім'я та Прізвище</TableHead>
+                    <TableHead>Роль</TableHead>
+                    <TableHead>Аватар</TableHead>
                     <TableHead className="text-right">Дії</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -228,7 +252,11 @@ export function AdminUsersPage() {
                         {user.email}
                       </TableCell>
                       <TableCell>
-                        {user.fullName || (
+                        {user.name && user.surname ? (
+                          `${user.name} ${user.surname}`
+                        ) : user.name || user.surname ? (
+                          `${user.name || ''}${user.surname || ''}`
+                        ) : (
                           <span className="text-muted-foreground italic">
                             Не вказано
                           </span>
@@ -241,7 +269,7 @@ export function AdminUsersPage() {
                               className="inline-flex items-center gap-1 px-2 py-1 bg-primary/10 text-primary rounded text-xs"
                             >
                               <Shield className="w-3 h-3" />
-                              {user.role.name}
+                              {user.role.name === 'Administrator' ? 'Адміністратор' : user.role.name === 'Coordinator' ? 'Координатор' : user.role.name === 'User' ? 'Користувач' : user.role.name}
                             </span>
                           ) : (
                             <span className="text-muted-foreground text-sm">
@@ -254,7 +282,7 @@ export function AdminUsersPage() {
                         {user.image?.url ? (
                           <img
                             src={user.image.url}
-                            alt={user.fullName || user.email}
+                            alt={`${user.name || ''} ${user.surname || ''}`.trim() || user.email}
                             className="w-10 h-10 rounded-full object-cover"
                           />
                         ) : (
@@ -267,20 +295,22 @@ export function AdminUsersPage() {
                         <div className="flex justify-end gap-2">
                           <Button
                             variant="outline"
-                            size="sm"
+                            size="icon"
+                            className="h-9 w-9 border border-[#D0D5DD] bg-white text-[#292929] hover:bg-[#F5F5F5] hover:text-[#292929] disabled:bg-white disabled:text-[#292929]"
                             onClick={() => handleOpenEditDialog(user)}
+                            title="Редагувати"
                           >
-                            <Pencil className="w-4 h-4 mr-1" />
-                            Редагувати
+                            <Pencil className="w-4 h-4 text-[#292929]" />
                           </Button>
                           <Button
-                            variant="destructive"
-                            size="sm"
-                            onClick={() => handleDeleteUser(user.id)}
+                            variant="outline"
+                            size="icon"
+                            className="h-9 w-9 border border-red-200 bg-white hover:bg-red-50 disabled:bg-white"
+                            onClick={() => handleOpenDeleteDialog(user)}
                             disabled={deletingUserId === user.id}
+                            title="Видалити"
                           >
-                            <Trash2 className="w-4 h-4 mr-1" />
-                            {deletingUserId === user.id ? 'Видалення...' : 'Видалити'}
+                            <Trash2 className="w-4 h-4 text-red-600" />
                           </Button>
                         </div>
                       </TableCell>
@@ -295,7 +325,7 @@ export function AdminUsersPage() {
 
       {/* Create User Dialog */}
       <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-        <DialogContent className="sm:max-w-[425px]">
+        <DialogContent className="sm:max-w-[490px]">
           <DialogHeader>
             <DialogTitle>Створити користувача</DialogTitle>
             <DialogDescription>
@@ -308,6 +338,7 @@ export function AdminUsersPage() {
               <Input
                 id="email"
                 type="email"
+                autoComplete="off"
                 placeholder="user@example.com"
                 value={createForm.email}
                 onChange={(e) =>
@@ -320,6 +351,7 @@ export function AdminUsersPage() {
               <Input
                 id="password"
                 type="password"
+                autoComplete="new-password"
                 placeholder="Мінімум 6 символів"
                 value={createForm.password}
                 onChange={(e) =>
@@ -328,13 +360,24 @@ export function AdminUsersPage() {
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="fullName">Повне ім'я</Label>
+              <Label htmlFor="name">Ім'я</Label>
               <Input
-                id="fullName"
-                placeholder="Іван Петренко"
-                value={createForm.fullName}
+                id="name"
+                placeholder="Іван"
+                value={createForm.name}
                 onChange={(e) =>
-                  setCreateForm((prev) => ({ ...prev, fullName: e.target.value }))
+                  setCreateForm((prev) => ({ ...prev, name: e.target.value }))
+                }
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="surname">Прізвище</Label>
+              <Input
+                id="surname"
+                placeholder="Петренко"
+                value={createForm.surname}
+                onChange={(e) =>
+                  setCreateForm((prev) => ({ ...prev, surname: e.target.value }))
                 }
               />
             </div>
@@ -349,11 +392,11 @@ export function AdminUsersPage() {
                     className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-md text-sm border transition-colors ${
                       createForm.roleId === role.id
                         ? 'bg-primary text-primary-foreground border-primary'
-                        : 'bg-background hover:bg-muted border-input'
+                        : 'border-[#D0D5DD] text-[#292929] bg-transparent hover:bg-[#F5F5F5]'
                     }`}
                   >
                     <Shield className="w-3 h-3" />
-                    {role.name}
+                    {role.name === 'Administrator' ? 'Адміністратор' : role.name === 'Coordinator' ? 'Координатор' : role.name === 'User' ? 'Користувач' : role.name}
                   </button>
                 ))}
               </div>
@@ -364,6 +407,7 @@ export function AdminUsersPage() {
               variant="outline"
               onClick={() => setIsCreateDialogOpen(false)}
               disabled={isCreating}
+              className="border border-[#D0D5DD] text-[#292929] bg-transparent hover:bg-[#F5F5F5] hover:text-[#292929] focus:outline-none focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0"
             >
               Скасувати
             </Button>
@@ -396,12 +440,22 @@ export function AdminUsersPage() {
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="edit-userName">Повне ім'я</Label>
+              <Label htmlFor="edit-userName">Ім'я</Label>
               <Input
                 id="edit-userName"
                 value={editForm.userName}
                 onChange={(e) =>
                   setEditForm((prev) => ({ ...prev, userName: e.target.value }))
+                }
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="edit-userSurname">Прізвище</Label>
+              <Input
+                id="edit-userSurname"
+                value={editForm.userSurname}
+                onChange={(e) =>
+                  setEditForm((prev) => ({ ...prev, userSurname: e.target.value }))
                 }
               />
             </div>
@@ -416,7 +470,7 @@ export function AdminUsersPage() {
                     className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-md text-sm border transition-colors ${
                       editForm.roleId === role.id
                         ? 'bg-primary text-primary-foreground border-primary'
-                        : 'bg-background hover:bg-muted border-input'
+                        : 'border-[#D0D5DD] text-[#292929] bg-transparent hover:bg-[#F5F5F5]'
                     }`}
                   >
                     <Shield className="w-3 h-3" />
@@ -431,11 +485,68 @@ export function AdminUsersPage() {
               variant="outline"
               onClick={() => setIsEditDialogOpen(false)}
               disabled={isEditing}
+              className="border border-[#D0D5DD] text-[#292929] bg-transparent hover:bg-[#F5F5F5] hover:text-[#292929] focus:outline-none focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0"
             >
               Скасувати
             </Button>
             <Button onClick={handleEditUser} disabled={isEditing}>
               {isEditing ? 'Збереження...' : 'Зберегти'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent className="sm:max-w-[490px]">
+          <DialogHeader>
+            <DialogTitle>Підтвердження видалення</DialogTitle>
+            <DialogDescription>
+              Ви впевнені, що хочете видалити цього користувача?
+            </DialogDescription>
+          </DialogHeader>
+          {userToDelete && (
+            <div className="py-4">
+              <div className="space-y-2">
+                <p className="text-sm">
+                  <span className="font-semibold">Email:</span> {userToDelete.email}
+                </p>
+                {(userToDelete.name || userToDelete.surname) && (
+                  <p className="text-sm">
+                    <span className="font-semibold">Ім'я:</span> {userToDelete.name} {userToDelete.surname}
+                  </p>
+                )}
+                {userToDelete.role && (
+                  <p className="text-sm">
+                    <span className="font-semibold">Роль:</span> {userToDelete.role.name === 'Administrator' ? 'Адміністратор' : userToDelete.role.name === 'Coordinator' ? 'Координатор' : userToDelete.role.name === 'User' ? 'Користувач' : userToDelete.role.name}
+                  </p>
+                )}
+              </div>
+              <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                <p className="text-sm text-yellow-800">
+                  <strong>Увага:</strong> Всі проблеми, коментарі та рейтинги створені цим користувачем будуть видалені.
+                </p>
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setDeleteDialogOpen(false)
+                setUserToDelete(null)
+              }}
+              disabled={deletingUserId !== null}
+              className="border border-[#D0D5DD] text-[#292929] bg-transparent hover:bg-[#F5F5F5] hover:text-[#292929] focus:outline-none focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+            >
+              Скасувати
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleDeleteUser}
+              disabled={deletingUserId !== null}
+            >
+              {deletingUserId ? 'Видалення...' : 'Так, видалити'}
             </Button>
           </DialogFooter>
         </DialogContent>

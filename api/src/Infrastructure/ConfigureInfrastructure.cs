@@ -1,4 +1,6 @@
+using Application.Common.Interfaces;
 using Infrastructure.Persistence;
+using Infrastructure.Services;
 using Infrastructure.SignalR;
 using Infrastructure.Storage;
 using Microsoft.AspNetCore.Builder;
@@ -13,5 +15,8 @@ public static class ConfigureInfrastructure
         services.AddPersistence(builder);
         services.AddSignalRServices();
         services.AddStorageServices(builder);
+        
+        // Register Clerk API service for syncing users with Clerk Dashboard
+        services.AddHttpClient<IClerkApiService, ClerkApiService>();
     }
 }

@@ -56,7 +56,7 @@ public static class ConfigurePersistence
         services.AddScoped<IJwtTokenService, JwtTokenService>();
         services.AddScoped<IHashPasswordService, HashPasswordService>();
         services.AddScoped<IImageService, ImageService>();
-        services.AddScoped<IIdentityService, IdentityService>();
+        services.AddScoped<IIdentityService, ClerkIdentityService>();
 
         services.AddScoped<RefreshTokenRepository>();
         services.AddScoped<IRefreshTokenRepository>(provider => provider.GetRequiredService<RefreshTokenRepository>());
