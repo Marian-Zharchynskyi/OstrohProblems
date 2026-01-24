@@ -35,7 +35,7 @@ export function MySubmittedProblemsPageWithTabs() {
         className="py-2"
         style={{ backgroundColor: designSystem.colors.profile.headerBackground }}
       >
-        <div className="max-w-6xl mx-auto px-6">
+        <div className="max-w-7xl mx-auto px-6">
           <div className="flex flex-wrap justify-center gap-4 mt-6">
             <button
               onClick={() => handleTabClick('profile')}

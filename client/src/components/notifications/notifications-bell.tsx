@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom'
 import { cn } from '@/lib/utils'
 
 export function NotificationsBell() {
-  const { notifications, unreadCount, markAsRead } = useSignalR()
+  const { notifications, unreadCount, markAsRead, markAllAsRead } = useSignalR()
   const [isOpen, setIsOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
   const navigate = useNavigate()
@@ -40,6 +40,10 @@ export function NotificationsBell() {
         return '🔄'
       case 'rejected':
         return '❌'
+      case 'completed':
+        return '✅'
+      case 'state_updated':
+        return '📝'
       case 'rating':
         return '⭐'
       case 'reply':
@@ -64,7 +68,7 @@ export function NotificationsBell() {
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="relative flex items-center justify-center w-10 h-10 p-0 bg-transparent rounded-full hover:bg-black/5 transition-colors text-black/70 hover:text-black"
+        className="relative flex items-center justify-center w-10 h-10 p-0 bg-transparent rounded-full hover:bg-black/5 transition-colors text-black/70 hover:text-black border-none outline-none focus:outline-none focus-visible:ring-0"
         aria-label="Нотифікації"
       >
         <Bell className="h-6 w-6" strokeWidth={2} />
@@ -76,8 +80,8 @@ export function NotificationsBell() {
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-80 max-h-96 overflow-y-auto rounded-lg border bg-white shadow-lg z-50">
-          <div className="sticky top-0 bg-white border-b px-4 py-3">
+        <div className="absolute right-0 mt-2 w-80 max-h-96 overflow-y-auto rounded-lg border border-gray-200 bg-white shadow-lg z-50">
+          <div className="sticky top-0 bg-white border-b border-gray-200 px-4 py-3 z-10">
             <h3 className="font-semibold text-gray-900">Нотифікації</h3>
           </div>
 
@@ -86,18 +90,20 @@ export function NotificationsBell() {
               Немає нових нотифікацій
             </div>
           ) : (
-            <div className="divide-y">
+            <div className="divide-y divide-gray-100">
               {notifications.slice(0, 10).map((notification) => (
                 <button
                   key={notification.id}
                   onClick={() => handleNotificationClick(notification.id, notification.problemId)}
                   className={cn(
-                    'w-full px-4 py-3 text-left hover:bg-gray-50 transition-colors',
-                    !notification.isRead && 'bg-blue-50'
+                    'w-full px-4 py-3 text-left transition-colors duration-150 border-none outline-none focus:outline-none',
+                    !notification.isRead
+                      ? 'bg-blue-50 hover:bg-blue-100'
+                      : 'bg-white hover:bg-gray-50'
                   )}
                 >
                   <div className="flex items-start gap-3">
-                    <span className="text-xl">{getNotificationIcon(notification.type)}</span>
+                    <span className="text-xl flex-shrink-0">{getNotificationIcon(notification.type)}</span>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm text-gray-900 font-medium line-clamp-2">
                         {notification.message}
@@ -119,15 +125,12 @@ export function NotificationsBell() {
           )}
 
           {notifications.length > 0 && (
-            <div className="border-t px-4 py-2">
+            <div className="border-t border-gray-100 p-2 bg-gray-50/50">
               <button
-                onClick={() => {
-                  setIsOpen(false)
-                  navigate('/problems')
-                }}
-                className="text-sm text-primary hover:underline"
+                onClick={markAllAsRead}
+                className="w-full flex items-center justify-center gap-2 py-2 text-sm font-medium text-[#1F2732] bg-white border border-[#D0D5DD] rounded-md hover:bg-[#F5F5F5] transition-all focus:outline-none focus:ring-0 active:scale-[0.98]"
               >
-                Переглянути всі
+                Позначити всі як прочитані
               </button>
             </div>
           )}

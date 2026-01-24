@@ -17,7 +17,7 @@ export default function CoordinatorPage() {
   const { onProblemsUpdated } = useSignalR()
   const queryClient = useQueryClient()
   const navigate = useNavigate()
-  
+
   const [activeTab, setActiveTab] = useState<TabType>('new')
 
   // Subscribe to SignalR refresh events for auto-refresh
@@ -26,13 +26,13 @@ export default function CoordinatorPage() {
       queryClient.invalidateQueries({ queryKey: ['problems'] })
     })
   }, [onProblemsUpdated, queryClient])
-  
+
   // Fetch New problems (unassigned)
   const { data: allNewProblems = [], isLoading: loadingNew } = useProblemsByStatus(ProblemStatusConstants.New)
-  
+
   // Fetch My problems (all assigned to me)
   const { data: myProblems = [], isLoading: loadingMy } = useProblemsByCoordinator(user?.id || '')
-  
+
   const loading = loadingNew || loadingMy
 
   // Derived lists
@@ -97,11 +97,10 @@ export default function CoordinatorPage() {
             variant={activeTab === tab.key ? 'default' : 'outline'}
             onClick={() => setActiveTab(tab.key)}
             size="sm"
-            className={`justify-between min-w-[150px] ${
-              activeTab === tab.key
-                ? 'shadow-sm'
-                : 'border-[#D0D5DD] bg-transparent text-[#1F2732] hover:bg-[#F5F5F5] hover:text-[#1F2732]'
-            }`}
+            className={`justify-between min-w-[150px] focus:outline-none focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0 ${activeTab === tab.key
+              ? 'shadow-sm border-transparent'
+              : 'border-[#D0D5DD] bg-transparent text-[#1F2732] hover:bg-[#F5F5F5] hover:text-[#1F2732]'
+              }`}
           >
             {tab.label} ({tab.count})
           </Button>
@@ -117,11 +116,11 @@ export default function CoordinatorPage() {
               key={problem.id}
               className="cursor-pointer hover:shadow-md transition-shadow"
               onClick={() => {
-                  if (activeTab === 'new' && problem.id) {
-                       navigate(`/coordinator/problems/${problem.id}/update`)
-                  } else if (problem.id) {
-                      navigate(`/problems/${problem.id}`)
-                  }
+                if (activeTab === 'new' && problem.id) {
+                  navigate(`/coordinator/problems/${problem.id}/update`)
+                } else if (problem.id) {
+                  navigate(`/problems/${problem.id}`)
+                }
               }}
             >
               <CardHeader>
@@ -134,56 +133,56 @@ export default function CoordinatorPage() {
               </CardHeader>
               <CardContent>
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-stretch">
-                    <div className="flex-1">
-                        <p
-                        className="text-sm text-gray-600 mb-2 line-clamp-2 break-words"
-                        style={{ overflowWrap: 'anywhere' }}
-                        >
-                        {problem.description}
-                        </p>
-                        <p className="text-xs text-gray-500">
-                        Автор: {problem.createdBy?.email} | {new Date(problem.createdAt).toLocaleDateString('uk-UA')}
-                        </p>
-                    </div>
-                     <div
-                        className="flex flex-col gap-2 shrink-0 min-w-[200px] justify-end sm:items-end"
-                        onClick={(e) => e.stopPropagation()}
-                     >
-                        {activeTab === 'new' ? (
-                             <Button
-                               variant="outline"
-                               size="sm"
-                               disabled={!problem.id}
-                               className="border-[#D0D5DD] text-[#1F2732] hover:bg-[#EAEAEA] hover:text-[#1F2732] transition-colors"
-                               onClick={() => problem.id && navigate(`/coordinator/problems/${problem.id}/update`)}
-                             >
-                               Переглянути та призначити
-                             </Button>
-                        ) : (
-                            <>
-                               {activeTab === 'my' && (
-                                   <Button
-                                       variant="outline"
-                                       size="sm"
-                                       className="border-[#D0D5DD] text-[#1F2732] hover:bg-[#EAEAEA] hover:text-[#1F2732] transition-colors"
-                                       onClick={() => problem.id && navigate(`/coordinator/problems/${problem.id}/update`)}
-                                   >
-                                       Оновити
-                                   </Button>
-                               )}
-                               {activeTab === 'rejected' && (
-                                    <Button
-                                        variant="outline"
-                                        size="sm"
-                                        className="border-[#E42556] text-[#E42556] hover:bg-[#FFE5EC] hover:text-[#C41C47] transition-colors"
-                                        onClick={() => handleRestoreProblem(problem.id || undefined)}
-                                    >
-                                        Повернути в роботу
-                                    </Button>
-                               )}
-                            </>
+                  <div className="flex-1">
+                    <p
+                      className="text-sm text-gray-600 mb-2 line-clamp-2 break-words"
+                      style={{ overflowWrap: 'anywhere' }}
+                    >
+                      {problem.description}
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      Автор: {problem.createdBy?.email} | {new Date(problem.createdAt).toLocaleDateString('uk-UA')}
+                    </p>
+                  </div>
+                  <div
+                    className="flex flex-col gap-2 shrink-0 min-w-[200px] justify-end sm:items-end"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    {activeTab === 'new' ? (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        disabled={!problem.id}
+                        className="border-[#D0D5DD] text-[#1F2732] hover:bg-[#EAEAEA] hover:text-[#1F2732] transition-colors focus:outline-none focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+                        onClick={() => problem.id && navigate(`/coordinator/problems/${problem.id}/update`)}
+                      >
+                        Переглянути та призначити
+                      </Button>
+                    ) : (
+                      <>
+                        {activeTab === 'my' && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="border-[#D0D5DD] text-[#1F2732] hover:bg-[#EAEAEA] hover:text-[#1F2732] transition-colors focus:outline-none focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+                            onClick={() => problem.id && navigate(`/coordinator/problems/${problem.id}/update`)}
+                          >
+                            Оновити
+                          </Button>
                         )}
-                   </div>
+                        {activeTab === 'rejected' && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="border-[#E42556] text-[#E42556] hover:bg-[#FFE5EC] hover:text-[#C41C47] transition-colors"
+                            onClick={() => handleRestoreProblem(problem.id || undefined)}
+                          >
+                            Повернути в роботу
+                          </Button>
+                        )}
+                      </>
+                    )}
+                  </div>
                 </div>
               </CardContent>
             </Card>
