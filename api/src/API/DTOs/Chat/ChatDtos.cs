@@ -24,3 +24,7 @@ public record ProblemSummaryDto(
     DateTime CreatedAt,
     string? CreatorName
 );
+
+public record TranscribeAudioResponse(
+    string Transcription
+);

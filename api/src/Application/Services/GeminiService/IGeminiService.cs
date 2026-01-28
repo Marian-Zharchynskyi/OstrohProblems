@@ -3,6 +3,8 @@ namespace Application.Services.GeminiService;
 public interface IGeminiService
 {
     Task<ChatResponse> ProcessChatMessageAsync(ChatRequest request, CancellationToken cancellationToken = default);
+    Task<string> TranscribeAudioAsync(Stream audioStream, CancellationToken cancellationToken = default);
+    Task<ChatResponse> ProcessVoiceMessageAsync(Stream audioStream, string userRole, Guid? userId = null, CancellationToken cancellationToken = default);
 }
 
 public record ChatRequest(

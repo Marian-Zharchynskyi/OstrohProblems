@@ -5,17 +5,34 @@ import { chatService } from '@/services/chat.service'
 import { useAuth } from '@/contexts/auth-context'
 import type { ChatMessage, ProblemSummaryChat } from '@/types/chat'
 import { useNavigate } from 'react-router-dom'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 
 export function AiChat() {
   const [isOpen, setIsOpen] = useState(false)
-  const [messages, setMessages] = useState<ChatMessage[]>([])
+  const [messages, setMessages] = useState<ChatMessage[]>(() => {
+    const saved = sessionStorage.getItem('ai-chat-messages')
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved) as ChatMessage[]
+        return parsed.map((msg) => ({
+          ...msg,
+          timestamp: new Date(msg.timestamp)
+        }))
+      } catch {
+        return []
+      }
+    }
+    return []
+  })
   const [inputValue, setInputValue] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [isRecording, setIsRecording] = useState(false)
-  const [audioBlob, setAudioBlob] = useState<Blob | null>(null)
+  const [isProcessingVoice, setIsProcessingVoice] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const mediaRecorderRef = useRef<MediaRecorder | null>(null)
   const audioChunksRef = useRef<Blob[]>([])
+  const streamRef = useRef<MediaStream | null>(null)
   const { getClerkToken } = useAuth()
   const navigate = useNavigate()
 
@@ -28,11 +45,17 @@ export function AiChat() {
   }, [messages])
 
   useEffect(() => {
+    if (messages.length > 0) {
+      sessionStorage.setItem('ai-chat-messages', JSON.stringify(messages))
+    }
+  }, [messages])
+
+  useEffect(() => {
     if (isOpen && messages.length === 0) {
       setMessages([
         {
           id: crypto.randomUUID(),
-          content: 'Привіт! 👋 Я AI-асистент платформи Ostroh Problems. Можу допомогти вам:\n\n• Знайти проблеми за категорією, статусом або рейтингом\n• Пояснити як користуватися сайтом\n• Відповісти на питання про вашу роль\n\nЗапитайте мене про що завгодно!',
+          content: 'Привіт! 👋 Я AI-асистент платформи Острог Разом. Можу допомогти вам:\n\n• Знайти проблеми за категорією, статусом або рейтингом\n• Пояснити як користуватися сайтом\n• Відповісти на питання про вашу роль\n\nЗапитайте мене про що завгодно!',
           role: 'assistant',
           timestamp: new Date(),
           responseType: 'Help',
@@ -42,31 +65,24 @@ export function AiChat() {
   }, [isOpen, messages.length])
 
   const handleSendMessage = async () => {
-    if (!inputValue.trim() && !audioBlob) return
+    if (!inputValue.trim()) return
 
     const userMessage: ChatMessage = {
       id: crypto.randomUUID(),
-      content: inputValue.trim() || '🎤 Голосове повідомлення',
+      content: inputValue.trim(),
       role: 'user',
       timestamp: new Date(),
     }
 
     setMessages((prev) => [...prev, userMessage])
     setInputValue('')
-    setAudioBlob(null)
     setIsLoading(true)
 
     try {
       const token = await getClerkToken?.()
-      
-      let messageToSend = inputValue.trim()
-      
-      if (audioBlob) {
-        messageToSend = await transcribeAudio(audioBlob)
-      }
 
       const response = await chatService.sendMessage(
-        { message: messageToSend },
+        { message: inputValue.trim() },
         token ?? null
       )
 
@@ -95,15 +111,52 @@ export function AiChat() {
     }
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const transcribeAudio = async (blob: Blob): Promise<string> => {
-    // TODO: Integrate with Google Speech-to-Text API for real transcription
-    return 'Голосове повідомлення (транскрипція недоступна в демо-версії)'
+  const handleVoiceMessage = async (audioBlob: Blob) => {
+    // Add user message indicator for voice
+    const userMessage: ChatMessage = {
+      id: crypto.randomUUID(),
+      content: '🎤 Голосове повідомлення',
+      role: 'user',
+      timestamp: new Date(),
+    }
+
+    setMessages((prev) => [...prev, userMessage])
+    setIsProcessingVoice(true)
+
+    try {
+      const token = await getClerkToken?.()
+
+      const response = await chatService.sendVoiceMessage(audioBlob, token ?? null)
+
+      const assistantMessage: ChatMessage = {
+        id: crypto.randomUUID(),
+        content: response.message,
+        role: 'assistant',
+        timestamp: new Date(),
+        responseType: response.responseType,
+        problems: response.problems ?? undefined,
+      }
+
+      setMessages((prev) => [...prev, assistantMessage])
+    } catch (error) {
+      console.error('Voice message error:', error)
+      const errorMessage: ChatMessage = {
+        id: crypto.randomUUID(),
+        content: 'Не вдалося обробити голосове повідомлення. Спробуйте ще раз.',
+        role: 'assistant',
+        timestamp: new Date(),
+        responseType: 'Error',
+      }
+      setMessages((prev) => [...prev, errorMessage])
+    } finally {
+      setIsProcessingVoice(false)
+    }
   }
 
   const startRecording = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+      streamRef.current = stream
       const mediaRecorder = new MediaRecorder(stream)
       mediaRecorderRef.current = mediaRecorder
       audioChunksRef.current = []
@@ -116,8 +169,12 @@ export function AiChat() {
 
       mediaRecorder.onstop = () => {
         const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' })
-        setAudioBlob(audioBlob)
         stream.getTracks().forEach((track) => track.stop())
+        streamRef.current = null
+        // Automatically send voice message for processing
+        if (audioBlob.size > 0) {
+          handleVoiceMessage(audioBlob)
+        }
       }
 
       mediaRecorder.start()
@@ -137,10 +194,15 @@ export function AiChat() {
 
   const cancelRecording = () => {
     if (mediaRecorderRef.current && isRecording) {
+      // Remove onstop handler to prevent sending
+      mediaRecorderRef.current.onstop = null
       mediaRecorderRef.current.stop()
     }
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach((track) => track.stop())
+      streamRef.current = null
+    }
     setIsRecording(false)
-    setAudioBlob(null)
     audioChunksRef.current = []
   }
 
@@ -177,21 +239,27 @@ export function AiChat() {
         </span>
       </div>
       <p className="text-xs text-gray-600 mt-1 line-clamp-2">{problem.description}</p>
-      <div className="flex items-center gap-3 mt-2 text-xs text-gray-500">
-        <span className="flex items-center gap-1">
-          <MapPin className="w-3 h-3" />
-          {problem.categories[0] || 'Інше'}
-        </span>
-        {problem.averageRating && (
+      <div className="flex flex-col gap-1 mt-2">
+        <div className="flex items-start gap-1 text-xs text-gray-500">
+          <MapPin className="w-3 h-3 mt-0.5 flex-shrink-0" />
+          <div className="flex flex-col gap-0.5">
+            {problem.categories.map((category, index) => (
+              <span key={index}>{category}</span>
+            ))}
+          </div>
+        </div>
+        <div className="flex items-center gap-3 text-xs text-gray-500">
+          {problem.averageRating && (
+            <span className="flex items-center gap-1">
+              <Star className="w-3 h-3 text-yellow-500" />
+              {problem.averageRating.toFixed(1)}
+            </span>
+          )}
           <span className="flex items-center gap-1">
-            <Star className="w-3 h-3 text-yellow-500" />
-            {problem.averageRating.toFixed(1)}
+            <Clock className="w-3 h-3" />
+            {new Date(problem.createdAt).toLocaleDateString('uk-UA')}
           </span>
-        )}
-        <span className="flex items-center gap-1">
-          <Clock className="w-3 h-3" />
-          {new Date(problem.createdAt).toLocaleDateString('uk-UA')}
-        </span>
+        </div>
       </div>
     </div>
   )
@@ -207,7 +275,7 @@ export function AiChat() {
         <div
           className={cn(
             'w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0',
-            isUser ? 'bg-primary text-white' : 'bg-gray-100 text-gray-600'
+            isUser ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-600'
           )}
         >
           {isUser ? <User className="w-4 h-4" /> : <Bot className="w-4 h-4" />}
@@ -216,11 +284,17 @@ export function AiChat() {
           className={cn(
             'max-w-[80%] rounded-2xl px-4 py-2',
             isUser
-              ? 'bg-primary text-white rounded-tr-sm'
+              ? 'bg-blue-500 text-white rounded-tr-sm'
               : 'bg-gray-100 text-gray-900 rounded-tl-sm'
           )}
         >
-          <div className="text-sm whitespace-pre-wrap">{message.content}</div>
+          {isUser ? (
+            <div className="text-sm whitespace-pre-wrap">{message.content}</div>
+          ) : (
+            <div className="text-sm prose prose-sm max-w-none prose-headings:mt-2 prose-headings:mb-1 prose-p:my-1 prose-ul:my-1 prose-ol:my-1 prose-li:my-0.5">
+              <ReactMarkdown remarkPlugins={[remarkGfm]}>{message.content}</ReactMarkdown>
+            </div>
+          )}
           {message.problems && message.problems.length > 0 && (
             <div className="mt-3 space-y-2">
               {message.problems.map(renderProblemCard)}
@@ -248,15 +322,15 @@ export function AiChat() {
       <button
         onClick={() => setIsOpen(!isOpen)}
         className={cn(
-          'fixed bottom-6 right-6 w-14 h-14 rounded-full shadow-lg flex items-center justify-center transition-all duration-300 z-50',
+          'fixed bottom-6 right-6 w-14 h-14 rounded-full shadow-lg flex items-center justify-center transition-transform duration-300 z-50 border-2 focus:outline-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300',
           isOpen
-            ? 'bg-gray-600 hover:bg-gray-700 rotate-0'
-            : 'bg-primary hover:bg-primary/90 animate-pulse'
+            ? 'bg-white border-gray-300 hover:bg-gray-50'
+            : 'bg-gradient-to-br from-blue-500 to-blue-600 border-blue-600 hover:from-blue-600 hover:to-blue-700 shadow-blue-200'
         )}
         aria-label={isOpen ? 'Закрити чат' : 'Відкрити AI асистента'}
       >
         {isOpen ? (
-          <X className="w-6 h-6 text-white" />
+          <X className="w-6 h-6 text-gray-700" />
         ) : (
           <MessageCircle className="w-6 h-6 text-white" />
         )}
@@ -273,13 +347,13 @@ export function AiChat() {
         style={{ height: 'min(600px, calc(100vh - 10rem))' }}
       >
         {/* Header */}
-        <div className="bg-primary text-white px-4 py-3 rounded-t-2xl flex items-center gap-3">
+        <div className="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-4 py-3 rounded-t-2xl flex items-center gap-3">
           <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
             <Bot className="w-6 h-6" />
           </div>
           <div>
             <h3 className="font-semibold">AI Асистент</h3>
-            <p className="text-xs text-white/80">Ostroh Problems</p>
+            <p className="text-xs text-white/80">Острог разом</p>
           </div>
         </div>
 
@@ -296,30 +370,35 @@ export function AiChat() {
               </div>
             </div>
           )}
+          {isProcessingVoice && (
+            <div className="flex gap-2 mb-4">
+              <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
+                <Bot className="w-4 h-4 text-gray-600" />
+              </div>
+              <div className="bg-gray-100 rounded-2xl rounded-tl-sm px-4 py-3 flex items-center gap-2">
+                <Loader2 className="w-4 h-4 animate-spin text-blue-500" />
+                <span className="text-sm text-gray-600">Розпізнаю голос...</span>
+              </div>
+            </div>
+          )}
           <div ref={messagesEndRef} />
         </div>
 
         {/* Audio Recording Indicator */}
-        {(isRecording || audioBlob) && (
+        {isRecording && (
           <div className="px-4 py-2 bg-gray-50 border-t flex items-center justify-between">
             <div className="flex items-center gap-2">
-              {isRecording ? (
-                <>
-                  <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse" />
-                  <span className="text-sm text-gray-600">Запис...</span>
-                </>
-              ) : (
-                <>
-                  <div className="w-3 h-3 bg-green-500 rounded-full" />
-                  <span className="text-sm text-gray-600">Записано</span>
-                </>
-              )}
+              <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse" />
+              <span className="text-sm text-gray-600">Запис...</span>
             </div>
             <button
               onClick={cancelRecording}
-              className="p-1 hover:bg-gray-200 rounded-full transition-colors"
+              className="p-2 text-gray-500 bg-gray-100 rounded-lg focus:outline-none focus-visible:ring-blue-300"
+              aria-label="Скасувати запис"
             >
-              <Trash2 className="w-4 h-4 text-gray-500" />
+              <span className="inline-flex items-center justify-center w-6 h-6 rounded-md border text-red-600">
+                <Trash2 className="w-3.5 h-3.5" strokeWidth={2.3} />
+              </span>
             </button>
           </div>
         )}
@@ -329,9 +408,9 @@ export function AiChat() {
           <div className="flex items-center gap-2">
             <button
               onClick={isRecording ? stopRecording : startRecording}
-              disabled={isLoading}
+              disabled={isLoading || isProcessingVoice}
               className={cn(
-                'p-2 rounded-full transition-colors',
+                'p-2 rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-300 transition-none',
                 isRecording
                   ? 'bg-red-500 text-white hover:bg-red-600'
                   : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
@@ -350,13 +429,13 @@ export function AiChat() {
               onChange={(e) => setInputValue(e.target.value)}
               onKeyPress={handleKeyPress}
               placeholder="Напишіть повідомлення..."
-              disabled={isLoading || isRecording}
-              className="flex-1 px-4 py-2 bg-gray-100 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 disabled:opacity-50"
+              disabled={isLoading || isRecording || isProcessingVoice}
+              className="flex-1 px-4 py-2 bg-gray-100 rounded-full text-sm border border-transparent focus:outline-none focus:ring-0 focus:border-gray-400 disabled:opacity-50"
             />
             <button
               onClick={handleSendMessage}
-              disabled={isLoading || (!inputValue.trim() && !audioBlob)}
-              className="p-2 bg-primary text-white rounded-full hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={isLoading || isProcessingVoice || !inputValue.trim()}
+              className="p-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300"
               aria-label="Надіслати"
             >
               <Send className="w-5 h-5" />

@@ -18,7 +18,9 @@ public class GeminiService : IGeminiService
     private readonly ILogger<GeminiService> _logger;
     
     private const string GeminiFlashModel = "gemini-2.5-flash";
+    private const string GeminiLiteModel = "gemini-2.5-flash";
     private const string GeminiProModel = "gemini-2.5-pro";
+    private const string GeminiEmbeddingModel = "text-embedding-004";
 
     public GeminiService(
         HttpClient httpClient,
@@ -66,6 +68,179 @@ public class GeminiService : IGeminiService
         }
     }
 
+    public async Task<string> TranscribeAudioAsync(Stream audioStream, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var apiKey = _configuration["Gemini:ApiKey"];
+            if (string.IsNullOrEmpty(apiKey))
+            {
+                throw new InvalidOperationException("Gemini API key is not configured");
+            }
+
+            // Read audio stream to byte array
+            using var memoryStream = new MemoryStream();
+            await audioStream.CopyToAsync(memoryStream, cancellationToken);
+            var audioBytes = memoryStream.ToArray();
+            var base64Audio = Convert.ToBase64String(audioBytes);
+
+            // Use Gemini's native multimodal capabilities to process audio
+            var url = $"https://generativelanguage.googleapis.com/v1beta/models/{GeminiFlashModel}:generateContent?key={apiKey}";
+
+            var requestBody = new
+            {
+                contents = new[]
+                {
+                    new
+                    {
+                        parts = new object[]
+                        {
+                            new
+                            {
+                                text = "Прослухай це голосове повідомлення і транскрибуй його в текст. Відповідай ТІЛЬКИ текстом повідомлення, без додаткових коментарів. Якщо це питання про міські проблеми, збережи всі деталі (адреса, тип проблеми, опис)."
+                            },
+                            new
+                            {
+                                inline_data = new
+                                {
+                                    mime_type = "audio/webm",
+                                    data = base64Audio
+                                }
+                            }
+                        }
+                    }
+                },
+                generationConfig = new
+                {
+                    temperature = 0.3,
+                    maxOutputTokens = 512
+                }
+            };
+
+            var content = new StringContent(
+                JsonSerializer.Serialize(requestBody),
+                Encoding.UTF8,
+                "application/json"
+            );
+
+            var response = await _httpClient.PostAsync(url, content, cancellationToken);
+            var responseContent = await response.Content.ReadAsStringAsync(cancellationToken);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                _logger.LogError("Gemini audio processing error: {StatusCode} - {Content}", response.StatusCode, responseContent);
+                return "Не вдалося розпізнати голос. Спробуйте ще раз.";
+            }
+
+            var jsonResponse = JsonSerializer.Deserialize<GeminiResponse>(responseContent);
+            var transcript = jsonResponse?.Candidates?.FirstOrDefault()?.Content?.Parts?.FirstOrDefault()?.Text;
+
+            return transcript?.Trim() ?? "Не вдалося розпізнати голос. Спробуйте говорити чіткіше.";
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error transcribing audio with Gemini");
+            return "Помилка при розпізнаванні голосу.";
+        }
+    }
+
+    public async Task<ChatResponse> ProcessVoiceMessageAsync(Stream audioStream, string userRole, Guid? userId = null, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var apiKey = _configuration["Gemini:ApiKey"];
+            if (string.IsNullOrEmpty(apiKey))
+            {
+                throw new InvalidOperationException("Gemini API key is not configured");
+            }
+
+            // Read audio stream to byte array
+            using var memoryStream = new MemoryStream();
+            await audioStream.CopyToAsync(memoryStream, cancellationToken);
+            var audioBytes = memoryStream.ToArray();
+            var base64Audio = Convert.ToBase64String(audioBytes);
+
+            // First, extract the user's intent/message from audio
+            var extractUrl = $"https://generativelanguage.googleapis.com/v1beta/models/{GeminiFlashModel}:generateContent?key={apiKey}";
+
+            var extractRequestBody = new
+            {
+                contents = new[]
+                {
+                    new
+                    {
+                        parts = new object[]
+                        {
+                            new
+                            {
+                                text = @"Прослухай це голосове повідомлення українською мовою та витягни з нього запит користувача. 
+Відповідай ТІЛЬКИ текстом того, що користувач просить або питає, без додаткових пояснень.
+Збережи всю інформацію: адреси, категорії проблем, деталі.
+Якщо не можеш розпізнати - відповідай 'НЕ_РОЗПІЗНАНО'."
+                            },
+                            new
+                            {
+                                inline_data = new
+                                {
+                                    mime_type = "audio/webm",
+                                    data = base64Audio
+                                }
+                            }
+                        }
+                    }
+                },
+                generationConfig = new
+                {
+                    temperature = 0.3,
+                    maxOutputTokens = 256
+                }
+            };
+
+            var extractContent = new StringContent(
+                JsonSerializer.Serialize(extractRequestBody),
+                Encoding.UTF8,
+                "application/json"
+            );
+
+            var extractResponse = await _httpClient.PostAsync(extractUrl, extractContent, cancellationToken);
+            var extractResponseContent = await extractResponse.Content.ReadAsStringAsync(cancellationToken);
+
+            if (!extractResponse.IsSuccessStatusCode)
+            {
+                _logger.LogError("Gemini voice processing error: {StatusCode} - {Content}", extractResponse.StatusCode, extractResponseContent);
+                return new ChatResponse(
+                    "Не вдалося розпізнати голос. Спробуйте говорити чіткіше або ближче до мікрофона.",
+                    ChatResponseType.Error
+                );
+            }
+
+            var extractJsonResponse = JsonSerializer.Deserialize<GeminiResponse>(extractResponseContent);
+            var userMessage = extractJsonResponse?.Candidates?.FirstOrDefault()?.Content?.Parts?.FirstOrDefault()?.Text?.Trim();
+
+            if (string.IsNullOrEmpty(userMessage) || userMessage == "НЕ_РОЗПІЗНАНО")
+            {
+                return new ChatResponse(
+                    "Не вдалося розпізнати голос. Спробуйте говорити чіткіше українською мовою.",
+                    ChatResponseType.Error
+                );
+            }
+
+            _logger.LogInformation("Voice message extracted: {Message}", userMessage);
+
+            // Now process the extracted message as a regular chat request
+            var chatRequest = new ChatRequest(userMessage, userRole, userId);
+            return await ProcessChatMessageAsync(chatRequest, cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error processing voice message with Gemini");
+            return new ChatResponse(
+                "Помилка при обробці голосового повідомлення. Спробуйте ще раз.",
+                ChatResponseType.Error
+            );
+        }
+    }
+
     private async Task<ChatIntent> ClassifyIntentAsync(string message, CancellationToken cancellationToken)
     {
         var prompt = $"""
@@ -87,7 +262,7 @@ public class GeminiService : IGeminiService
                       Відповідь:
                       """;
 
-        var response = await CallGeminiAsync(prompt, GeminiFlashModel, cancellationToken);
+        var response = await CallGeminiAsync(prompt, GeminiLiteModel, cancellationToken);
         
         return response.Trim().ToUpperInvariant() switch
         {
@@ -263,7 +438,7 @@ public class GeminiService : IGeminiService
         }
 
         var message = problemSummaries.Any()
-            ? $"Ось ваші проблеми (показано {problemSummaries.Count} з {userProblems.Count}):"
+            ? $"Ось ваші подані проблеми (показано {problemSummaries.Count} з {userProblems.Count}):"
             : "Ви ще не створювали жодної проблеми.";
 
         return new ChatResponse(message, ChatResponseType.ProblemsList, problemSummaries);
@@ -318,12 +493,12 @@ public class GeminiService : IGeminiService
                  1. Натисніть 'Повідомити про проблему'
                  2. Вкажіть місце на карті
                  3. Опишіть проблему та додайте фото
-                 4. Відстежуйте статус у розділі 'Мої звіти'
+                 4. Відстежуйте статус у розділі 'Подані проблеми'
                  """
         };
 
         var message = $"""
-                       # Як користуватися Ostroh Problems
+                       # Як користуватися платформою Острог Разом
 
                                    {roleSpecificInstructions}
 
@@ -333,32 +508,37 @@ public class GeminiService : IGeminiService
         return Task.FromResult(new ChatResponse(message, ChatResponseType.Help));
     }
 
-    private Task<ChatResponse> HandleWhatIsThisSiteAsync(ChatRequest request, CancellationToken cancellationToken)
+    private async Task<ChatResponse> HandleWhatIsThisSiteAsync(ChatRequest request, CancellationToken cancellationToken)
     {
-        var message = """
-                      # Ostroh Problems - Платформа для вирішення міських проблем
+        var systemPrompt = GetSystemPrompt(request.UserRole);
+        var prompt = $"""
+                      {systemPrompt}
 
-                      **Ostroh Problems** — це веб-платформа для звітування, відстеження та вирішення міських проблем в місті Острог.
+                      Користувач запитує: "{request.Message}"
 
-                      ## Основні можливості:
-                      - 📍 **Інтерактивна карта** — бачте всі проблеми міста на карті
-                      - 📝 **Звітування** — повідомляйте про проблеми з фото та геолокацією
-                      - 🔄 **Відстеження** — слідкуйте за статусом вирішення
-                      - 💬 **Коментарі** — обговорюйте проблеми з іншими
-                      - ⭐ **Оцінки** — оцінюйте якість вирішення
+                      Розкажи про платформу "Острог Разом" цікаво та по-різному кожного разу. Використовуй наступну інформацію як базу, але додай свої думки та приклади:
 
-                      ## Категорії проблем:
-                      Дороги, Освітлення, Сміття, Водопостачання, Громадський транспорт, Парки та зелені зони, Безпека, Шум, Тварини та інше.
+                      БАЗОВА ІНФОРМАЦІЯ:
+                      - Це веб-платформа для звітування та вирішення міських проблем в Острозі
+                      - Основні можливості: інтерактивна карта, звітування з фото, відстеження статусу, коментарі, оцінки
+                      - Категорії: Дороги, Освітлення, Сміття, Водопостачання, Транспорт, Парки, Безпека, Шум, Тварини
+                      - Ролі: Користувач (створює звіти), Координатор (вирішує проблеми), Адміністратор (керує системою)
 
-                      ## Ролі в системі:
-                      - **Користувач** — створює звіти та відстежує їх
-                      - **Координатор** — працює над вирішенням проблем
-                      - **Адміністратор** — керує системою та користувачами
+                      ВАЖЛИВО:
+                      1. Кожна відповідь має бути унікальною та цікавою
+                      2. Додай конкретні приклади як платформа допомагає різним групам:
+                         - Простим людям міста (швидко повідомити про яму, зламане освітлення)
+                         - Депутатам (бачити реальні проблеми громади, приймати обґрунтовані рішення)
+                         - Волонтерам (координувати зусилля, відстежувати прогрес)
+                      3. Використовуй живу мову, а не шаблони
+                      4. Можеш додати емодзі для виразності, але помірно
+                      5. Зроби відповідь особистою та залучаючою
 
-                      Це демо-проект для демонстрації можливостей системи.
+                      Дай відповідь українською мовою.
                       """;
 
-        return Task.FromResult(new ChatResponse(message, ChatResponseType.Help));
+        var response = await CallGeminiAsync(prompt, GeminiFlashModel, cancellationToken);
+        return new ChatResponse(response, ChatResponseType.Help);
     }
 
     private Task<ChatResponse> HandleContactAuthorsAsync(ChatRequest request, CancellationToken cancellationToken)
@@ -366,7 +546,7 @@ public class GeminiService : IGeminiService
         var message = """
                       # Зв'язок з авторами
 
-                      **Ostroh Problems** — це демо-проект, створений для демонстрації можливостей сучасних веб-технологій.
+                      **Острог Разом** — це демо-проект, створений для демонстрації можливостей сучасних веб-технологій.
 
                       ## Контакти:
                       - 📧 **Email:** support@ostrohproblems.demo
@@ -494,8 +674,9 @@ public class GeminiService : IGeminiService
             },
             generationConfig = new
             {
-                temperature = 0.7,
-                maxOutputTokens = 1024
+                temperature = 0.9,
+                maxOutputTokens = 1024,
+                topP = 0.95
             }
         };
 
@@ -521,7 +702,7 @@ public class GeminiService : IGeminiService
     private string GetSystemPrompt(string userRole)
     {
         return $"""
-                Ти - AI асистент платформи Ostroh Problems для вирішення міських проблем в місті Острог.
+                Ти - AI асистент платформи Острог Разом для вирішення міських проблем в місті Острог.
 
                             Про платформу:
                             - Це веб-додаток для звітування та відстеження міських проблем
@@ -538,10 +719,14 @@ public class GeminiService : IGeminiService
 
                             Правила:
                             1. Відповідай українською мовою
-                            2. Будь дружнім та корисним
+                            2. Будь дружнім, корисним та креативним
                             3. Якщо не знаєш відповіді - скажи про це чесно
                             4. Пропонуй конкретні дії для вирішення питань
-                            5. Це демо-проект, тому деякі дані є ілюстративними
+                            5. Кожна відповідь має бути унікальною - уникай шаблонних фраз
+                            6. Додавай конкретні приклади та сценарії використання
+                            7. Використовуй живу розмовну мову, а не формальні заготовки
+                            8. Можеш використовувати емодзі для виразності, але помірно
+                            9. Це демо-проект, тому деякі дані є ілюстративними
                 """;
     }
 
