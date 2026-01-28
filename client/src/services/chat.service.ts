@@ -24,4 +24,48 @@ export const chatService = {
 
     return response.data
   },
+
+  async transcribeAudio(
+    audioBlob: Blob,
+    token: string | null
+  ): Promise<string> {
+    const formData = new FormData()
+    formData.append('audioFile', audioBlob, 'audio.webm')
+
+    const headers: Record<string, string> = {}
+
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`
+    }
+
+    const response = await axios.post<{ transcription: string }>(
+      `${API_URL}/chat/transcribe`,
+      formData,
+      { headers }
+    )
+
+    return response.data.transcription
+  },
+
+  async sendVoiceMessage(
+    audioBlob: Blob,
+    token: string | null
+  ): Promise<ChatMessageResponse> {
+    const formData = new FormData()
+    formData.append('audioFile', audioBlob, 'audio.webm')
+
+    const headers: Record<string, string> = {}
+
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`
+    }
+
+    const response = await axios.post<ChatMessageResponse>(
+      `${API_URL}/chat/voice-message`,
+      formData,
+      { headers }
+    )
+
+    return response.data
+  },
 }
