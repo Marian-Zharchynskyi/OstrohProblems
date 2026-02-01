@@ -124,10 +124,65 @@ public class ChatController(IGeminiService geminiService, IIdentityService ident
 
     private Guid? GetUserId()
     {
-        return identityService.GetUserId()
-            .Match(
+        var userIdOption = identityService.GetUserId();
+        return userIdOption.IsSome
+            ? userIdOption.Match(
                 userId => (Guid?)userId.Value,
                 () => null
-            );
+            )
+            : null;
+    }
+
+    [Authorize]
+    [HttpPost("extract-problem")]
+    public async Task<ActionResult<ExtractedProblemResponse>> ExtractProblemData(
+        [FromBody] ExtractProblemRequest request,
+        CancellationToken cancellationToken)
+    {
+        var result = await geminiService.ExtractProblemDataAsync(request.Message, cancellationToken);
+
+        return new ExtractedProblemResponse(
+            result.Title,
+            result.Description,
+            result.Categories,
+            result.Priority,
+            result.StreetName,
+            result.Latitude,
+            result.Longitude,
+            result.AiMessage,
+            result.IsComplete
+        );
+    }
+
+    [Authorize]
+    [HttpPost("extract-problem-voice")]
+    public async Task<ActionResult<ExtractedProblemResponse>> ExtractProblemDataFromVoice(
+        IFormFile audioFile,
+        CancellationToken cancellationToken)
+    {
+        if (audioFile == null || audioFile.Length == 0)
+        {
+            return BadRequest(new { error = "Audio file is required" });
+        }
+
+        if (audioFile.Length > 10 * 1024 * 1024)
+        {
+            return BadRequest(new { error = "Audio file is too large. Maximum size is 10MB." });
+        }
+
+        using var stream = audioFile.OpenReadStream();
+        var result = await geminiService.ExtractProblemDataFromVoiceAsync(stream, cancellationToken);
+
+        return new ExtractedProblemResponse(
+            result.Title,
+            result.Description,
+            result.Categories,
+            result.Priority,
+            result.StreetName,
+            result.Latitude,
+            result.Longitude,
+            result.AiMessage,
+            result.IsComplete
+        );
     }
 }

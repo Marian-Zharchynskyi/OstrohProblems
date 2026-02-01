@@ -33,3 +33,15 @@ export interface ChatMessageResponse {
   responseType: ChatResponseType
   problems: ProblemSummaryChat[] | null
 }
+
+export interface ExtractedProblemData {
+  title: string
+  description: string
+  categories: string[]
+  priority: string
+  streetName: string | null
+  latitude: number | null
+  longitude: number | null
+  aiMessage: string | null
+  isComplete: boolean
+}

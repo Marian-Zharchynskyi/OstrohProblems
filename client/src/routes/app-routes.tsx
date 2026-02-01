@@ -13,6 +13,7 @@ import { MapPage } from '@/pages/map-page'
 import { ProfilePage } from '@/pages/profile-page'
 import { AdminUsersPage } from '@/pages/admin-users-page'
 import { CreateIssuePage } from '@/pages/create-issue-page'
+import { CreateIssueAiPage } from '@/pages/create-issue-ai-page'
 import { ProblemDetailPage } from '@/pages/problem-detail-page'
 import { ProblemCommentsPage } from '@/pages/problem-comments-page'
 import { MySubmittedProblemsPageWithTabs } from '@/pages/my-submitted-problems-page-with-tabs'
@@ -142,6 +143,16 @@ export function AppRoutes() {
           <ProtectedRoute allowedRoles={['User', 'Administrator']}>
             <Layout>
               <CreateIssuePage />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/problems/create-ai"
+        element={
+          <ProtectedRoute allowedRoles={['User', 'Administrator']}>
+            <Layout>
+              <CreateIssueAiPage />
             </Layout>
           </ProtectedRoute>
         }
