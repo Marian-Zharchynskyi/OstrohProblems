@@ -5,6 +5,8 @@ public interface IGeminiService
     Task<ChatResponse> ProcessChatMessageAsync(ChatRequest request, CancellationToken cancellationToken = default);
     Task<string> TranscribeAudioAsync(Stream audioStream, CancellationToken cancellationToken = default);
     Task<ChatResponse> ProcessVoiceMessageAsync(Stream audioStream, string userRole, Guid? userId = null, CancellationToken cancellationToken = default);
+    Task<ExtractedProblemData> ExtractProblemDataAsync(string userMessage, CancellationToken cancellationToken = default);
+    Task<ExtractedProblemData> ExtractProblemDataFromVoiceAsync(Stream audioStream, CancellationToken cancellationToken = default);
 }
 
 public record ChatRequest(
@@ -41,4 +43,16 @@ public record ProblemSummaryForChat(
     int CommentsCount,
     DateTime CreatedAt,
     string? CreatorName
+);
+
+public record ExtractedProblemData(
+    string Title,
+    string Description,
+    List<string> Categories,
+    string Priority,
+    string? StreetName,
+    double? Latitude,
+    double? Longitude,
+    string? AiMessage,
+    bool IsComplete
 );

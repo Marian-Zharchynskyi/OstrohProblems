@@ -28,3 +28,19 @@ public record ProblemSummaryDto(
 public record TranscribeAudioResponse(
     string Transcription
 );
+
+public record ExtractProblemRequest(
+    string Message
+);
+
+public record ExtractedProblemResponse(
+    string Title,
+    string Description,
+    List<string> Categories,
+    string Priority,
+    string? StreetName,
+    double? Latitude,
+    double? Longitude,
+    string? AiMessage,
+    bool IsComplete
+);

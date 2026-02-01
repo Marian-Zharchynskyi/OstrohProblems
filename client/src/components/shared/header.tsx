@@ -1,9 +1,10 @@
 import { useState, useRef, useEffect } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
-import { LogOut, Plus, ChevronDown, User as UserIcon, FileText } from 'lucide-react'
+import { LogOut, ChevronDown, User as UserIcon, FileText } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/contexts/auth-context'
 import { NotificationsBell } from '@/components/notifications/notifications-bell'
+import { CreateProblemDropdown } from '@/components/shared/create-problem-dropdown'
 import { designSystem } from '@/lib/design-system'
 import { useQuery } from '@tanstack/react-query'
 import { userService } from '@/services/user.service'
@@ -133,13 +134,7 @@ export const Header = () => {
                 {/* Regular User Actions */}
                 {isUser && (
                   <>
-                    <Link
-                      to="/problems/create"
-                      className="hidden sm:flex items-center gap-2 text-sm font-medium bg-primary text-primary-foreground px-5 py-2.5 rounded-full hover:bg-primary/90 transition-all shadow-sm active:scale-95"
-                    >
-                      <Plus className="h-4 w-4" />
-                      Подати проблему
-                    </Link>
+                    <CreateProblemDropdown />
 
                     <NotificationsBell />
                   </>

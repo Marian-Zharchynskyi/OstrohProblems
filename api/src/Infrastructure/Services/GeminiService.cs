@@ -144,6 +144,237 @@ public class GeminiService : IGeminiService
         }
     }
 
+    public async Task<ExtractedProblemData> ExtractProblemDataAsync(string userMessage, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var prompt = GetProblemExtractionPrompt(userMessage);
+            var response = await CallGeminiAsync(prompt, GeminiFlashModel, cancellationToken);
+            return ParseExtractedProblemData(response, userMessage);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error extracting problem data");
+            return new ExtractedProblemData(
+                Title: "",
+                Description: userMessage,
+                Categories: new List<string>(),
+                Priority: "Середній",
+                StreetName: null,
+                Latitude: null,
+                Longitude: null,
+                AiMessage: "Не вдалося обробити запит. Спробуйте описати проблему детальніше.",
+                IsComplete: false
+            );
+        }
+    }
+
+    public async Task<ExtractedProblemData> ExtractProblemDataFromVoiceAsync(Stream audioStream, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var apiKey = _configuration["Gemini:ApiKey"];
+            if (string.IsNullOrEmpty(apiKey))
+            {
+                throw new InvalidOperationException("Gemini API key is not configured");
+            }
+
+            using var memoryStream = new MemoryStream();
+            await audioStream.CopyToAsync(memoryStream, cancellationToken);
+            var audioBytes = memoryStream.ToArray();
+            var base64Audio = Convert.ToBase64String(audioBytes);
+
+            var url = $"https://generativelanguage.googleapis.com/v1beta/models/{GeminiFlashModel}:generateContent?key={apiKey}";
+
+            var extractionPrompt = @"Прослухай це голосове повідомлення українською мовою. Користувач описує міську проблему для звіту.
+Витягни з повідомлення наступну інформацію та поверни у форматі JSON:
+{
+  ""title"": ""короткий заголовок проблеми (до 100 символів)"",
+  ""description"": ""детальний опис проблеми"",
+  ""categories"": [""категорія1""],
+  ""priority"": ""пріоритет"",
+  ""streetName"": ""назва вулиці якщо згадана"",
+  ""aiMessage"": ""твоя відповідь користувачу""
+}
+
+Доступні категорії: Дороги, Освітлення, Сміття, Водопостачання, Громадський транспорт, Парки та зелені зони, Безпека, Шум, Тварини, Інше.
+Доступні пріоритети: Низький, Середній, Високий, Критичний.
+
+Якщо не можеш розпізнати голос - поверни JSON з порожніми полями та aiMessage з поясненням.
+Відповідай ТІЛЬКИ валідним JSON без додаткового тексту.";
+
+            var requestBody = new
+            {
+                contents = new[]
+                {
+                    new
+                    {
+                        parts = new object[]
+                        {
+                            new { text = extractionPrompt },
+                            new
+                            {
+                                inline_data = new
+                                {
+                                    mime_type = "audio/webm",
+                                    data = base64Audio
+                                }
+                            }
+                        }
+                    }
+                },
+                generationConfig = new
+                {
+                    temperature = 0.3,
+                    maxOutputTokens = 1024
+                }
+            };
+
+            var content = new StringContent(
+                JsonSerializer.Serialize(requestBody),
+                Encoding.UTF8,
+                "application/json"
+            );
+
+            var response = await _httpClient.PostAsync(url, content, cancellationToken);
+            var responseContent = await response.Content.ReadAsStringAsync(cancellationToken);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                _logger.LogError("Gemini voice extraction error: {StatusCode} - {Content}", response.StatusCode, responseContent);
+                return new ExtractedProblemData(
+                    Title: "",
+                    Description: "",
+                    Categories: new List<string>(),
+                    Priority: "Середній",
+                    StreetName: null,
+                    Latitude: null,
+                    Longitude: null,
+                    AiMessage: "Не вдалося розпізнати голос. Спробуйте говорити чіткіше.",
+                    IsComplete: false
+                );
+            }
+
+            var jsonResponse = JsonSerializer.Deserialize<GeminiResponse>(responseContent);
+            var extractedText = jsonResponse?.Candidates?.FirstOrDefault()?.Content?.Parts?.FirstOrDefault()?.Text?.Trim() ?? "";
+
+            return ParseExtractedProblemData(extractedText, "");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error extracting problem data from voice");
+            return new ExtractedProblemData(
+                Title: "",
+                Description: "",
+                Categories: new List<string>(),
+                Priority: "Середній",
+                StreetName: null,
+                Latitude: null,
+                Longitude: null,
+                AiMessage: "Помилка при обробці голосового повідомлення.",
+                IsComplete: false
+            );
+        }
+    }
+
+    private string GetProblemExtractionPrompt(string userMessage)
+    {
+        return $@"Ти - AI асистент для створення звітів про міські проблеми в місті Острог.
+Користувач описує проблему. Витягни з опису інформацію та поверни у форматі JSON:
+
+{{
+  ""title"": ""короткий заголовок проблеми (до 100 символів)"",
+  ""description"": ""детальний опис проблеми (мінімум 30 символів)"",
+  ""categories"": [""категорія1""],
+  ""priority"": ""пріоритет"",
+  ""streetName"": ""назва вулиці якщо згадана або null"",
+  ""aiMessage"": ""твоя дружня відповідь користувачу про те що ти зрозумів""
+}}
+
+Доступні категорії: Дороги, Освітлення, Сміття, Водопостачання, Громадський транспорт, Парки та зелені зони, Безпека, Шум, Тварини, Інше.
+Доступні пріоритети: Низький, Середній, Високий, Критичний.
+
+Правила визначення пріоритету:
+- Критичний: небезпека для життя, аварійні ситуації
+- Високий: серйозні проблеми що потребують швидкого вирішення
+- Середній: звичайні проблеми
+- Низький: незначні косметичні проблеми
+
+Повідомлення користувача: ""{userMessage}""
+
+Відповідай ТІЛЬКИ валідним JSON без додаткового тексту.";
+    }
+
+    private ExtractedProblemData ParseExtractedProblemData(string jsonResponse, string originalMessage)
+    {
+        try
+        {
+            // Clean up the response - remove markdown code blocks if present
+            var cleanJson = jsonResponse.Trim();
+            if (cleanJson.StartsWith("```json"))
+                cleanJson = cleanJson[7..];
+            if (cleanJson.StartsWith("```"))
+                cleanJson = cleanJson[3..];
+            if (cleanJson.EndsWith("```"))
+                cleanJson = cleanJson[..^3];
+            cleanJson = cleanJson.Trim();
+
+            var options = new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            };
+
+            var parsed = JsonSerializer.Deserialize<ExtractedProblemJson>(cleanJson, options);
+
+            if (parsed == null)
+            {
+                return new ExtractedProblemData(
+                    Title: "",
+                    Description: originalMessage,
+                    Categories: new List<string>(),
+                    Priority: "Середній",
+                    StreetName: null,
+                    Latitude: null,
+                    Longitude: null,
+                    AiMessage: "Не вдалося розпізнати дані. Опишіть проблему детальніше.",
+                    IsComplete: false
+                );
+            }
+
+            var isComplete = !string.IsNullOrWhiteSpace(parsed.Title) &&
+                           !string.IsNullOrWhiteSpace(parsed.Description) &&
+                           parsed.Description.Length >= 30 &&
+                           parsed.Categories?.Count > 0;
+
+            return new ExtractedProblemData(
+                Title: parsed.Title ?? "",
+                Description: parsed.Description ?? originalMessage,
+                Categories: parsed.Categories ?? new List<string>(),
+                Priority: parsed.Priority ?? "Середній",
+                StreetName: parsed.StreetName,
+                Latitude: null,
+                Longitude: null,
+                AiMessage: parsed.AiMessage ?? "Дані успішно розпізнано!",
+                IsComplete: isComplete
+            );
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error parsing extracted problem data: {Response}", jsonResponse);
+            return new ExtractedProblemData(
+                Title: "",
+                Description: originalMessage,
+                Categories: new List<string>(),
+                Priority: "Середній",
+                StreetName: null,
+                Latitude: null,
+                Longitude: null,
+                AiMessage: "Виникла помилка при обробці. Спробуйте ще раз.",
+                IsComplete: false
+            );
+        }
+    }
+
     public async Task<ChatResponse> ProcessVoiceMessageAsync(Stream audioStream, string userRole, Guid? userId = null, CancellationToken cancellationToken = default)
     {
         try
@@ -262,7 +493,7 @@ public class GeminiService : IGeminiService
                       Відповідь:
                       """;
 
-        var response = await CallGeminiAsync(prompt, GeminiLiteModel, cancellationToken);
+        var response = await CallGeminiAsyncExtended(prompt, GeminiLiteModel, cancellationToken, maxTokens: 64, temperature: 0.1);
         
         return response.Trim().ToUpperInvariant() switch
         {
@@ -415,10 +646,16 @@ public class GeminiService : IGeminiService
 
     private async Task<ChatResponse> HandleGetMyProblemsAsync(ChatRequest request, CancellationToken cancellationToken)
     {
-        if (!request.UserId.HasValue)
+        if (!request.UserId.HasValue || request.UserRole == "Guest")
         {
             return new ChatResponse(
-                "Щоб переглянути свої проблеми, вам потрібно увійти в систему.",
+                "Щоб переглянути свої подані проблеми, вам потрібно увійти в систему. 🔐\n\n" +
+                "Після входу ви зможете:\n" +
+                "- Переглядати всі свої звіти\n" +
+                "- Відстежувати статус вирішення\n" +
+                "- Редагувати та доповнювати свої проблеми\n" +
+                "- Отримувати сповіщення про оновлення\n\n" +
+                "Натисніть кнопку 'Увійти' у верхньому правому куті.",
                 ChatResponseType.Text
             );
         }
@@ -533,11 +770,12 @@ public class GeminiService : IGeminiService
                       3. Використовуй живу мову, а не шаблони
                       4. Можеш додати емодзі для виразності, але помірно
                       5. Зроби відповідь особистою та залучаючою
+                      6. ОБОВ'ЯЗКОВО дай ПОВНУ та ДЕТАЛЬНУ відповідь (мінімум 200-300 слів)
 
                       Дай відповідь українською мовою.
                       """;
 
-        var response = await CallGeminiAsync(prompt, GeminiFlashModel, cancellationToken);
+        var response = await CallGeminiAsyncExtended(prompt, GeminiFlashModel, cancellationToken, maxTokens: 2048);
         return new ChatResponse(response, ChatResponseType.Help);
     }
 
@@ -569,6 +807,27 @@ public class GeminiService : IGeminiService
     {
         var message = request.UserRole switch
         {
+            "Guest" => """
+                       # Можливості для гостей
+
+                       Ви переглядаєте сайт як **гість** (без входу в систему).
+
+                       ## Що ви можете робити зараз:
+                       - ✅ Переглядати карту з усіма проблемами міста
+                       - ✅ Читати опис проблем та коментарі
+                       - ✅ Бачити статуси та пріоритети проблем
+                       - ✅ Використовувати AI-асистента для пошуку інформації
+
+                       ## Що стане доступним після входу:
+                       - 🔓 Створення власних звітів про проблеми
+                       - 🔓 Додавання фотографій та коментарів
+                       - 🔓 Оцінювання вирішених проблем
+                       - 🔓 Відстеження статусу ваших звітів
+                       - 🔓 Отримання сповіщень про оновлення
+
+                       **Увійдіть в систему**, щоб отримати повний доступ до функціоналу платформи! 🚀
+                       """,
+
             "Administrator" => """
                                # Можливості адміністратора
 
@@ -652,6 +911,11 @@ public class GeminiService : IGeminiService
 
     private async Task<string> CallGeminiAsync(string prompt, string model, CancellationToken cancellationToken)
     {
+        return await CallGeminiAsyncExtended(prompt, model, cancellationToken, maxTokens: 1024);
+    }
+
+    private async Task<string> CallGeminiAsyncExtended(string prompt, string model, CancellationToken cancellationToken, int maxTokens = 1024, double temperature = 0.9)
+    {
         var apiKey = _configuration["Gemini:ApiKey"];
         if (string.IsNullOrEmpty(apiKey))
         {
@@ -674,8 +938,8 @@ public class GeminiService : IGeminiService
             },
             generationConfig = new
             {
-                temperature = 0.9,
-                maxOutputTokens = 1024,
+                temperature,
+                maxOutputTokens = maxTokens,
                 topP = 0.95
             }
         };
@@ -838,4 +1102,25 @@ internal class GeminiPart
 {
     [JsonPropertyName("text")]
     public string? Text { get; set; }
+}
+
+internal class ExtractedProblemJson
+{
+    [JsonPropertyName("title")]
+    public string? Title { get; set; }
+
+    [JsonPropertyName("description")]
+    public string? Description { get; set; }
+
+    [JsonPropertyName("categories")]
+    public List<string>? Categories { get; set; }
+
+    [JsonPropertyName("priority")]
+    public string? Priority { get; set; }
+
+    [JsonPropertyName("streetName")]
+    public string? StreetName { get; set; }
+
+    [JsonPropertyName("aiMessage")]
+    public string? AiMessage { get; set; }
 }
