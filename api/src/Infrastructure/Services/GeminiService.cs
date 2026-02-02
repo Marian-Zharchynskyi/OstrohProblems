@@ -50,6 +50,7 @@ public class GeminiService : IGeminiService
                 ChatIntent.GetProblemsByPriority => await HandleGetProblemsByPriorityAsync(request, cancellationToken),
                 ChatIntent.GetRecentProblems => await HandleGetRecentProblemsAsync(request, cancellationToken),
                 ChatIntent.GetMyProblems => await HandleGetMyProblemsAsync(request, cancellationToken),
+                ChatIntent.AnalyzeProblems => await HandleAnalyzeProblemsAsync(request, cancellationToken),
                 ChatIntent.HowToUse => await HandleHowToUseAsync(request, cancellationToken),
                 ChatIntent.WhatIsThisSite => await HandleWhatIsThisSiteAsync(request, cancellationToken),
                 ChatIntent.ContactAuthors => await HandleContactAuthorsAsync(request, cancellationToken),
@@ -149,7 +150,7 @@ public class GeminiService : IGeminiService
         try
         {
             var prompt = GetProblemExtractionPrompt(userMessage);
-            var response = await CallGeminiAsync(prompt, GeminiFlashModel, cancellationToken);
+            var response = await CallGeminiAsyncExtended(prompt, GeminiFlashModel, cancellationToken, maxTokens: 2048, temperature: 0.3);
             return ParseExtractedProblemData(response, userMessage);
         }
         catch (Exception ex)
@@ -186,22 +187,44 @@ public class GeminiService : IGeminiService
 
             var url = $"https://generativelanguage.googleapis.com/v1beta/models/{GeminiFlashModel}:generateContent?key={apiKey}";
 
-            var extractionPrompt = @"Прослухай це голосове повідомлення українською мовою. Користувач описує міську проблему для звіту.
+            var extractionPrompt = @"Прослухай це голосове повідомлення українською мовою. Користувач описує міську проблему для звіту в місті Острог, Рівненська область, Україна.
 Витягни з повідомлення наступну інформацію та поверни у форматі JSON:
 {
   ""title"": ""короткий заголовок проблеми (до 100 символів)"",
   ""description"": ""детальний опис проблеми"",
   ""categories"": [""категорія1""],
   ""priority"": ""пріоритет"",
-  ""streetName"": ""назва вулиці якщо згадана"",
+  ""streetName"": ""ОБОВ'ЯЗКОВО вкажи назву вулиці з локації"",
+  ""latitude"": число або null,
+  ""longitude"": число або null,
   ""aiMessage"": ""твоя відповідь користувачу""
 }
 
 Доступні категорії: Дороги, Освітлення, Сміття, Водопостачання, Громадський транспорт, Парки та зелені зони, Безпека, Шум, Тварини, Інше.
 Доступні пріоритети: Низький, Середній, Високий, Критичний.
 
+ПОПУЛЯРНІ ЛОКАЦІЇ ОСТРОГА:
+1. Новий корпус Острозької академії (Монастир капуцинів) - вул. Семінарська, 2 - 50.32917, 26.51278
+2. Старий корпус Острозької академії - вул. Семінарська, 2 - 50.32833, 26.51278
+3. АТБ (супермаркет) - вул. Гальшки Острозької, 1в - 50.32729, 26.52463
+4. Острозький замок - вул. Академічна, 5 - 50.32626, 26.52212
+5. Нова Пошта - вул. Князів Острозьких, 3 - 50.32849, 26.51955
+6. Укрпошта - просп. Незалежності, 7 - 50.32951, 26.52054
+7. Татарська вежа - вул. Татарська - 50.3306, 26.5260
+8. Автовокзал Острог - просп. Незалежності, 166 - 50.33557, 26.49400
+9. Богоявленський собор - вул. Академічна, 5в - 50.32661, 26.52128
+10. Гуртожиток Академічний дім - просп. Незалежності, 5 - 50.32951, 26.52054
+
+Якщо згадано ""старий корпус"", ""академія"", ""університет"" - це Острозька академія (вул. Семінарська).
+
 Якщо не можеш розпізнати голос - поверни JSON з порожніми полями та aiMessage з поясненням.
-Відповідай ТІЛЬКИ валідним JSON без додаткового тексту.";
+
+КРИТИЧНО ВАЖЛИВО:
+1. Відповідай ТІЛЬКИ валідним JSON без додаткового тексту
+2. Переконайся що JSON ПОВНИЙ і ЗАВЕРШЕНИЙ (всі дужки закриті)
+3. Використовуй правильне UTF-8 кодування для українських символів
+4. НЕ обрізай текст - завершуй всі поля повністю
+5. Всі рядкові поля мають бути повністю заповнені без обривів";
 
             var requestBody = new
             {
@@ -226,7 +249,7 @@ public class GeminiService : IGeminiService
                 generationConfig = new
                 {
                     temperature = 0.3,
-                    maxOutputTokens = 1024
+                    maxOutputTokens = 2048
                 }
             };
 
@@ -279,7 +302,7 @@ public class GeminiService : IGeminiService
 
     private string GetProblemExtractionPrompt(string userMessage)
     {
-        return $@"Ти - AI асистент для створення звітів про міські проблеми в місті Острог.
+        return $@"Ти - AI асистент для створення звітів про міські проблеми в місті Острог, Рівненська область, Україна.
 Користувач описує проблему. Витягни з опису інформацію та поверни у форматі JSON:
 
 {{
@@ -287,12 +310,30 @@ public class GeminiService : IGeminiService
   ""description"": ""детальний опис проблеми (мінімум 30 символів)"",
   ""categories"": [""категорія1""],
   ""priority"": ""пріоритет"",
-  ""streetName"": ""назва вулиці якщо згадана або null"",
+  ""streetName"": ""ОБОВ'ЯЗКОВО вкажи назву вулиці з локації або найближчої відомої точки"",
+  ""latitude"": число або null,
+  ""longitude"": число або null,
   ""aiMessage"": ""твоя дружня відповідь користувачу про те що ти зрозумів""
 }}
 
 Доступні категорії: Дороги, Освітлення, Сміття, Водопостачання, Громадський транспорт, Парки та зелені зони, Безпека, Шум, Тварини, Інше.
 Доступні пріоритети: Низький, Середній, Високий, Критичний.
+
+ПОПУЛЯРНІ ЛОКАЦІЇ ОСТРОГА (використовуй для визначення координат та вулиць):
+1. Новий корпус Острозької академії (Монастир капуцинів) - вул. Семінарська, 2 - координати: 50.32917, 26.51278
+2. Старий корпус Острозької академії (головний корпус) - вул. Семінарська, 2 - координати: 50.32833, 26.51278
+3. АТБ (супермаркет) - вул. Гальшки Острозької, 1в - координати: 50.32729, 26.52463
+4. Острозький замок (Кругла вежа, Мурована вежа) - вул. Академічна, 5 - координати: 50.32626, 26.52212
+5. Нова Пошта (відділення №1) - вул. Князів Острозьких, 3 - координати: 50.32849, 26.51955
+6. Укрпошта (відділення 35800) - просп. Незалежності, 7 - координати: 50.32951, 26.52054
+7. Татарська вежа - вул. Татарська - координати: 50.3306, 26.5260
+8. Автовокзал Острог - просп. Незалежності, 166 - координати: 50.33557, 26.49400
+9. Богоявленський собор (на території замку) - вул. Академічна, 5в - координати: 50.32661, 26.52128
+10. Гуртожиток Академічний дім (№5) - просп. Незалежності, 5 - координати: 50.32951, 26.52054
+11. Центр міста / Центральна площа - координати: 50.3290, 26.5180
+12. Парк біля замку - вул. Академічна - координати: 50.3268, 26.5210
+13. Ринок - просп. Незалежності - координати: 50.3295, 26.5190
+14. Міська рада - просп. Незалежності, 12 - координати: 50.3292, 26.5175
 
 Правила визначення пріоритету:
 - Критичний: небезпека для життя, аварійні ситуації
@@ -300,9 +341,20 @@ public class GeminiService : IGeminiService
 - Середній: звичайні проблеми
 - Низький: незначні косметичні проблеми
 
+ВАЖЛИВО:
+1. Якщо користувач згадує відому локацію з списку вище - ОБОВ'ЯЗКОВО встанови координати та streetName
+2. Якщо згадано ""старий корпус"", ""академія"", ""університет"" - це Острозька академія
+3. Вулицю завжди записуй у форматі ""вул. Назва"" або ""просп. Назва""
+4. Якщо локація невідома - залиш координати null, але спробуй визначити вулицю за контекстом
+
 Повідомлення користувача: ""{userMessage}""
 
-Відповідай ТІЛЬКИ валідним JSON без додаткового тексту.";
+КРИТИЧНО ВАЖЛИВО:
+1. Відповідай ТІЛЬКИ валідним JSON без додаткового тексту
+2. Переконайся що JSON ПОВНИЙ і ЗАВЕРШЕНИЙ (всі дужки закриті)
+3. Використовуй правильне UTF-8 кодування для українських символів
+4. НЕ обрізай текст - завершуй всі поля повністю
+5. Всі рядкові поля мають бути повністю заповнені без обривів";
     }
 
     private ExtractedProblemData ParseExtractedProblemData(string jsonResponse, string originalMessage)
@@ -311,6 +363,11 @@ public class GeminiService : IGeminiService
         {
             // Clean up the response - remove markdown code blocks if present
             var cleanJson = jsonResponse.Trim();
+            
+            _logger.LogInformation("Parsing JSON response (length: {Length}): {Response}", 
+                cleanJson.Length, 
+                cleanJson.Length > 500 ? cleanJson.Substring(0, 500) + "..." : cleanJson);
+            
             if (cleanJson.StartsWith("```json"))
                 cleanJson = cleanJson[7..];
             if (cleanJson.StartsWith("```"))
@@ -318,6 +375,33 @@ public class GeminiService : IGeminiService
             if (cleanJson.EndsWith("```"))
                 cleanJson = cleanJson[..^3];
             cleanJson = cleanJson.Trim();
+
+            // Try to fix incomplete JSON by checking if it ends properly
+            if (!cleanJson.EndsWith("}"))
+            {
+                _logger.LogWarning("JSON response appears incomplete (doesn't end with }}). Attempting to fix...");
+                
+                // Check if response was truncated mid-string
+                var lastQuoteIndex = cleanJson.LastIndexOf('"');
+                var openQuotes = cleanJson.Count(c => c == '"');
+                
+                // If odd number of quotes, the string was cut off - close it
+                if (openQuotes % 2 != 0)
+                {
+                    cleanJson += "\"";
+                    _logger.LogInformation("Closed unclosed string");
+                }
+                
+                // Try to close the JSON properly
+                var openBraces = cleanJson.Count(c => c == '{');
+                var closeBraces = cleanJson.Count(c => c == '}');
+                if (openBraces > closeBraces)
+                {
+                    // Add missing closing braces
+                    cleanJson += new string('}', openBraces - closeBraces);
+                    _logger.LogInformation("Added {Count} closing braces", openBraces - closeBraces);
+                }
+            }
 
             var options = new JsonSerializerOptions
             {
@@ -328,6 +412,7 @@ public class GeminiService : IGeminiService
 
             if (parsed == null)
             {
+                _logger.LogWarning("Parsed JSON is null");
                 return new ExtractedProblemData(
                     Title: "",
                     Description: originalMessage,
@@ -352,15 +437,17 @@ public class GeminiService : IGeminiService
                 Categories: parsed.Categories ?? new List<string>(),
                 Priority: parsed.Priority ?? "Середній",
                 StreetName: parsed.StreetName,
-                Latitude: null,
-                Longitude: null,
+                Latitude: parsed.Latitude,
+                Longitude: parsed.Longitude,
                 AiMessage: parsed.AiMessage ?? "Дані успішно розпізнано!",
                 IsComplete: isComplete
             );
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error parsing extracted problem data: {Response}", jsonResponse);
+            _logger.LogError(ex, "Error parsing extracted problem data. Response length: {Length}, First 200 chars: {Preview}", 
+                jsonResponse?.Length ?? 0, 
+                jsonResponse?.Length > 200 ? jsonResponse.Substring(0, 200) : jsonResponse ?? "null");
             return new ExtractedProblemData(
                 Title: "",
                 Description: originalMessage,
@@ -474,28 +561,49 @@ public class GeminiService : IGeminiService
 
     private async Task<ChatIntent> ClassifyIntentAsync(string message, CancellationToken cancellationToken)
     {
+        // First, check for keyword-based fallback patterns for analyze/compare intents
+        // This ensures that even if the classifier fails, we can detect the intent
+        var messageLower = message.ToLowerInvariant();
+        var analyzeKeywords = new[] { "порівняй", "порівняння", "порівнян", "різниця", "різниц", "статистика", "аналіз", "найпопулярніш", "скільки проблем", "які найбільше", "в чому різниця", "відмінност", "чим відрізня", "що спільного", "схожість", "відмінність" };
+        var isLikelyAnalyze = analyzeKeywords.Any(keyword => messageLower.Contains(keyword));
+        
+        // If keyword match is strong, return immediately to avoid misclassification
+        if (isLikelyAnalyze)
+        {
+            _logger.LogInformation("Message: '{Message}' -> Classified as: AnalyzeProblems (keyword match)", message);
+            return ChatIntent.AnalyzeProblems;
+        }
+        
         var prompt = $"""
-                      Класифікуй намір користувача на основі його повідомлення. Відповідай ТІЛЬКИ одним словом з наступного списку:
-                      - TOP_PROBLEMS (якщо питає про найкращі/найгірші/топ проблеми за рейтингом)
-                      - CATEGORY_PROBLEMS (якщо питає про проблеми певної категорії: дороги, освітлення, сміття, водопостачання, транспорт, парки, безпека, шум, тварини)
-                      - STATUS_PROBLEMS (якщо питає про проблеми за статусом: нові, в роботі, виконані, відхилені)
-                      - PRIORITY_PROBLEMS (якщо питає про проблеми за пріоритетом: низький, середній, високий, критичний)
-                      - RECENT_PROBLEMS (якщо питає про останні/нещодавні проблеми)
-                      - MY_PROBLEMS (якщо питає про свої проблеми)
-                      - HOW_TO_USE (якщо питає як користуватися сайтом/системою)
-                      - WHAT_IS_SITE (якщо питає що це за сайт/для чого він)
-                      - CONTACT_AUTHORS (якщо хоче зв'язатися з авторами/підтримкою)
-                      - ROLE_CAPABILITIES (якщо питає що може робити його роль/які права)
-                      - GENERAL (для всіх інших питань)
+                      Класифікуй намір користувача. Відповідай ТІЛЬКИ одним з цих слів (без додаткового тексту):
 
-                      Повідомлення користувача: "{message}"
+                      TOP_PROBLEMS - питає про топ/найкращі/найгірші проблеми за рейтингом
+                      CATEGORY_PROBLEMS - питає про проблеми певної категорії
+                      STATUS_PROBLEMS - питає про проблеми за статусом
+                      PRIORITY_PROBLEMS - питає про проблеми за пріоритетом
+                      RECENT_PROBLEMS - питає про останні/нещодавні проблеми
+                      MY_PROBLEMS - питає про свої проблеми
+                      ANALYZE_PROBLEMS - хоче ПОРІВНЯТИ, АНАЛІЗУВАТИ, дізнатись СТАТИСТИКУ, РІЗНИЦЮ між проблемами, питає "в чому різниця", "чим відрізняються"
+                      HOW_TO_USE - питає як користуватися сайтом
+                      WHAT_IS_SITE - питає що це за сайт/платформа
+                      CONTACT_AUTHORS - хоче зв'язатися з авторами
+                      ROLE_CAPABILITIES - питає про можливості своєї ролі
+                      GENERAL - інші питання
 
-                      Відповідь:
+                      Повідомлення: "{message}"
+                      
+                      Відповідь (ТІЛЬКИ одне слово):
                       """;
 
-        var response = await CallGeminiAsyncExtended(prompt, GeminiLiteModel, cancellationToken, maxTokens: 64, temperature: 0.1);
+        var response = await CallGeminiAsyncExtended(prompt, GeminiLiteModel, cancellationToken, maxTokens: 32, temperature: 0.0);
+        var rawResponse = response.Trim().ToUpperInvariant();
         
-        return response.Trim().ToUpperInvariant() switch
+        // Clean up potential extra text from response
+        var cleanedResponse = rawResponse.Split('\n')[0].Trim();
+        if (cleanedResponse.Contains(" "))
+            cleanedResponse = cleanedResponse.Split(' ')[0];
+        
+        var intent = cleanedResponse switch
         {
             "TOP_PROBLEMS" => ChatIntent.GetTopProblems,
             "CATEGORY_PROBLEMS" => ChatIntent.GetProblemsByCategory,
@@ -503,12 +611,18 @@ public class GeminiService : IGeminiService
             "PRIORITY_PROBLEMS" => ChatIntent.GetProblemsByPriority,
             "RECENT_PROBLEMS" => ChatIntent.GetRecentProblems,
             "MY_PROBLEMS" => ChatIntent.GetMyProblems,
+            "ANALYZE_PROBLEMS" => ChatIntent.AnalyzeProblems,
             "HOW_TO_USE" => ChatIntent.HowToUse,
             "WHAT_IS_SITE" => ChatIntent.WhatIsThisSite,
             "CONTACT_AUTHORS" => ChatIntent.ContactAuthors,
             "ROLE_CAPABILITIES" => ChatIntent.RoleCapabilities,
             _ => ChatIntent.GeneralQuestion
         };
+
+        _logger.LogInformation("Message: '{Message}' -> Classified as: {Intent} (raw response: '{RawResponse}')", 
+            message, intent, rawResponse);
+        
+        return intent;
     }
 
     private async Task<ChatResponse> HandleGetTopProblemsAsync(ChatRequest request, CancellationToken cancellationToken)
@@ -681,8 +795,112 @@ public class GeminiService : IGeminiService
         return new ChatResponse(message, ChatResponseType.ProblemsList, problemSummaries);
     }
 
+    private async Task<ChatResponse> HandleAnalyzeProblemsAsync(ChatRequest request, CancellationToken cancellationToken)
+    {
+        // Get all problems with ratings for analysis
+        var allProblems = await _problemQueries.GetAll(cancellationToken);
+        var problemsWithRatings = new List<(Problem Problem, double AvgRating, int CommentsCount)>();
+
+        foreach (var problem in allProblems)
+        {
+            var ratings = await _ratingQueries.GetByProblemId(problem.Id, cancellationToken);
+            var avgRating = ratings.Any() ? ratings.Average(r => r.Points) : 0;
+            problemsWithRatings.Add((problem, avgRating, problem.Comments.Count));
+        }
+
+        // Prepare data summary for AI analysis
+        var topByRating = problemsWithRatings
+            .OrderByDescending(p => p.AvgRating)
+            .Take(10)
+            .ToList();
+
+        var categoriesStats = allProblems
+            .SelectMany(p => p.Categories)
+            .GroupBy(c => c.Value)
+            .Select(g => new { Category = g.Key, Count = g.Count() })
+            .OrderByDescending(x => x.Count)
+            .ToList();
+
+        var statusStats = allProblems
+            .GroupBy(p => p.Status.Value)
+            .Select(g => new { Status = g.Key, Count = g.Count() })
+            .ToList();
+
+        var priorityStats = allProblems
+            .GroupBy(p => p.Priority.Value)
+            .Select(g => new { Priority = g.Key, Count = g.Count() })
+            .ToList();
+
+        // Build context for AI
+        var dataContext = new StringBuilder();
+        dataContext.AppendLine("СТАТИСТИКА СИСТЕМИ:");
+        dataContext.AppendLine($"Всього проблем: {allProblems.Count}");
+        dataContext.AppendLine();
+
+        dataContext.AppendLine("ТОП-10 ПРОБЛЕМ ЗА РЕЙТИНГОМ:");
+        foreach (var (problem, rating, comments) in topByRating)
+        {
+            dataContext.AppendLine($"- \"{problem.Title}\" (Рейтинг: {rating:F1}, Коментарів: {comments}, Статус: {problem.Status.Value}, Пріоритет: {problem.Priority.Value}, Категорії: {string.Join(", ", problem.Categories.Select(c => c.Value))})");
+        }
+        dataContext.AppendLine();
+
+        dataContext.AppendLine("СТАТИСТИКА ЗА КАТЕГОРІЯМИ:");
+        foreach (var stat in categoriesStats)
+        {
+            dataContext.AppendLine($"- {stat.Category}: {stat.Count} проблем");
+        }
+        dataContext.AppendLine();
+
+        dataContext.AppendLine("СТАТИСТИКА ЗА СТАТУСАМИ:");
+        foreach (var stat in statusStats)
+        {
+            dataContext.AppendLine($"- {stat.Status}: {stat.Count} проблем");
+        }
+        dataContext.AppendLine();
+
+        dataContext.AppendLine("СТАТИСТИКА ЗА ПРІОРИТЕТАМИ:");
+        foreach (var stat in priorityStats)
+        {
+            dataContext.AppendLine($"- {stat.Priority}: {stat.Count} проблем");
+        }
+
+        var systemPrompt = GetSystemPrompt(request.UserRole);
+        var prompt = $"""
+                      {systemPrompt}
+
+                      Користувач просить проаналізувати дані про проблеми міста.
+
+                      ЗАПИТ КОРИСТУВАЧА: "{request.Message}"
+
+                      ДАНІ ДЛЯ АНАЛІЗУ:
+                      {dataContext}
+
+                      ІНСТРУКЦІЇ:
+                      1. Проаналізуй дані та дай детальну, інформативну відповідь на запит користувача
+                      2. Якщо користувач просить порівняти проблеми - порівняй топ-2 за рейтингом та поясни різницю детально:
+                         - Опиши кожну проблему окремо
+                         - Порівняй їх за категоріями, пріоритетом, статусом
+                         - Порівняй рейтинги та кількість коментарів
+                         - Поясни чому одна популярніша за іншу
+                         - Зроби висновки про те, що це говорить про пріоритети громади
+                      3. Використовуй конкретні цифри та факти з даних
+                      4. Будь аналітичним та об'єктивним
+                      5. Якщо є тренди або цікаві спостереження - обов'язково згадай їх
+                      6. Відповідай українською мовою
+                      7. Структуруй відповідь для зручності читання (використовуй списки, абзаци, заголовки)
+                      8. Дай практичні висновки або рекомендації якщо доречно
+                      9. Використовуй емодзі для виразності (але помірно)
+
+                      Дай ПОВНУ та ДЕТАЛЬНУ відповідь (мінімум 200-300 слів). НЕ ОБРІЗАЙ відповідь - завершуй всі думки повністю.
+                      """;
+
+        var response = await CallGeminiAsyncExtended(prompt, GeminiFlashModel, cancellationToken, maxTokens: 4096, temperature: 0.7);
+        return new ChatResponse(response, ChatResponseType.Text);
+    }
+
     private Task<ChatResponse> HandleHowToUseAsync(ChatRequest request, CancellationToken cancellationToken)
     {
+
         var roleSpecificInstructions = request.UserRole switch
         {
             "Administrator" => """
@@ -896,6 +1114,17 @@ public class GeminiService : IGeminiService
 
     private async Task<ChatResponse> HandleGeneralQuestionAsync(ChatRequest request, CancellationToken cancellationToken)
     {
+        // Check if this is actually an analytical question that was misclassified
+        var messageLower = request.Message.ToLowerInvariant();
+        var analyzeIndicators = new[] { "порівня", "різниц", "статистик", "аналіз", "найпопулярн", "скільки", "найбільш", "відмінн", "схож" };
+        var isLikelyAnalytical = analyzeIndicators.Any(indicator => messageLower.Contains(indicator));
+        
+        if (isLikelyAnalytical)
+        {
+            _logger.LogInformation("GeneralQuestion appears to be analytical, redirecting to HandleAnalyzeProblemsAsync");
+            return await HandleAnalyzeProblemsAsync(request, cancellationToken);
+        }
+        
         var systemPrompt = GetSystemPrompt(request.UserRole);
         var prompt = $"""
                       {systemPrompt}
@@ -903,9 +1132,11 @@ public class GeminiService : IGeminiService
                                   Питання користувача: {request.Message}
 
                                   Дай корисну та дружню відповідь українською мовою. Якщо питання стосується проблем міста, запропонуй конкретні дії.
+                                  
+                                  ВАЖЛИВО: Дай ПОВНУ відповідь (мінімум 100-150 слів).
                       """;
 
-        var response = await CallGeminiAsync(prompt, GeminiFlashModel, cancellationToken);
+        var response = await CallGeminiAsyncExtended(prompt, GeminiFlashModel, cancellationToken, maxTokens: 2048, temperature: 0.9);
         return new ChatResponse(response, ChatResponseType.Text);
     }
 
@@ -1073,6 +1304,7 @@ internal enum ChatIntent
     GetProblemsByPriority,
     GetRecentProblems,
     GetMyProblems,
+    AnalyzeProblems,
     HowToUse,
     WhatIsThisSite,
     ContactAuthors,
@@ -1120,6 +1352,12 @@ internal class ExtractedProblemJson
 
     [JsonPropertyName("streetName")]
     public string? StreetName { get; set; }
+
+    [JsonPropertyName("latitude")]
+    public double? Latitude { get; set; }
+
+    [JsonPropertyName("longitude")]
+    public double? Longitude { get; set; }
 
     [JsonPropertyName("aiMessage")]
     public string? AiMessage { get; set; }
