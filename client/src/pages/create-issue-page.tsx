@@ -31,6 +31,7 @@ export function CreateIssuePage() {
   })
 
   const [files, setFiles] = useState<FileList | null>(null)
+  const [imagePreviews, setImagePreviews] = useState<string[]>([])
   const [descriptionError, setDescriptionError] = useState('')
   const [streetName, setStreetName] = useState('')
   const [mapKey, setMapKey] = useState(0)
@@ -61,9 +62,25 @@ export function CreateIssuePage() {
       toast.error(`Максимальна кількість фото: ${MAX_IMAGES_COUNT}`)
       e.target.value = ''
       setFiles(null)
+      setImagePreviews([])
       return
     }
     setFiles(selectedFiles)
+
+    // Generate image previews
+    if (selectedFiles) {
+      const previews: string[] = []
+      Array.from(selectedFiles).forEach((file) => {
+        const reader = new FileReader()
+        reader.onloadend = () => {
+          previews.push(reader.result as string)
+          if (previews.length === selectedFiles.length) {
+            setImagePreviews([...previews])
+          }
+        }
+        reader.readAsDataURL(file)
+      })
+    }
   }
 
   const handleResetLocation = () => {
@@ -245,11 +262,19 @@ export function CreateIssuePage() {
               {/* I'll show placeholders primarily, maybe indicate if files are selected via text below or toast. The prompt says "Slots 2-4 (Empty)". I'll strictly follow the design requested. */}
 
               {[...Array(3)].map((_, i) => (
-                <div key={i} className="aspect-[2/1] bg-[#F5F6F7] rounded-[10px] flex items-center justify-center relative text-gray-400">
-                  <div className="relative">
-                    <Camera className="w-8 h-8" />
-                    <Plus className="w-3 h-3 absolute -top-1 -right-1 text-gray-400" />
-                  </div>
+                <div key={i} className="aspect-[2/1] bg-[#F5F6F7] rounded-[10px] flex items-center justify-center relative text-gray-400 overflow-hidden">
+                  {imagePreviews[i] ? (
+                    <img
+                      src={imagePreviews[i]}
+                      alt={`Preview ${i + 1}`}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="relative">
+                      <Camera className="w-8 h-8" />
+                      <Plus className="w-3 h-3 absolute -top-1 -right-1 text-gray-400" />
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
