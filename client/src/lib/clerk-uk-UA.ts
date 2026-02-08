@@ -10,6 +10,20 @@ export const ukUA = {
       subtitle: 'Увійдіть до вашого акаунту',
       actionText: 'Не маєте акаунту ?',
       actionLink: 'Зареєструватися',
+      forgotPasswordLink: "Не пам'ятаю пароль",
+      badge__lastUsed: 'Останній використаний',
+      badge__preferred: 'Рекомендований',
+      lastUsed: 'Останній використаний',
+    },
+    forgotPasswordLink: "Не пам'ятаю пароль",
+    badge__lastUsed: 'Останній використаний',
+    badge__preferred: 'Рекомендований',
+    lastUsed: 'Останній використаний',
+    factorOne: {
+      forgotPasswordLink: "Не пам'ятаю пароль",
+    },
+    factorTwo: {
+      forgotPasswordLink: "Не пам'ятаю пароль",
     },
     emailLink: {
       title: 'Перевірте вашу пошту',
@@ -33,7 +47,7 @@ export const ukUA = {
       title: 'Введіть пароль',
       subtitle: 'для продовження до {{applicationName}}',
       actionLink: 'Використати інший метод',
-      forgotPasswordLink: 'Забули пароль?',
+      forgotPasswordLink: "Не пам'ятаю пароль",
     },
     phoneCode: {
       title: 'Перевірте ваш телефон',
@@ -64,6 +78,8 @@ export const ukUA = {
         content: 'Якщо у вас виникли труднощі із входом до вашого акаунту, надішліть нам електронного листа, і ми попрацюємо з вами, щоб якомога швидше відновити доступ.',
         blockButton__emailSupport: 'Написати листа на підтримку',
       },
+      forgotPasswordLink: "Не пам'ятаю пароль",
+      blockButton__forgotPassword: "Не пам'ятаю пароль",
     },
     forgotPassword: {
       title: 'Скинути пароль',
@@ -75,7 +91,7 @@ export const ukUA = {
       resendButton: 'Не отримали код? Надіслати знову',
     },
     forgotPasswordAlternativeMethods: {
-      title: 'Забули пароль?',
+      title: "Не пам'ятаєте пароль?",
       label__alternativeMethods: 'Або виберіть інший спосіб входу.',
       blockButton__resetPassword: 'Скинути ваш пароль',
     },
@@ -349,6 +365,7 @@ export const ukUA = {
 
   // Form fields
   formFieldLabel__emailAddress: 'Електронна пошта',
+  formFieldAction__forgotPassword: "Не пам'ятаю пароль",
   formFieldLabel__emailAddress_username: 'Електронна пошта або ім\'я користувача',
   formFieldLabel__username: 'Ім\'я користувача',
   formFieldLabel__phoneNumber: 'Номер телефону',
@@ -423,11 +440,20 @@ export const ukUA = {
   badge__unverified: 'Не підтверджено',
   badge__userDevice: 'Пристрій користувача',
   badge__you: 'Ви',
-  badge__lastUsed: 'Останній вхід',
+  badge__lastUsed: 'Останній використаний',
+  badge__preferred: 'Рекомендований',
+  badge__last_used: 'Останній використаний',
   badge__lastActive: 'Остання активність',
   badge__last_active_at: 'Остання активність',
   badge__last_sign_in_at: 'Останній вхід',
   badge__active: 'Активний',
+  lastUsed: 'Останній використаний',
+  badge: {
+    lastUsed: 'Останній використаний',
+    last_used: 'Останній використаний',
+    preferred: 'Рекомендований',
+    primary: 'Основний',
+  },
 
 
   // Buttons
@@ -588,6 +614,9 @@ export const ukUA = {
     subtitle: 'щоб продовжити до {{applicationName}}',
     action__addAccount: 'Додати акаунт',
     action__signOutAll: 'Вийти з усіх акаунтів',
+    badge__lastUsed: 'Останній використаний',
+    badge__preferred: 'Рекомендований',
+    lastUsed: 'Останній використаний',
   },
 
   // Last used label migrated to Badges section
