@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { useProblem } from '@/features/problems/hooks/use-problems'
 import { useRealtimeComments } from '@/hooks/use-realtime-comments'
 import { useAuth } from '@/contexts/auth-context'
+import { useSnackbar } from '@/contexts/snackbar-provider'
 import { commentsApi } from '@/features/comments/api/comments-api'
 import { ratingsApi } from '@/features/ratings/api/ratings-api'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -10,11 +11,11 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { ProblemImagesManager } from '@/components/problem-images-manager'
-import { 
-  User, 
-  Tag, 
-  ArrowLeft, 
-  MessageSquare, 
+import {
+  User,
+  Tag,
+  ArrowLeft,
+  MessageSquare,
   Star,
   Send
 } from 'lucide-react'
@@ -24,15 +25,16 @@ import { toast } from '@/lib/toast'
 export function ProblemDetailPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
-  const { user } = useAuth()
+  const { user, isAuthenticated } = useAuth()
+  const snackbar = useSnackbar()
   const isCoordinator = user?.roles?.includes('Coordinator')
   const { data: problem, isLoading, refetch } = useProblem(id || '')
-  
+
   const realtimeComments = useRealtimeComments(id || null, problem?.comments ?? undefined)
-  
+
   const [newComment, setNewComment] = useState('')
   const [isSubmittingComment, setIsSubmittingComment] = useState(false)
-  
+
   const [newRating, setNewRating] = useState<number>(5)
   const [isSubmittingRating, setIsSubmittingRating] = useState(false)
   const [userRating, setUserRating] = useState<number | null>(null)
@@ -40,17 +42,21 @@ export function ProblemDetailPage() {
   const [isRatingModalOpen, setIsRatingModalOpen] = useState(false)
   const [averageRating, setAverageRating] = useState<number>(0)
 
+  const isAdmin = user?.roles?.includes('Administrator')
+
   const handleBackNavigation = () => {
     if (isCoordinator) {
       navigate('/coordinator')
+    } else if (isAdmin) {
+      navigate('/admin/problems')
     } else {
-      navigate('/problems')
+      navigate('/map')
     }
   }
 
   const handleSubmitComment = async () => {
     if (!id || !newComment.trim()) return
-    
+
     try {
       setIsSubmittingComment(true)
       await commentsApi.create({ content: newComment, problemId: id })
@@ -75,7 +81,7 @@ export function ProblemDetailPage() {
         setUserRating(null)
         setHasUserRated(false)
       }
-      
+
       const avgRating = await ratingsApi.getAverageByProblemId(id)
       setAverageRating(avgRating)
     } catch {
@@ -87,7 +93,7 @@ export function ProblemDetailPage() {
 
   const handleSubmitRating = async () => {
     if (!id) return
-    
+
     try {
       setIsSubmittingRating(true)
       await ratingsApi.create({ points: newRating, problemId: id })
@@ -105,12 +111,12 @@ export function ProblemDetailPage() {
   const renderStars = (rating: number) => {
     return [1, 2, 3, 4, 5].map((star) => {
       const fillPercentage = Math.max(0, Math.min(100, (rating - star + 1) * 100))
-      
+
       return (
         <div key={star} className="relative w-6 h-6">
           <Star className="w-6 h-6 text-gray-300 absolute" />
-          <div 
-            className="overflow-hidden absolute" 
+          <div
+            className="overflow-hidden absolute"
             style={{ width: `${fillPercentage}%` }}
           >
             <Star className="w-6 h-6 text-yellow-500 fill-yellow-500" />
@@ -121,11 +127,11 @@ export function ProblemDetailPage() {
   }
 
   useEffect(() => {
-    if (id && user) {
+    if (id) {
       fetchUserRating()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id, user])
+  }, [id, isAuthenticated])
 
   if (isLoading) {
     return (
@@ -152,9 +158,9 @@ export function ProblemDetailPage() {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center gap-4">
-        <Button 
-          variant="outline" 
-          size="icon" 
+        <Button
+          variant="outline"
+          size="icon"
           onClick={handleBackNavigation}
           className="h-9 w-9 border border-[#D0D5DD] bg-white text-[#292929] hover:bg-[#F5F5F5] hover:text-[#292929]"
         >
@@ -223,7 +229,7 @@ export function ProblemDetailPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               {/* Add comment form */}
-              {user && (
+              {isAuthenticated ? (
                 <div className="flex gap-2">
                   <Input
                     placeholder="Напишіть коментар..."
@@ -237,12 +243,31 @@ export function ProblemDetailPage() {
                     }}
                     className="flex-1"
                   />
-                  <Button 
-                    onClick={handleSubmitComment} 
+                  <Button
+                    onClick={handleSubmitComment}
                     disabled={isSubmittingComment || !newComment.trim()}
                     variant="outline"
                     size="icon"
                     className="h-10 w-10 border border-[#D0D5DD] bg-white text-[#292929] hover:bg-[#F5F5F5] hover:text-[#292929] disabled:bg-white disabled:text-[#292929]"
+                  >
+                    <Send className="w-5 h-5 text-[#292929]" />
+                  </Button>
+                </div>
+              ) : (
+                <div
+                  className="flex gap-2 cursor-pointer"
+                  onClick={() => snackbar.show('У анонімному перегляді доступно лише перегляд проблем. Увійдіть, щоб залишити коментар.', 'info', 5000)}
+                >
+                  <Input
+                    placeholder="Напишіть коментар..."
+                    disabled
+                    className="flex-1 cursor-pointer"
+                  />
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    disabled
+                    className="h-10 w-10 border border-[#D0D5DD] bg-white text-[#292929]"
                   >
                     <Send className="w-5 h-5 text-[#292929]" />
                   </Button>
@@ -310,13 +335,12 @@ export function ProblemDetailPage() {
               <CardTitle>Пріоритет</CardTitle>
             </CardHeader>
             <CardContent>
-              <span className={`inline-flex items-center rounded-full px-3 py-1 text-sm font-medium ${
-                problem.priority === 'Критичний' ? 'bg-red-50 text-red-700' :
+              <span className={`inline-flex items-center rounded-full px-3 py-1 text-sm font-medium ${problem.priority === 'Критичний' ? 'bg-red-50 text-red-700' :
                 problem.priority === 'Високий' ? 'bg-orange-50 text-orange-700' :
-                problem.priority === 'Середній' ? 'bg-yellow-50 text-yellow-700' :
-                problem.priority === 'Низький' ? 'bg-green-50 text-green-700' :
-                'bg-gray-50 text-gray-700'
-              }`}>
+                  problem.priority === 'Середній' ? 'bg-yellow-50 text-yellow-700' :
+                    problem.priority === 'Низький' ? 'bg-green-50 text-green-700' :
+                      'bg-gray-50 text-gray-700'
+                }`}>
                 {problem.priority || 'Невідомо'}
               </span>
             </CardContent>
@@ -386,21 +410,21 @@ export function ProblemDetailPage() {
           )}
 
           {/* Rating Display */}
-          {user && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Star className="w-5 h-5" />
-                  Рейтинг проблеми
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {hasUserRated ? (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Star className="w-5 h-5" />
+                Рейтинг проблеми
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {isAuthenticated ? (
+                hasUserRated ? (
                   <div className="space-y-3">
                     <div className="p-3 bg-green-50 rounded-lg">
                       <div className="flex items-center justify-between mb-2">
                         <p className="text-sm font-medium text-green-800">Ваша оцінка</p>
-                        <Button 
+                        <Button
                           size="sm"
                           variant="outline"
                           onClick={() => setIsRatingModalOpen(true)}
@@ -431,8 +455,8 @@ export function ProblemDetailPage() {
                     {averageRating === 0 ? (
                       <div className="p-3 bg-blue-50 rounded-lg text-center">
                         <p className="text-sm font-medium text-blue-800 mb-3">Середнього рейтингу не має</p>
-                        <Button 
-                          onClick={() => setIsRatingModalOpen(true)} 
+                        <Button
+                          onClick={() => setIsRatingModalOpen(true)}
                           className="w-full bg-[#E42556] hover:bg-[#E42556]/90 text-white font-semibold shadow-md hover:shadow-lg transition-all duration-200"
                         >
                           Оцінити проблему
@@ -446,8 +470,8 @@ export function ProblemDetailPage() {
                             {renderStars(averageRating)}
                           </div>
                         </div>
-                        <Button 
-                          onClick={() => setIsRatingModalOpen(true)} 
+                        <Button
+                          onClick={() => setIsRatingModalOpen(true)}
                           className="w-full bg-[#E42556] hover:bg-[#E42556]/90 text-white font-semibold shadow-md hover:shadow-lg transition-all duration-200"
                         >
                           Оцінити проблему
@@ -455,10 +479,31 @@ export function ProblemDetailPage() {
                       </div>
                     )}
                   </div>
-                )}
-              </CardContent>
-            </Card>
-          )}
+                )
+              ) : (
+                <div className="space-y-3">
+                  {averageRating > 0 ? (
+                    <div className="p-3 bg-blue-50 rounded-lg">
+                      <p className="text-sm font-medium text-blue-800 mb-2">Середня оцінка</p>
+                      <div className="flex gap-1">
+                        {renderStars(averageRating)}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="p-3 bg-gray-50 rounded-lg">
+                      <p className="text-sm font-medium text-gray-600">Середнього рейтингу не має</p>
+                    </div>
+                  )}
+                  <Button
+                    onClick={() => snackbar.show('У анонімному перегляді доступно лише перегляд проблем. Увійдіть, щоб оцінити проблему.', 'info', 5000)}
+                    className="w-full bg-[#E42556] hover:bg-[#E42556]/90 text-white font-semibold shadow-md hover:shadow-lg transition-all duration-200"
+                  >
+                    Оцінити проблему
+                  </Button>
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </div>
       </div>
 
@@ -499,8 +544,8 @@ export function ProblemDetailPage() {
             >
               Скасувати
             </Button>
-            <Button 
-              onClick={handleSubmitRating} 
+            <Button
+              onClick={handleSubmitRating}
               disabled={isSubmittingRating}
               className="bg-[#E42556] hover:bg-[#E42556]/90 text-white"
             >

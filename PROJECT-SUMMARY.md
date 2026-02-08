@@ -1,111 +1,345 @@
-# Ostroh Problems - Project Summary
+# Ostroh Problems - Огляд Проекту
 
-## 📋 Project Overview
-Ostroh Problems is a comprehensive web application for reporting, tracking, and resolving urban issues in the city of Ostroh. The system connects citizens, coordinators, and administrators to facilitate efficient problem resolution.
+## 📋 Про Проект
+**Ostroh Problems** — це комплексна веб-платформа для повідомлення, відстеження та вирішення міських проблем у місті Острог. Система створює єдиний простір для взаємодії між мешканцями, координаторами служб та адміністрацією міста задля ефективного покращення міського середовища.
 
-## ✅ Completed Implementation
+Головна мета — забезпечити прозорість у вирішенні комунальних та інфраструктурних питань, надати зручний інструмент фіксації проблем та зворотного зв'язку.
 
-### 🏗️ Architecture
+---
 
-#### Backend (API)
-- **Clean Architecture** with 4 layers:
-  - **API**: Controllers, DTOs, Filters, Middleware.
-  - **Application**: Business logic, CQRS with MediatR, Validators (FluentValidation), Interfaces.
-  - **Domain**: Entities (`Problem`, `Category`, `User`, etc.), Enums, Value Objects.
-  - **Infrastructure**: Persistence (EF Core), Services implementation (`ImageService`, `SignalRService`, `IdentityService`).
-- **Database**: PostgreSQL with Entity Framework Core.
-- **Real-time**: SignalR for live updates (Comments, Notifications).
-- **Storage**: Local file system storage for images.
+## 👥 Ролі та Їх Можливості
 
-#### Frontend (Client)
-- **Feature-based Architecture**: Modular structure (`features/` containing api, hooks, components).
-- **Tech Stack**: React 19, TypeScript, Vite.
-- **State Management**: React Query (TanStack Query) for server state.
-- **UI Framework**: TailwindCSS + ShadCN UI.
-- **Routing**: React Router DOM with role-based protection.
+Система побудована на рольовій моделі доступу (RBAC), де кожен користувач має чітко визначені повноваження.
 
-### 📦 Technology Stack
+### 1. Користувач (User)
+Звичайний мешканець міста або зареєстрований гість.
+*   **Створення проблем**: Може повідомляти про нові проблеми, додаючи заголовок, опис, категорію, локацію (координати) та фотографії.
+*   **Перегляд**: Має доступ до списку власних проблем та загального списку публічних проблем.
+*   **Редагування**: Може змінювати опис, заголовок та категорії створених ним проблем (до певного етапу).
+*   **Взаємодія**: Може залишати коментарі до проблем, брати участь у обговореннях.
+*   **Оцінка**: Може оцінювати якість вирішення проблеми після її закриття.
+*   **Профіль**: Управління власним профілем (зміна фото, даних).
 
-| Area | Technologies |
-|------|--------------|
-| **Backend** | .NET 8, ASP.NET Core, EF Core, MediatR, FluentValidation, SignalR, Npgsql |
-| **Frontend** | React 19, TypeScript, Vite, Axios, React Query, React Hook Form, Zod |
-| **Database** | PostgreSQL |
-| **Styling** | TailwindCSS, ShadCN UI, Lucide React |
-| **Tools** | Docker (ready), Swagger UI |
+### 2. Координатор (Coordinator)
+Відповідальна особа (представник комунальних служб або міської ради), що займається безпосереднім вирішенням проблем.
+*   **Управління процесом**:
+    *   Приймати проблеми в роботу (`StartProblem`).
+    *   Змінювати поточний стан виконання (`UpdateCurrentState`).
+    *   Завершувати виконання проблеми (`CompleteProblem`).
+    *   Відхиляти проблеми із зазначенням причини (`Reject`).
+    *   Відновлювати відхилені проблеми (`Restore`).
+*   **Звітування**: Завантажувати фото-звіти про виконану роботу (`UploadCoordinatorImages`).
+*   **Комунікація**: Залишати офіційні коментарі координатора (`SetCoordinatorComment`), які виділяються візуально.
+*   **Редагування даних**: Має право уточнювати локацію проблеми (координати), якщо користувач вказав її неточно.
+*   **Доступ**: Бачить всі проблеми, але фокусується на призначених йому або тих, що відповідають його профілю.
 
-### 🎨 Features Implemented
+### 3. Адміністратор (Administrator)
+Має повний контроль над системою.
+*   **Управління користувачами**: Перегляд списку всіх користувачів, створення, редагування та видалення облікових записів.
+*   **Управління категоріями**: Створення та редагування довідника категорій проблем (напр., "Дороги", "Освітлення", "Сміття").
+*   **Модерація**: Може видаляти некоректні проблеми, коментарі або фотографії.
+*   **Призначення**: Може призначати координаторів на конкретні проблеми (`AssignCoordinator`).
+*   **Усі права інших ролей**: Має доступ до функціоналу користувача та координатора.
 
-#### 1. Problems Management
-- **Reporting**: Citizens can create problems with Title, Description, Location (Lat/Lon), Categories, and Photos.
-- **Workflow**: Status lifecycle (`New` -> `InProgress` -> `Completed` or `Rejected`).
-- **Coordination**:
-  - Assign coordinators to problems.
-  - Coordinator dashboard to manage assigned tasks.
-  - Rejection with reason and Restore functionality.
-  - Update current state/progress.
-- **Discovery**: List views, filtering by status/user/coordinator, Map view.
+---
 
-#### 2. Categories Management
-- **Full CRUD**: Administrators can Create, Read, Update, and Delete problem categories.
-- **Integration**: Categories are linked to problems (Many-to-Many).
+## ⚙️ Життєвий Цикл Проблеми (Workflow)
 
-#### 3. User & Role Management
-- **Authentication**: JWT-based auth (Login, Register).
-- **Roles**:
-  - `Administrator`: Full access, manage users, categories, and all problems.
-  - `Coordinator`: Manage assigned problems, update status.
-  - `User`: Report problems, track own submissions.
-- **Profile**: Update personal info and upload profile picture.
-- **Admin Panel**: User management table (list, create, edit, delete users).
+Проблема проходить через кілька станів (Status), які відображають етап її вирішення:
 
-#### 4. Interaction
-- **Comments**: Real-time commenting system on problems.
-- **Ratings**: Users can rate the resolution quality.
-- **Notifications**: SignalR-based notifications (infrastructure ready).
+1.  **Нова (New)**: Проблема створена користувачем і очікує на розгляд.
+2.  **В роботі (InProgress)**: Координатор прийняв проблему та почав над нею працювати.
+3.  **Виконано (Completed)**: Роботи завершені, додано фото-звіт (опціонально), проблема вирішена.
+4.  **Відхилено (Rejected)**: Проблема відхилена координатором або адміністратором (наприклад, дублікат, неактуально, поза компетенцією) з обов'язковою вказівкою причини.
 
-### � Technical Details
+> **Додатково**:
+> *   Відхилену проблему можна **Відновити (Restore)**, повертаючи її до активного стану.
+> *   Користувачі можуть ставити **Оцінки (Ratings)** та лишати **Коментарі** на будь-якому етапі (залежно від налаштувань).
 
-#### API Structure
-- **Problems**: `/problems` (CRUD, Status updates, Image upload, Assignment)
-- **Categories**: `/problem-categories` (CRUD)
-- **Auth**: `/account` (Login, Register, Refresh Token)
-- **Users**: `/users` (CRUD, Image upload)
-- **Comments**: `/comments` (CRUD, Real-time)
-- **Ratings**: `/ratings` (CRUD)
+---
 
-#### Image Handling
-- **Service**: `ImageService` handles file operations.
-- **Storage**: Images are saved locally in the `uploads` directory.
-- **Entities**: `ProblemImage` and `UserImage` store file paths.
+## 🏗️ Архітектура та Технології
 
-#### Real-time (SignalR)
-- **Hubs**: `CommentsHub`, `NotificationsHub`.
-- **Flow**: Clients join groups based on Problem ID to receive live comment updates.
+Проект реалізовано як **Full-Stack Web Application** з використанням сучасних підходів.
 
-## 🚀 Getting Started
+### Backend (Server)
+*   **Платформа**: .NET 8, ASP.NET Core Web API.
+*   **Архітектура**: Clean Architecture (Layers: Domain, Application, Infrastructure, Api).
+*   **База даних**: PostgreSQL + Entity Framework Core (Code First).
+*   **Real-time**: SignalR (для живих коментарів та повідомлень).
+*   **Валідація**: FluentValidation.
+*   **CQRS**: MediatR pattern для розділення команд та запитів.
+*   **Файли**: Локальне збереження зображень (`ImageService`).
 
-### Prerequisites
-- Node.js & npm
-- .NET SDK
-- PostgreSQL
+### Frontend (Client)
+*   **Фреймворк**: React 19 + TypeScript (на базі Vite).
+*   **UI/UX**: TailwindCSS + ShadCN UI (Radix Primitives).
+*   **State Management**: React Query (TanStack Query) для серверного стану.
+*   **Форми**: React Hook Form + Zod.
+*   **Карти**: Інтеграція карт для відображення та вибору геолокації (Lat/Lon).
 
-### Setup
-1. **Database**: Update connection string in `appsettings.json` and run migrations (`dotnet ef database update`).
-2. **Backend**: Run the API project (`dotnet run`).
-3. **Frontend**:
-   ```bash
-   cd client
-   npm install
-   npm run dev
-   ```
+---
 
-## 🔮 Future Enhancements
-- [ ] Advanced Map integration (interactive picking).
-- [ ] Email notifications.
-- [ ] Public stats dashboard.
-- [ ] Mobile-responsive optimizations for field reporting.
-- [ ] Unit and Integration tests coverage.
+## 🚀 Функціональні Модулі
 
-## ✨ Summary
-The project has evolved into a robust full-stack solution. The backend now supports a complex workflow for problem resolution with role-based security. The frontend provides a modern, responsive interface for all user roles, leveraging real-time capabilities and efficient state management. The transition to local image storage and full entity-based Categories is complete.
+### 1. Модуль Проблем (Problems Core)
+*   CRUD операції для проблем.
+*   Фільтрація: за статусом, категорією, пріоритетом, датою.
+*   Пошук: текстовий пошук по заголовку/опису.
+*   Сортування (новіші/старіші, пріоритетні).
+*   Пагінація списків.
+
+### 2. Модуль Взаємодії
+*   **Коментарі**: Деревоподібні або лінійні обговорення під кожною проблемою, оновлення в реальному часі.
+*   **Рейтинги**: Система оцінювання якості роботи служб.
+
+### 3. Галерея
+*   Підтримка мульти-завантаження фото для користувачів при створенні.
+*   Окремий блок для фото-звітів координаторів ("Було/Стало").
+*   Оптимізація та безпечне зберігання файлів.
+
+### 4. Адмін-панель
+*   Керування довідниками (Категорії).
+*   Таблиця користувачів з фільтрами та можливостями редагування.
+
+---
+
+## 📦 База Даних (Database)
+
+Система використовує реляційну базу даних **PostgreSQL**, взаємодія з якою відбувається через **Entity Framework Core** за підходом **Code First**.
+
+### Основні Сутності (Entities):
+1.  **Users (`users`)**:
+    *   Зберігає локальну копію даних користувачів, синхронізовану з Clerk.
+    *   Поля: `id`, `clerk_id` (зв'язок з Clerk), `email`, `role_id`, персональні дані.
+2.  **Roles (`roles`)**:
+    *   Визначає права доступу (User, Coordinator, Administrator).
+3.  **Problems (`problems`)**:
+    *   Центральна сутність системи.
+    *   Поля: `title`, `description`, `status` (enum), `priority` (enum), `latitude`, `longitude`, `created_by`.
+    *   Зв'язки: One-to-Many з коментарями, рейтингами, зображеннями.
+4.  **Comments (`comments`)**:
+    *   Текстові повідомлення до проблем.
+    *   Підтримує ієрархію або лінійний список.
+5.  **Ratings (`ratings`)**:
+    *   Оцінки якості вирішення проблеми (1-5 зірок).
+6.  **RefreshTokens (`refresh_tokens`)**:
+    *   Використовується для механізму оновлення сесій (якщо застосовується власна JWT реалізація паралельно з Clerk).
+
+### Особливості:
+*   **Міграції**: Управління схемою БД через EF Core Migrations.
+*   **Seeding**: Автоматичне наповнення початковими даними (ролі, тестові користувачі) через `DataSeed`.
+
+---
+
+## 🔌 API Архітектура
+
+API побудовано за принципами **Clean Architecture** та **CQRS** (Command Query Responsibility Segregation).
+
+### Структура Проекту:
+1.  **Domain Layer**:
+    *   Ядро системи. Містить сутності (`Entities`), Value Objects, Enums та інтерфейси репозиторіїв.
+    *   Не має залежностей від інших шарів.
+2.  **Application Layer**:
+    *   Бізнес-логіка.
+    *   Використовує **MediatR** для обробки запитів:
+        *   **Commands**: Змінюють стан (CreateProblem, UpdateUser).
+        *   **Queries**: Читають дані (GetProblemById, GetAllUsers).
+    *   Валідація вхідних даних через **FluentValidation**.
+    *   Визначає інтерфейси для інфраструктури (`IStorageService`, `IClerkApiService`).
+3.  **Infrastructure Layer**:
+    *   Реалізація інтерфейсів Application шару.
+    *   Доступ до БД (Repositories, DbContext).
+    *   Зовнішні сервіси (Clerk, Backblaze, Email).
+    *   SignalR Hubs для WebSockets.
+4.  **API Layer (Presentation)**:
+    *   REST Controllers (`Controllers/`).
+    *   Конфігурація DI контейнера (`Program.cs`).
+    *   Middleware (Global Exception Handling, Auth, Clerk Sync).
+
+### Патерни:
+*   **Repository Pattern**: Абстрагування доступу до даних.
+*   **Mediator Pattern**: Зменшення зв'язності між компонентами через MediatR.
+*   **Dependency Injection**: Використання вбудованого DI контейнера .NET.
+
+### Реалізація Clean Architecture:
+1.  **Правило залежностей**:
+    *   Кожен внутрішній шар *не знає* про зовнішні. `Domain` не посилається на Application/Infrastructure.
+    *   `Application` оперує абстракціями (`IProblemRepository`, `IStorageService`).
+    *   `Infrastructure` підписується на ці інтерфейси і надає конкретні реалізації.
+2.  **Потік HTTP-запиту**:
+    *   `Controller → MediatR Command/Query → Handler → Repository/Service → DbContext/API`.
+    *   Відповідь повертається тим самим шляхом, але вже як DTO/Result.
+3.  **Розділення команд і запитів**:
+    *   `Application/Problems/Commands/*` містить логіку змін стану.
+    *   `Application/Problems/Queries/*` читає дані без побічних ефектів.
+4.  **Конфігурація DI**:
+    *   В `Infrastructure.ConfigureInfrastructure` реєструються всі сервіси, репозиторії, клієнти зовнішніх API.
+    *   В `Application.DependencyInjection` підключаються MediatR, Validators, Behaviors (наприклад, `LoggingBehavior`).
+5.  **Обробка транзакцій і pipeline**:
+    *   Використовуються `Pipeline Behaviors` для крос-секційних задач (логування, валідація, performance tracking).
+    *   EF Core `DbContext` управляє транзакціями, забезпечуючи атомарність команд.
+
+Таким чином кожен шар має чітку відповідальність, а заміна або розширення (наприклад, іншого сховища файлів чи БД) не впливатиме на бізнес-логіку.
+
+---
+
+## 💻 Frontend Архітектура (Client-Side)
+
+Клієнтська частина реалізована як **Single Page Application (SPA)** на базі **React 19** та **TypeScript**, з фокусом на продуктивність, типізацію та сучасний UX.
+
+### 🛠️ Технологічний Стек
+
+#### Core & Build
+*   **React 19**: Остання версія бібліотеки для побудови інтерфейсів.
+*   **TypeScript**: Сувора типізація для надійності коду та зручності рефакторингу.
+*   **Vite**: Надшвидкий бандлер та інструмент розробки (Hot Module Replacement).
+*   **React Router v7**: Сучасна маршрутизація для SPA.
+
+#### UI/UX та Стилізація
+*   **TailwindCSS v4**: Utility-first CSS фреймворк для швидкої та гнучкої стилізації.
+*   **ShadCN UI**: Колекція перевикористовуваних компонентів на базі **Radix UI** (доступність, керування фокусом, клавіатурна навігація). Компоненти знаходяться прямо в коді проекту (`components/ui`), що дає повний контроль.
+*   **Lucide React**: Набір сучасних векторних іконок.
+*   **Шрифти**: `Mulish` (основний текст) та `Sora` (заголовки) для сучасної типографіки.
+*   **Theming**: Підтримка темної/світлої теми через CSS змінні та клас `dark`.
+
+#### State Management & Data Fetching
+*   **TanStack Query (React Query) v5**:
+    *   Кешування серверного стану (Server State).
+    *   Автоматичні повторні запити (retry) при помилках.
+    *   Оптимістичні оновлення (Optimistic UI) для миттєвого візуального відгуку (наприклад, при лайках чи коментарях).
+*   **Axios**: HTTP клієнт з налаштованими інтерсепторами:
+    *   Автоматичне додавання `Bearer` токена до запитів.
+    *   Centralized Error Handling.
+    *   Перехоплення 401 помилок та автоматичний рефреш токенів (Silent Refresh logic).
+
+#### Forms & Validation
+*   **React Hook Form**: Продуктивна робота з формами, мінімізація ре-рендерів, легка інтеграція з UI компонентами.
+*   **Zod**: Schema-first валідація даних. Схеми валідації синхронізовані з типами TypeScript, що гарантує цілісність даних на клієнті.
+
+#### Maps (Карти)
+*   **Leaflet & React-Leaflet**: Легковагова бібліотека для відображення інтерактивних карт.
+*   Функціонал: вибір геолокації проблеми кліком, відображення кластерів маркерів, кастомні іконки.
+
+#### Real-time (WebSockets)
+*   **@microsoft/signalr**: Клієнтська бібліотека для WebSocket з'єднань.
+*   **SignalRService**: Власний сервіс-обгортка для керування підключеннями:
+    *   Автоматичний реконнект.
+    *   Підписка на канали коментарів (`JoinProblemGroup`).
+    *   Отримання сповіщень в реальному часі.
+
+---
+
+### �️ Інструменти Розробки та Якість Коду (Dev Tools)
+*   **ESLint**: Статичний аналіз коду для виявлення помилок та забезпечення єдиного стилю.
+*   **Prettier**: Автоматичне форматування коду.
+*   **Husky & Lint-staged**: Git hooks, що автоматично запускають лінтери перед комітом (pre-commit), не дозволяючи "брудному" коду потрапити в репозиторій.
+*   **PostCSS & Autoprefixer**: Обробка CSS для кросбраузерної сумісності.
+
+### 🧩 Допоміжні Бібліотеки (Utilities)
+*   **class-variance-authority (CVA)**: Створення варіантів компонентів (наприклад, button variants: default, destructive, outline). Стандарт для ShadCN UI.
+*   **clsx & tailwind-merge**: Розумне об'єднання CSS класів, що дозволяє динамічно змінювати стилі без конфліктів Tailwind класів.
+*   **jwt-decode**: Декодування JWT токенів на клієнті для отримання інформації про термін дії та payload.
+
+---
+
+### � Структура Проекту (Feature-Sliced Design Inspired)
+
+Проект організовано за модульним принципом для кращої підтримки та масштабованості:
+
+*   `src/features/` - Бізнес-фічі (Problems, Comments, Ratings, Auth). Кожна папка містить компоненти, хуки та типи, специфічні лише для цієї фічі.
+*   `src/components/ui/` - Базові UI атоми (Button, Input, Card, Modal, Badge) від ShadCN.
+*   `src/lib/` - Утиліти та конфігурації (Axios instance, Query Client configuration, `cn` utility for Tailwind class merging).
+*   `src/services/` - API сервіси, що інкапсулюють HTTP запити до бекенду.
+*   `src/contexts/` - React Contexts для глобального стану (ThemeContext, AuthContext).
+*   `src/hooks/` - Загальні кастомні хуки (наприклад, `use-toast`, `use-media-query`).
+*   `src/pages/` - Компоненти сторінок, що збирають фічі в єдині екрани.
+
+---
+
+### 🔐 Особливості Реалізації Auth (Клієнт)
+*   Використання **Clerk React SDK** (`@clerk/clerk-react`) для керування сесією користувача та UI компонентів входу/реєстрації.
+*   Гібридна авторизація: Клієнт отримує токен від Clerk, але також підтримує власні JWT токени бекенду для доступу до API.
+*   **TokenStorage**: Утиліта для безпечного зберігання Access/Refresh токенів в LocalStorage (з можливістю розширення до Cookies).
+
+### Глобальні Провайдери (Context Providers)
+Кореневий компонент `App.tsx` огортає додаток рядом контекстів для забезпечення глобального функціоналу:
+*   `QueryProvider`: Налаштування React Query клієнта.
+*   `ClerkAuthProvider`: Інтеграція з Clerk Authentication.
+*   `SignalRProvider`: Управління WebSocket з'єднанням.
+*   `SnackbarProvider`: Кастомна система сповіщень (Success/Error/Info) з анімаціями.
+
+### 📡 Організація API Шару
+Взаємодія з бекендом інкапсульована в типізовані сервіси (наприклад, `problems-api.ts`):
+*   Використання DTO (Data Transfer Objects) для типізації запитів та відповідей.
+*   Методи для кожного ендпоінту (`getAll`, `create`, `uploadImages`).
+*   Підтримка `FormData` для завантаження файлів.
+*   Централізована обробка пагінації та фільтрації.
+
+---
+
+## ☁️ Інтеграція з Backblaze B2 (File Storage)
+
+Для надійного та масштабованого зберігання файлів (зокрема фотографій проблем) використовується хмарне сховище **Backblaze B2**.
+
+### Технічна Реалізація:
+*   **S3 Compatibility**: Використовується **AWS SDK for .NET** (`Amazon.S3`), оскільки Backblaze надає S3-сумісний API.
+*   **Service**: `BackblazeB2StorageService` реалізує інтерфейс `IStorageService`.
+
+### Функціонал:
+1.  **Завантаження (`UploadFileAsync`)**:
+    *   Приймає `IFormFile`.
+    *   Генерує унікальне ім'я файлу (GUID) для уникнення колізій.
+    *   Перевіряє MIME-type (дозволені тільки зображення).
+    *   Завантажує файл у відповідний Bucket.
+2.  **Пакетне Завантаження**: Підтримка завантаження колекції файлів за один запит.
+3.  **Видалення**: Видалення об'єктів зі сховища при видаленні проблеми чи фото.
+4.  **Доступ**: Генерація публічних посилань для відображення фото на клієнті.
+
+---
+
+## 🔐 Інтеграція з Clerk (Authentication & Identity)
+
+Система використовує **Clerk** як зовнішній провайдер ідентифікації, забезпечуючи сучасний та безпечний процес аутентифікації.
+
+### Гібридна Модель Даних:
+*   **Clerk**: Відповідає за логін, реєстрацію, 2FA, OAuth (Google, Facebook тощо) та зберігання базового профілю (Email, Password hash, Avatar).
+*   **Local DB**: Зберігає локальну копію користувача (`users` table) з посиланням `clerk_id` для зв'язку з бізнес-даними (проблеми, коментарі).
+
+### Компоненти Інтеграції:
+1.  **Auth Middleware (`ClerkUserSyncMiddleware`)**:
+    *   Перехоплює запити.
+    *   Автоматично синхронізує дані користувача з Clerk у локальну БД при кожному запиті (забезпечує актуальність даних).
+2.  **Webhooks (`ClerkWebhookController`)**:
+    *   Слухає події від Clerk (`user.created`, `user.updated`, `user.deleted`).
+    *   Автоматично оновлює або видаляє користувача в локальній БД при змінах на стороні Clerk Dashboard.
+3.  **Clerk API Service (`ClerkApiService`)**:
+    *   Дозволяє керувати користувачами Clerk з адмін-панелі нашого додатку.
+    *   Можливості: зміна ролей (через `public_metadata`), блокування, оновлення профілю.
+
+### Переваги:
+*   Високий рівень безпеки без необхідності писати власний Auth-модуль.
+*   Готові UI компоненти на клієнті.
+*   Централізоване управління користувачами.
+
+---
+
+##  Налаштування та Запуск
+
+### Передумови
+*   Node.js (v18+)
+*   .NET 8 SDK
+*   PostgreSQL Database
+*   Docker (опціонально)
+
+### Інструкція
+1.  **База даних**: Налаштуйте ConnectionString у `appsettings.json` (секція `DefaultConnection`).
+2.  **Міграції**: Запустіть `dotnet ef database update` у папці API для створення схеми БД.
+3.  **Сервер**: Запустіть API командою `dotnet run`.
+4.  **Клієнт**:
+    ```bash
+    cd client
+    npm install
+    npm run dev
+    ```
+5.  Відкрийте браузер за адресою, вказаною в терміналі (зазвичай `http://localhost:5173`).

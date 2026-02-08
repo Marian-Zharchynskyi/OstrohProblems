@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import type { CreateProblem } from '@/types'
 import { CATEGORIES } from '@/constants/categories'
@@ -11,7 +11,8 @@ import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { LocationPickerMap } from '@/components/location-picker-map'
 import { toast } from '@/lib/toast'
-import { Camera, ChevronDown, Plus, RotateCcw, Crosshair } from 'lucide-react'
+import { Camera, Plus, RotateCcw, Crosshair, X } from 'lucide-react'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 
 const MAX_IMAGES_COUNT = 4 // Changed to 4 as per UI requirement "Grid of 4 slots"
 const PRIORITIES = ['Низький', 'Середній', 'Високий', 'Критичний']
@@ -31,6 +32,7 @@ export function CreateIssuePage() {
   })
 
   const [files, setFiles] = useState<FileList | null>(null)
+  const [imagePreviews, setImagePreviews] = useState<string[]>([])
   const [descriptionError, setDescriptionError] = useState('')
   const [streetName, setStreetName] = useState('')
   const [mapKey, setMapKey] = useState(0)
@@ -38,21 +40,27 @@ export function CreateIssuePage() {
   // Helper for single category selection
   const selectedCategory = formData.categoryNames[0] || ''
 
+  // Cleanup preview URLs on unmount
+  useEffect(() => {
+    return () => {
+      imagePreviews.forEach(url => URL.revokeObjectURL(url))
+    }
+  }, [imagePreviews])
+
   const handleLocationChange = (lat: number, lng: number, street: string) => {
     setFormData({ ...formData, latitude: lat, longitude: lng })
     setStreetName(street)
   }
 
-  const handleCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const val = e.target.value
+  const handleCategoryChange = (value: string) => {
     setFormData({
       ...formData,
-      categoryNames: val ? [val] : [],
+      categoryNames: value ? [value] : [],
     })
   }
 
-  const handlePriorityChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setFormData({ ...formData, priority: e.target.value })
+  const handlePriorityChange = (value: string) => {
+    setFormData({ ...formData, priority: value })
   }
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -61,9 +69,43 @@ export function CreateIssuePage() {
       toast.error(`Максимальна кількість фото: ${MAX_IMAGES_COUNT}`)
       e.target.value = ''
       setFiles(null)
+      setImagePreviews([])
       return
     }
+
+    // Cleanup old previews
+    imagePreviews.forEach(url => URL.revokeObjectURL(url))
+
+    // Create new previews
+    if (selectedFiles && selectedFiles.length > 0) {
+      const previews = Array.from(selectedFiles).map(file => URL.createObjectURL(file))
+      setImagePreviews(previews)
+    } else {
+      setImagePreviews([])
+    }
+
     setFiles(selectedFiles)
+  }
+
+  const handleRemoveImage = (index: number) => {
+    if (!files) return
+
+    // Cleanup the preview URL
+    URL.revokeObjectURL(imagePreviews[index])
+
+    // Create new FileList without the removed file
+    const dt = new DataTransfer()
+    Array.from(files).forEach((file, i) => {
+      if (i !== index) dt.items.add(file)
+    })
+
+    const newFiles = dt.files.length > 0 ? dt.files : null
+    setFiles(newFiles)
+    setImagePreviews(prev => prev.filter((_, i) => i !== index))
+
+    // Reset input value
+    const input = document.getElementById('problem-images') as HTMLInputElement
+    if (input) input.value = ''
   }
 
   const handleResetLocation = () => {
@@ -156,19 +198,16 @@ export function CreateIssuePage() {
                 <Label className="text-[#1F2732] font-medium ml-1">
                   Категорія <span className="text-destructive">*</span>
                 </Label>
-                <div className="relative">
-                  <select
-                    value={selectedCategory}
-                    onChange={handleCategoryChange}
-                    className={`${inputBaseClasses} h-12 appearance-none cursor-pointer`}
-                  >
-                    <option value="" disabled hidden>Виберіть категорію</option>
+                <Select value={selectedCategory} onValueChange={handleCategoryChange}>
+                  <SelectTrigger className="h-12 bg-[#F5F6F7] border-none rounded-[10px] text-sm text-[#464646] focus:ring-0 focus:ring-offset-0 focus:border-none">
+                    <SelectValue placeholder="Виберіть категорію" />
+                  </SelectTrigger>
+                  <SelectContent>
                     {CATEGORIES.map((cat) => (
-                      <option key={cat.value} value={cat.value}>{cat.label}</option>
+                      <SelectItem key={cat.value} value={cat.value}>{cat.label}</SelectItem>
                     ))}
-                  </select>
-                  <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 h-5 w-5 pointer-events-none" />
-                </div>
+                  </SelectContent>
+                </Select>
               </div>
 
               {/* Priority */}
@@ -176,19 +215,16 @@ export function CreateIssuePage() {
                 <Label className="text-[#1F2732] font-medium ml-1">
                   Пріоритет <span className="text-destructive">*</span>
                 </Label>
-                <div className="relative">
-                  <select
-                    value={formData.priority || ''}
-                    onChange={handlePriorityChange}
-                    className={`${inputBaseClasses} h-12 appearance-none cursor-pointer`}
-                  >
-                    <option value="" disabled hidden>Виберіть пріоритет</option>
+                <Select value={formData.priority || ''} onValueChange={handlePriorityChange}>
+                  <SelectTrigger className="h-12 bg-[#F5F6F7] border-none rounded-[10px] text-sm text-[#464646] focus:ring-0 focus:ring-offset-0 focus:border-none">
+                    <SelectValue placeholder="Виберіть пріоритет" />
+                  </SelectTrigger>
+                  <SelectContent>
                     {PRIORITIES.map((p) => (
-                      <option key={p} value={p}>{p}</option>
+                      <SelectItem key={p} value={p}>{p}</SelectItem>
                     ))}
-                  </select>
-                  <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 h-5 w-5 pointer-events-none" />
-                </div>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
 
@@ -240,18 +276,36 @@ export function CreateIssuePage() {
                 />
               </div>
 
-              {/* Placeholder Slots / Preview */}
-              {/* If files selected, show count or previews? User requested "Slots 2-4 (Empty): ... center camera icon with small plus". */}
-              {/* I'll show placeholders primarily, maybe indicate if files are selected via text below or toast. The prompt says "Slots 2-4 (Empty)". I'll strictly follow the design requested. */}
+              {/* Preview Slots or Placeholders */}
+              {[...Array(3)].map((_, i) => {
+                const hasPreview = imagePreviews[i]
 
-              {[...Array(3)].map((_, i) => (
-                <div key={i} className="aspect-[2/1] bg-[#F5F6F7] rounded-[10px] flex items-center justify-center relative text-gray-400">
-                  <div className="relative">
-                    <Camera className="w-8 h-8" />
-                    <Plus className="w-3 h-3 absolute -top-1 -right-1 text-gray-400" />
+                return (
+                  <div key={i} className="aspect-[2/1] bg-[#F5F6F7] rounded-[10px] flex items-center justify-center relative overflow-hidden">
+                    {hasPreview ? (
+                      <>
+                        <img
+                          src={hasPreview}
+                          alt={`Preview ${i + 1}`}
+                          className="w-full h-full object-cover"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveImage(i)}
+                          className="absolute top-1 right-1 bg-red-500 hover:bg-red-600 text-white rounded-full p-1 transition-colors"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </>
+                    ) : (
+                      <div className="relative text-gray-400">
+                        <Camera className="w-8 h-8" />
+                        <Plus className="w-3 h-3 absolute -top-1 -right-1 text-gray-400" />
+                      </div>
+                    )}
                   </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
             {files && files.length > 0 && (
               <p className="text-sm text-muted-foreground mt-2">

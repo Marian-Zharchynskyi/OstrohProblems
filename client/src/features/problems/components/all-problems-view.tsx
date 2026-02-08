@@ -17,11 +17,11 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { toast } from '@/lib/toast'
 import { useQueryClient } from '@tanstack/react-query'
-import { 
-  Search, 
-  MapPin, 
-  Star, 
-  ChevronDown, 
+import {
+  Search,
+  MapPin,
+  Star,
+  ChevronDown,
   ChevronUp,
   Loader2,
   Pencil,
@@ -72,12 +72,12 @@ const CommentsBlock = memo(function CommentsBlock({ comments, problemId, onViewA
   const { user } = useAuth()
   const realtimeComments = useRealtimeComments(problemId, comments)
   const sortedComments = useMemo(() => {
-    return [...realtimeComments].sort((a, b) => 
+    return [...realtimeComments].sort((a, b) =>
       new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
     )
   }, [realtimeComments])
   const displayedComments = sortedComments.slice(0, 3)
-  
+
   const [editingComment, setEditingComment] = useState<Comment | null>(null)
   const [isEditOpen, setIsEditOpen] = useState(false)
   const [commentToDelete, setCommentToDelete] = useState<string | null>(null)
@@ -124,8 +124,8 @@ const CommentsBlock = memo(function CommentsBlock({ comments, problemId, onViewA
       <h2 className="text-xl font-bold text-[#1F2732] font-['Mulish'] mb-4">
         Останні коментарі
       </h2>
-      
-      <Card className="bg-white border border-gray-200 rounded-lg flex flex-col h-fit">
+
+      <Card className="bg-white border border-gray-200 rounded-lg flex flex-col min-h-[300px]">
         <CardContent className="p-5">
           {sortedComments.length === 0 ? (
             <p className="text-gray-500 text-sm">Коментарів поки немає</p>
@@ -139,7 +139,7 @@ const CommentsBlock = memo(function CommentsBlock({ comments, problemId, onViewA
                     <div className="py-3 px-4 md:px-5">
                       <div className="flex items-center justify-between gap-6 mb-5">
                         <span className="text-sm font-bold text-[#292929]">
-                          {comment?.user?.name} {comment?.user?.surname}
+                          {comment?.user?.name} {comment?.user?.surname}{canEdit ? ' (Ви)' : ''}
                         </span>
                         <div className="flex items-center gap-2">
                           <span className="text-xs font-bold text-[#292929]">
@@ -147,7 +147,7 @@ const CommentsBlock = memo(function CommentsBlock({ comments, problemId, onViewA
                           </span>
                           {canEdit && (
                             <div className="flex items-center gap-2 ml-2">
-                              <button 
+                              <button
                                 type="button"
                                 onClick={() => {
                                   setEditingComment(comment)
@@ -158,7 +158,7 @@ const CommentsBlock = memo(function CommentsBlock({ comments, problemId, onViewA
                               >
                                 <Pencil className="w-3.5 h-3.5 text-gray-500 hover:text-blue-600" />
                               </button>
-                              <button 
+                              <button
                                 type="button"
                                 onClick={() => setCommentToDelete(comment.id)}
                                 className="p-0 bg-transparent border-none shadow-none transition-opacity hover:opacity-80 outline-none focus:outline-none focus:ring-0"
@@ -178,7 +178,7 @@ const CommentsBlock = memo(function CommentsBlock({ comments, problemId, onViewA
                   </div>
                 )
               })}
-              
+
               {sortedComments.length > 0 && (
                 <>
                   <hr className="border-gray-200 border-b-[1px] mt-3 mx-4 md:mx-5" />
@@ -195,8 +195,8 @@ const CommentsBlock = memo(function CommentsBlock({ comments, problemId, onViewA
           )}
         </CardContent>
       </Card>
-      
-      <Button 
+
+      <Button
         onClick={() => setIsCreateOpen(true)}
         className="mt-4 bg-[#E42556] hover:bg-[#E42556]/90 text-white font-bold rounded-md self-center px-8 py-2 w-auto min-h-0 h-auto focus-visible:ring-0 focus-visible:ring-offset-0 focus:ring-0 border-0 outline-none"
         style={{ boxShadow: 'none', borderColor: 'transparent' }}
@@ -250,7 +250,7 @@ const AllCommentsModal = memo(function AllCommentsModal({ open, onOpenChange, co
           </DialogTitle>
           <p className="text-sm text-gray-600 mt-2">{problemTitle}</p>
         </DialogHeader>
-        
+
         <div className="flex-1 overflow-y-auto pr-2">
           {realtimeComments.length === 0 ? (
             <p className="text-gray-500 text-sm text-center py-8">Коментарів поки немає</p>
@@ -264,12 +264,12 @@ const AllCommentsModal = memo(function AllCommentsModal({ open, onOpenChange, co
                         {comment?.user?.name} {comment?.user?.surname}
                       </span>
                       <span className="text-xs text-gray-500">
-                        {new Date(comment.createdAt).toLocaleDateString('uk-UA', { 
-                          day: '2-digit', 
-                          month: '2-digit', 
+                        {new Date(comment.createdAt).toLocaleDateString('uk-UA', {
+                          day: '2-digit',
+                          month: '2-digit',
                           year: 'numeric',
-                          hour: '2-digit', 
-                          minute: '2-digit' 
+                          hour: '2-digit',
+                          minute: '2-digit'
                         })}
                       </span>
                     </div>
@@ -306,7 +306,7 @@ const DescriptionBlock = memo(function DescriptionBlock({ problem }: Description
           <p className={`text-gray-600 whitespace-pre-wrap break-words ${!expanded && isLongDescription ? 'line-clamp-3' : ''}`}>
             {problem.description}
           </p>
-          
+
           {isLongDescription && (
             <button
               onClick={() => setExpanded(!expanded)}
@@ -359,15 +359,15 @@ const ProblemDetailsCard = memo(function ProblemDetailsCard({ problem }: Problem
         )
         const data = await response.json()
         const addr = data.address || {}
-        const streetName = addr.road || addr.pedestrian || addr.footway || 
-                          addr.street || addr.suburb || addr.neighbourhood || 
-                          addr.city || 'Невідома вулиця'
+        const streetName = addr.road || addr.pedestrian || addr.footway ||
+          addr.street || addr.suburb || addr.neighbourhood ||
+          addr.city || 'Невідома вулиця'
         setAddress(streetName)
       } catch {
         setAddress('Не вдалося визначити адресу')
       }
     }
-    
+
     fetchAddress()
   }, [problem.latitude, problem.longitude])
 
@@ -377,7 +377,7 @@ const ProblemDetailsCard = memo(function ProblemDetailsCard({ problem }: Problem
         try {
           const avgRating = await ratingsApi.getAverageByProblemId(problem.id)
           setAverageRating(avgRating)
-          
+
           if (user) {
             const userRatingData = await ratingsApi.getUserRatingForProblem(problem.id)
             if (userRatingData) {
@@ -446,16 +446,16 @@ const ProblemDetailsCard = memo(function ProblemDetailsCard({ problem }: Problem
 
   const handleSubmitRating = async () => {
     if (!problem.id) return
-    
+
     try {
       setIsSubmittingRating(true)
       await ratingsApi.create({ points: newRating, problemId: problem.id })
       toast.success('Оцінку додано')
       setIsRatingModalOpen(false)
-      
+
       const avgRating = await ratingsApi.getAverageByProblemId(problem.id)
       setAverageRating(avgRating)
-      
+
       if (user) {
         const userRatingData = await ratingsApi.getUserRatingForProblem(problem.id)
         if (userRatingData) {
@@ -471,16 +471,16 @@ const ProblemDetailsCard = memo(function ProblemDetailsCard({ problem }: Problem
 
   const displayRating = showUserRating ? (userRating ?? 0) : averageRating
   const hasUserRating = Boolean(user && userRating !== null)
-  
+
   const renderStars = (rating: number) => {
     return [1, 2, 3, 4, 5].map((star) => {
       const fillPercentage = Math.max(0, Math.min(100, (rating - star + 1) * 100))
-      
+
       return (
         <div key={star} className="relative w-5 h-5">
           <Star className="w-5 h-5 text-[#D2D2D2] absolute" />
-          <div 
-            className="overflow-hidden absolute" 
+          <div
+            className="overflow-hidden absolute"
             style={{ width: `${fillPercentage}%` }}
           >
             <Star className="w-5 h-5 text-[#FFA900] fill-[#FFA900]" />
@@ -513,10 +513,10 @@ const ProblemDetailsCard = memo(function ProblemDetailsCard({ problem }: Problem
               </div>
             </div>
             <div className="flex flex-col items-end">
-              <div 
+              <div
                 className="flex flex-col items-end group"
               >
-                <div 
+                <div
                   className="flex items-center gap-0.5 cursor-pointer"
                   onClick={() => setIsRatingModalOpen(true)}
                 >
@@ -529,9 +529,9 @@ const ProblemDetailsCard = memo(function ProblemDetailsCard({ problem }: Problem
                     className="p-0 bg-transparent border-none shadow-none transition-opacity hover:opacity-80 outline-none focus:outline-none focus:ring-0"
                     title="Змінити відображення рейтингу"
                   >
-                    <img 
-                      src="/icons/change.png" 
-                      alt="Change rating view" 
+                    <img
+                      src="/icons/change.png"
+                      alt="Change rating view"
                       className="w-5 h-5"
                     />
                   </button>
@@ -565,12 +565,12 @@ const ProblemDetailsCard = memo(function ProblemDetailsCard({ problem }: Problem
             <div className="flex justify-between items-start my-1">
               <span className="font-bold text-gray-700">Категорія</span>
               <div className="flex flex-col items-end">
-                {problem.categories && problem.categories.length > 0 
+                {problem.categories && problem.categories.length > 0
                   ? problem.categories.map((cat, index) => (
-                      <span key={index} className="text-gray-600">
-                        {cat}
-                      </span>
-                    ))
+                    <span key={index} className="text-gray-600">
+                      {cat}
+                    </span>
+                  ))
                   : <span className="text-gray-600">Не вказано</span>}
               </div>
             </div>
@@ -676,8 +676,8 @@ const ProblemDetailsCard = memo(function ProblemDetailsCard({ problem }: Problem
             >
               Скасувати
             </Button>
-            <Button 
-              onClick={handleSubmitRating} 
+            <Button
+              onClick={handleSubmitRating}
               disabled={isSubmittingRating}
               className="bg-[#E42556] hover:bg-[#E42556]/90 text-white"
             >
@@ -692,7 +692,7 @@ const ProblemDetailsCard = memo(function ProblemDetailsCard({ problem }: Problem
 
 function MapRefUpdater({ onReady }: { onReady: (map: LeafletMap) => void }) {
   const map = useMap()
-  
+
   useEffect(() => {
     onReady(map)
   }, [map, onReady])
@@ -731,7 +731,7 @@ export function AllProblemsView() {
 
   const filteredProblems = useMemo(() => {
     if (!allProblems) return []
-    
+
     return allProblems.filter(problem => {
       if (statusFilter !== 'all' && problem.status !== statusFilter) return false
       if (searchTerm && !problem.title.toLowerCase().includes(searchTerm.toLowerCase())) return false
@@ -818,7 +818,7 @@ export function AllProblemsView() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-6 py-2">
+    <div className="max-w-7xl mx-auto px-6 py-2 overflow-x-hidden">
       <div className="mb-8">
         <h1 className="font-semibold text-[#1F2732] font-['Sora'] text-[2.4rem] leading-[3.6rem]">
           Проблеми
@@ -859,7 +859,7 @@ export function AllProblemsView() {
             className="pl-10 bg-white border border-[#464646] rounded-[10px] text-[#464646] focus-visible:ring-0 focus-visible:border-[2px]"
           />
         </div>
-        
+
         <Select value={categoryFilter} onValueChange={setCategoryFilter}>
           <SelectTrigger className="w-[180px] bg-white border border-[#464646] rounded-[10px] text-[#464646] focus:ring-0 focus:ring-offset-0 focus:border-[2px]">
             <SelectValue placeholder="Категорія" />
@@ -905,7 +905,7 @@ export function AllProblemsView() {
         <Card className="bg-white border border-gray-200 rounded-[10px] h-[500px] flex items-center justify-center">
           <div className="text-center p-8">
             <p className="text-gray-500 text-lg">
-              {statusFilter === 'all' 
+              {statusFilter === 'all'
                 ? 'Немає проблем для відображення'
                 : 'Немає проблем з таким статусом'}
             </p>
@@ -951,8 +951,8 @@ export function AllProblemsView() {
 
             <div className="lg:col-span-2 h-[500px]">
               {selectedProblem && showDetails ? (
-                <CommentsBlock 
-                  comments={selectedProblem.comments || []} 
+                <CommentsBlock
+                  comments={selectedProblem.comments || []}
                   problemId={selectedProblem.id}
                   onViewAllComments={handleViewAllComments}
                   onCommentUpdate={handleProblemUpdate}
@@ -970,9 +970,9 @@ export function AllProblemsView() {
               <div className="lg:col-span-2">
                 <DescriptionBlock problem={selectedProblem} />
               </div>
-              
+
               <div className="lg:col-span-3">
-                <ProblemDetailsCard 
+                <ProblemDetailsCard
                   problem={selectedProblem}
                 />
               </div>

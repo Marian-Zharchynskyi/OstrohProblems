@@ -7,17 +7,16 @@ import { NotificationsBell } from '@/components/notifications/notifications-bell
 import { designSystem } from '@/lib/design-system'
 import { useQuery } from '@tanstack/react-query'
 import { userService } from '@/services/user.service'
-import { tokenStorage } from '@/lib/token-storage'
 
 const publicNavItems = [
   { path: '/map', label: 'Всі проблеми' },
 ]
 
 const adminNavItems = [
-  { path: '/dashboard', label: 'Головна' },
-  { path: '/problems', label: 'Проблеми' },
-  { path: '/comments', label: 'Коментарі' },
-  { path: '/ratings', label: 'Рейтинги' },
+  { path: '/admin/dashboard', label: 'Головна' },
+  { path: '/admin/problems', label: 'Проблеми' },
+  { path: '/admin/comments', label: 'Коментарі' },
+  { path: '/admin/ratings', label: 'Рейтинги' },
   { path: '/admin/users', label: 'Користувачі' },
 ]
 
@@ -32,7 +31,7 @@ const userNavItems = [
 export const Header = () => {
   const location = useLocation()
   const navigate = useNavigate()
-  const { isAuthenticated, user, signOut } = useAuth()
+  const { isAuthenticated, user, signOut, getClerkToken } = useAuth()
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
 
@@ -40,11 +39,12 @@ export const Header = () => {
   const { data: userProfile } = useQuery({
     queryKey: ['currentUser', user?.id],
     queryFn: async () => {
-      const token = tokenStorage.getAccessToken()
+      if (!getClerkToken) return null
+      const token = await getClerkToken()
       if (!token) return null
       return userService.getCurrentUser(token)
     },
-    enabled: !!isAuthenticated && !!user?.id
+    enabled: !!isAuthenticated && !!user?.id && !!getClerkToken
   })
 
   // Close dropdown when clicking outside
@@ -70,10 +70,10 @@ export const Header = () => {
   }
 
   const navItems = getNavItems()
-  const logoLink = isAuthenticated && !isUser ? (isAdmin ? '/dashboard' : '/coordinator') : '/'
+  const logoLink = isAuthenticated && !isUser ? (isAdmin ? '/admin/dashboard' : '/coordinator') : '/'
 
   const userRoleLabel = isAdmin ? 'Адміністратор' : isCoordinator ? 'Координатор' : 'Користувач'
-  
+
   const getDisplayName = () => {
     const name = userProfile?.name
       ? `${userProfile.name} ${userProfile.surname || ''}`
@@ -135,7 +135,13 @@ export const Header = () => {
                   <>
                     <Link
                       to="/problems/create"
-                      className="hidden sm:flex items-center gap-2 text-sm font-medium bg-primary text-primary-foreground px-5 py-2.5 rounded-full hover:bg-primary/90 transition-all shadow-sm active:scale-95"
+                      className="hidden sm:flex items-center gap-2 text-sm font-medium px-5 py-2.5 rounded-full transition-all shadow-sm active:scale-95"
+                      style={{
+                        backgroundColor: '#E42556',
+                        color: '#FFFFFF',
+                      }}
+                      onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#c8204b' }}
+                      onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#E42556' }}
                     >
                       <Plus className="h-4 w-4" />
                       Подати проблему

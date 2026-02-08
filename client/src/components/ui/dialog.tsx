@@ -27,10 +27,10 @@ interface DialogProps {
 
 const Dialog: React.FC<DialogProps> = ({ open = false, onOpenChange, children }) => {
   const [internalOpen, setInternalOpen] = React.useState(open)
-  
+
   const isControlled = onOpenChange !== undefined
   const isOpen = isControlled ? open : internalOpen
-  
+
   const handleOpenChange = React.useCallback(
     (newOpen: boolean) => {
       if (isControlled) {
@@ -60,7 +60,7 @@ const DialogTrigger = React.forwardRef<
   React.ButtonHTMLAttributes<HTMLButtonElement>
 >(({ onClick, ...props }, ref) => {
   const { onOpenChange } = useDialog()
-  
+
   return (
     <button
       ref={ref}
@@ -76,9 +76,9 @@ DialogTrigger.displayName = "DialogTrigger"
 
 const DialogPortal: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { open } = useDialog()
-  
+
   if (!open) return null
-  
+
   return <>{children}</>
 }
 
@@ -87,7 +87,7 @@ const DialogOverlay = React.forwardRef<
   React.HTMLAttributes<HTMLDivElement>
 >(({ className, ...props }, ref) => {
   const { onOpenChange } = useDialog()
-  
+
   return (
     <div
       ref={ref}
@@ -107,7 +107,7 @@ const DialogContent = React.forwardRef<
   React.HTMLAttributes<HTMLDivElement>
 >(({ className, children, ...props }, ref) => {
   const { onOpenChange } = useDialog()
-  
+
   return (
     <DialogPortal>
       <DialogOverlay />
@@ -125,8 +125,18 @@ const DialogContent = React.forwardRef<
           <button
             className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0 disabled:pointer-events-none border-0"
             onClick={() => onOpenChange(false)}
+            style={{
+              background: 'transparent',
+              backgroundColor: 'transparent',
+              padding: '0',
+              margin: '0',
+              border: 'none',
+              outline: 'none',
+              boxShadow: 'none',
+              cursor: 'pointer'
+            }}
           >
-            <X className="h-4 w-4" />
+            <X className="h-4 w-4 text-gray-700" />
             <span className="sr-only">Close</span>
           </button>
         </div>
