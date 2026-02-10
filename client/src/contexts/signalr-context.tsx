@@ -4,15 +4,41 @@ import { useAuth } from './auth-context'
 import type { Notification, Comment } from '@/types'
 import { SignalRContext } from './signalr-context'
 
+const NOTIFICATIONS_STORAGE_KEY = 'ostroh_notifications'
+
+// Helper functions for localStorage
+const loadNotificationsFromStorage = (): Notification[] => {
+  try {
+    const stored = localStorage.getItem(NOTIFICATIONS_STORAGE_KEY)
+    return stored ? JSON.parse(stored) : []
+  } catch (error) {
+    console.error('Failed to load notifications from localStorage:', error)
+    return []
+  }
+}
+
+const saveNotificationsToStorage = (notifications: Notification[]) => {
+  try {
+    localStorage.setItem(NOTIFICATIONS_STORAGE_KEY, JSON.stringify(notifications))
+  } catch (error) {
+    console.error('Failed to save notifications to localStorage:', error)
+  }
+}
+
 export function SignalRProvider({ children }: { children: ReactNode }) {
   const { user, getClerkToken } = useAuth()
   const [isConnected, setIsConnected] = useState(false)
-  const [notifications, setNotifications] = useState<Notification[]>([])
+  const [notifications, setNotifications] = useState<Notification[]>(() => loadNotificationsFromStorage())
   const problemsUpdatedCallbackRef = useRef<(() => void) | null>(null)
 
   const isCoordinatorOrAdmin = user?.roles?.some(
     (role) => role === 'Coordinator' || role === 'Administrator'
   )
+
+  // Save notifications to localStorage whenever they change
+  useEffect(() => {
+    saveNotificationsToStorage(notifications)
+  }, [notifications])
 
   useEffect(() => {
     if (user && getClerkToken) {
@@ -105,6 +131,7 @@ export function SignalRProvider({ children }: { children: ReactNode }) {
 
   const clearNotifications = useCallback(() => {
     setNotifications([])
+    localStorage.removeItem(NOTIFICATIONS_STORAGE_KEY)
   }, [])
 
   const unreadCount = notifications.filter((n) => !n.isRead).length

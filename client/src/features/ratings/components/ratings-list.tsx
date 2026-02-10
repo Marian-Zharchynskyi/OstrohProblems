@@ -42,10 +42,7 @@ export function RatingsList() {
     },
   ]
 
-  const handleCreate = () => {
-    setSelectedRating(null)
-    setIsFormOpen(true)
-  }
+
 
   const handleEdit = (rating: Rating) => {
     setSelectedRating(rating)
@@ -89,10 +86,7 @@ export function RatingsList() {
       <PageHeader
         title="Рейтинги"
         description="Управління рейтингами проблем"
-        action={{
-          label: 'Новий рейтинг',
-          onClick: handleCreate,
-        }}
+
       />
 
       <DataTable
