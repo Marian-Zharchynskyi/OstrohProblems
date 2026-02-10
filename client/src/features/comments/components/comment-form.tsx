@@ -90,12 +90,14 @@ export function CommentForm({
             >
               Скасувати
             </Button>
-            <Button 
-              type="submit" 
+            <Button
+              type="submit"
               disabled={isLoading}
               className="bg-[#E42556] hover:bg-[#E42556]/90 focus:outline-none focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0"
             >
-              {isLoading ? 'Оновлення...' : 'Оновити'}
+              {isLoading
+                ? (initialData ? 'Оновлення...' : 'Створення...')
+                : (initialData ? 'Оновити' : 'Створити')}
             </Button>
           </DialogFooter>
         </form>

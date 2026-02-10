@@ -12,7 +12,7 @@ import { toast } from '@/lib/toast'
 import { useQueryClient } from '@tanstack/react-query'
 import { LocationPickerMap } from '@/components/location-picker-map'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, Camera, Plus, X } from 'lucide-react'
 
 const MAX_COORDINATOR_IMAGES = 6
 
@@ -27,6 +27,7 @@ export default function CoordinatorUpdatePage() {
   const [rejectionReason, setRejectionReason] = useState('')
   const [currentStateInput, setCurrentStateInput] = useState('')
   const [coordinatorFiles, setCoordinatorFiles] = useState<FileList | null>(null)
+  const [imagePreviews, setImagePreviews] = useState<string[]>([])
   const [selectedPriority, setSelectedPriority] = useState<string>('')
   const [newLocation, setNewLocation] = useState<{ lat: number; lng: number } | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -38,6 +39,13 @@ export default function CoordinatorUpdatePage() {
       if (problem.priority) setSelectedPriority(problem.priority)
     }
   }, [problem])
+
+  // Cleanup preview URLs on unmount
+  useEffect(() => {
+    return () => {
+      imagePreviews.forEach(url => URL.revokeObjectURL(url))
+    }
+  }, [imagePreviews])
 
   if (isLoading || !problem) {
     return <div className="container mx-auto p-6">Завантаження...</div>
@@ -105,6 +113,7 @@ export default function CoordinatorUpdatePage() {
 
       toast.success('Поточний стан оновлено')
       setCoordinatorFiles(null)
+      setImagePreviews([])
       if (fileInputRef.current) fileInputRef.current.value = ''
       invalidateQueries()
       navigate('/coordinator')
@@ -149,6 +158,9 @@ export default function CoordinatorUpdatePage() {
       }
 
       toast.success('Проблему завершено')
+      setCoordinatorFiles(null)
+      setImagePreviews([])
+      if (fileInputRef.current) fileInputRef.current.value = ''
       invalidateQueries()
       navigate('/coordinator')
     } catch {
@@ -165,9 +177,42 @@ export default function CoordinatorUpdatePage() {
       toast.error(`Можна додати ще ${maxNewFiles} фото (максимум ${MAX_COORDINATOR_IMAGES})`)
       e.target.value = ''
       setCoordinatorFiles(null)
+      setImagePreviews([])
       return
     }
+
+    // Cleanup old previews
+    imagePreviews.forEach(url => URL.revokeObjectURL(url))
+
+    // Create new previews
+    if (selectedFiles && selectedFiles.length > 0) {
+      const previews = Array.from(selectedFiles).map(file => URL.createObjectURL(file))
+      setImagePreviews(previews)
+    } else {
+      setImagePreviews([])
+    }
+
     setCoordinatorFiles(selectedFiles)
+  }
+
+  const handleRemoveImage = (index: number) => {
+    if (!coordinatorFiles) return
+
+    // Cleanup the preview URL
+    URL.revokeObjectURL(imagePreviews[index])
+
+    // Create new FileList without the removed file
+    const dt = new DataTransfer()
+    Array.from(coordinatorFiles).forEach((file, i) => {
+      if (i !== index) dt.items.add(file)
+    })
+
+    const newFiles = dt.files.length > 0 ? dt.files : null
+    setCoordinatorFiles(newFiles)
+    setImagePreviews(prev => prev.filter((_, i) => i !== index))
+
+    // Reset input value
+    if (fileInputRef.current) fileInputRef.current.value = ''
   }
 
   const getStatusBadgeClass = (status: string) => {
@@ -201,7 +246,7 @@ export default function CoordinatorUpdatePage() {
             <CardHeader>
               <CardTitle className="flex justify-between items-center">
                 <span>{problem.title}</span>
-                <span className={`inline-flex items-center rounded-full px-3 py-1 text-sm font-medium ${getStatusBadgeClass(problem.status)}`}>
+                <span className={`inline-flex items-center rounded-full px-3 py-1 text-sm font-medium whitespace-nowrap flex-shrink-0 ${getStatusBadgeClass(problem.status)}`}>
                   {problem.status}
                 </span>
               </CardTitle>
@@ -268,23 +313,15 @@ export default function CoordinatorUpdatePage() {
                     />
                   </div>
 
-                  {/* Image Upload for In Progress */}
-                  {problem.status === ProblemStatusConstants.InProgress && (
-                    <div className="space-y-2">
-                      <Label>Додати фото</Label>
-                      <p className="text-sm text-muted-foreground mb-2">
-                        Завантажено {problem.coordinatorImages?.length || 0} з {MAX_COORDINATOR_IMAGES}
-                      </p>
-                      <input
-                        ref={fileInputRef}
-                        type="file"
-                        multiple
-                        accept="image/*"
-                        onChange={handleCoordinatorFileChange}
-                        className="text-sm w-full"
-                      />
-                    </div>
-                  )}
+                  {/* Hidden Image Upload Input - triggered by photo section below */}
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    multiple
+                    accept="image/*"
+                    onChange={handleCoordinatorFileChange}
+                    className="hidden"
+                  />
 
                   {/* Buttons */}
                   <div className="flex flex-wrap gap-3 pt-4 border-t">
@@ -356,6 +393,67 @@ export default function CoordinatorUpdatePage() {
               )}
             </CardContent>
           </Card>
+
+          {/* Photo Upload Card - Only for InProgress */}
+          {problem.status === ProblemStatusConstants.InProgress && (
+            <Card>
+              <CardHeader className="border-b border-gray-100 bg-white pb-4">
+                <CardTitle className="font-heading font-semibold text-lg text-[#1F2732]">
+                  Фото
+                </CardTitle>
+                <p className="text-sm text-gray-500 font-sans">
+                  Для кращого відображення прогресу ви можете прикріпити фото
+                </p>
+              </CardHeader>
+              <CardContent className="p-6">
+                <div className="grid grid-cols-2 gap-4">
+                  {/* Add Button Slot */}
+                  <div
+                    onClick={() => fileInputRef.current?.click()}
+                    className="aspect-[2/1] bg-[#F5F6F7] rounded-[10px] flex flex-col items-center justify-center cursor-pointer hover:bg-gray-200 transition-colors group"
+                  >
+                    <span className="text-sm text-[#1F2732] border-b border-black pb-0.5 mb-1 font-medium">Додати фото</span>
+                  </div>
+
+                  {/* Preview Slots or Placeholders */}
+                  {[...Array(5)].map((_, i) => {
+                    const hasPreview = imagePreviews[i]
+
+                    return (
+                      <div key={i} className="aspect-[2/1] bg-[#F5F6F7] rounded-[10px] flex items-center justify-center relative overflow-hidden">
+                        {hasPreview ? (
+                          <>
+                            <img
+                              src={hasPreview}
+                              alt={`Preview ${i + 1}`}
+                              className="w-full h-full object-cover"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveImage(i)}
+                              className="absolute top-1 right-1 bg-red-500 hover:bg-red-600 text-white rounded-full p-1 transition-colors"
+                            >
+                              <X className="w-3 h-3" />
+                            </button>
+                          </>
+                        ) : (
+                          <div className="relative text-gray-400">
+                            <Camera className="w-8 h-8" />
+                            <Plus className="w-3 h-3 absolute -top-1 -right-1 text-gray-400" />
+                          </div>
+                        )}
+                      </div>
+                    )
+                  })}
+                </div>
+                {coordinatorFiles && coordinatorFiles.length > 0 && (
+                  <p className="text-sm text-muted-foreground mt-2">
+                    Обрано файлів: {coordinatorFiles.length} / {MAX_COORDINATOR_IMAGES - (problem.coordinatorImages?.length || 0)}
+                  </p>
+                )}
+              </CardContent>
+            </Card>
+          )}
         </div>
       </div>
     </div>
