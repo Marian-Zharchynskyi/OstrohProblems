@@ -67,66 +67,66 @@ namespace Infrastructure.Persistence.Migrations
                     b.HasData(
                         new
                         {
-                            Id = new Guid("00000000-0000-0000-0002-000000000001"),
+                            Id = new Guid("a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d"),
                             Content = "Підтверджую, яма дуже глибока, пошкодив колесо.",
                             CreatedAt = new DateTime(2024, 1, 16, 15, 0, 0, 0, DateTimeKind.Utc),
-                            ProblemId = new Guid("00000000-0000-0000-0001-000000000001"),
+                            ProblemId = new Guid("6a1b2c3d-4e5f-6a7b-8c9d-0e1f2a3b4c5d"),
                             UpdatedAt = new DateTime(2024, 1, 16, 15, 0, 0, 0, DateTimeKind.Utc),
-                            UserId = new Guid("00000000-0000-0000-0000-000000000011")
+                            UserId = new Guid("8e1a2b3c-4d5e-6f7a-8b9c-0d1e2f3a4b5d")
                         },
                         new
                         {
-                            Id = new Guid("00000000-0000-0000-0002-000000000002"),
+                            Id = new Guid("b2c3d4e5-f6a7-8b9c-0d1e-2f3a4b5c6d7e"),
                             Content = "Дякуємо за звернення, передали в дорожню службу.",
                             CreatedAt = new DateTime(2024, 1, 16, 16, 0, 0, 0, DateTimeKind.Utc),
-                            ProblemId = new Guid("00000000-0000-0000-0001-000000000001"),
+                            ProblemId = new Guid("6a1b2c3d-4e5f-6a7b-8c9d-0e1f2a3b4c5d"),
                             UpdatedAt = new DateTime(2024, 1, 16, 16, 0, 0, 0, DateTimeKind.Utc),
-                            UserId = new Guid("00000000-0000-0000-0000-000000000012")
+                            UserId = new Guid("7d0c1b2a-3e4f-5a6b-7c8d-9e0f1a2b3c4d")
                         },
                         new
                         {
-                            Id = new Guid("00000000-0000-0000-0002-000000000003"),
+                            Id = new Guid("c3d4e5f6-a7b8-9c0d-1e2f-3a4b5c6d7e8f"),
                             Content = "Темно ввечері ходити, небезпечно.",
                             CreatedAt = new DateTime(2024, 1, 16, 17, 0, 0, 0, DateTimeKind.Utc),
-                            ProblemId = new Guid("00000000-0000-0000-0001-000000000002"),
+                            ProblemId = new Guid("5b2c3d4e-5f6a-7b8c-9d0e-1f2a3b4c5d6e"),
                             UpdatedAt = new DateTime(2024, 1, 16, 17, 0, 0, 0, DateTimeKind.Utc),
-                            UserId = new Guid("00000000-0000-0000-0000-000000000011")
+                            UserId = new Guid("8e1a2b3c-4d5e-6f7a-8b9c-0d1e2f3a4b5d")
                         },
                         new
                         {
-                            Id = new Guid("00000000-0000-0000-0002-000000000004"),
+                            Id = new Guid("d4e5f6a7-b8c9-0d1e-2f3a-4b5c6d7e8f9a"),
                             Content = "Жахливий запах, неможливо пройти повз.",
                             CreatedAt = new DateTime(2024, 1, 16, 18, 0, 0, 0, DateTimeKind.Utc),
-                            ProblemId = new Guid("00000000-0000-0000-0001-000000000003"),
+                            ProblemId = new Guid("4c3d4e5f-6a7b-8c9d-0e1f-2a3b4c5d6e7f"),
                             UpdatedAt = new DateTime(2024, 1, 16, 18, 0, 0, 0, DateTimeKind.Utc),
-                            UserId = new Guid("00000000-0000-0000-0000-000000000011")
+                            UserId = new Guid("8e1a2b3c-4d5e-6f7a-8b9c-0d1e2f3a4b5d")
                         },
                         new
                         {
-                            Id = new Guid("00000000-0000-0000-0002-000000000005"),
+                            Id = new Guid("e5f6a7b8-c9d0-1e2f-3a4b-5c6d7e8f9a0b"),
                             Content = "Прошу терміново вирішити, гілки вже торкаються проводів.",
                             CreatedAt = new DateTime(2024, 1, 16, 19, 0, 0, 0, DateTimeKind.Utc),
-                            ProblemId = new Guid("00000000-0000-0000-0001-000000000004"),
+                            ProblemId = new Guid("3d4e5f6a-7b8c-9d0e-1f2a-3b4c5d6e7f8a"),
                             UpdatedAt = new DateTime(2024, 1, 16, 19, 0, 0, 0, DateTimeKind.Utc),
-                            UserId = new Guid("00000000-0000-0000-0000-000000000011")
+                            UserId = new Guid("8e1a2b3c-4d5e-6f7a-8b9c-0d1e2f3a4b5d")
                         },
                         new
                         {
-                            Id = new Guid("00000000-0000-0000-0002-000000000006"),
+                            Id = new Guid("f6a7b8c9-d0e1-2f3a-4b5c-6d7e8f9a0b1c"),
                             Content = "Діти переходять дорогу в небезпечному місці.",
                             CreatedAt = new DateTime(2024, 1, 16, 20, 0, 0, 0, DateTimeKind.Utc),
-                            ProblemId = new Guid("00000000-0000-0000-0001-000000000005"),
+                            ProblemId = new Guid("2e5f6a7b-8c9d-0e1f-2a3b-4c5d6e7f8a9b"),
                             UpdatedAt = new DateTime(2024, 1, 16, 20, 0, 0, 0, DateTimeKind.Utc),
-                            UserId = new Guid("00000000-0000-0000-0000-000000000011")
+                            UserId = new Guid("8e1a2b3c-4d5e-6f7a-8b9c-0d1e2f3a4b5d")
                         },
                         new
                         {
-                            Id = new Guid("00000000-0000-0000-0002-000000000007"),
+                            Id = new Guid("12345678-9abc-def0-1234-56789abcdef0"),
                             Content = "Вода тече вже третій день, ніхто не реагує.",
                             CreatedAt = new DateTime(2024, 1, 16, 21, 0, 0, 0, DateTimeKind.Utc),
-                            ProblemId = new Guid("00000000-0000-0000-0001-000000000008"),
+                            ProblemId = new Guid("9b8c9d0e-1f2a-3b4c-5d6e-7f8a9b0c1d2e"),
                             UpdatedAt = new DateTime(2024, 1, 16, 21, 0, 0, 0, DateTimeKind.Utc),
-                            UserId = new Guid("00000000-0000-0000-0000-000000000011")
+                            UserId = new Guid("8e1a2b3c-4d5e-6f7a-8b9c-0d1e2f3a4b5d")
                         });
                 });
 
@@ -149,17 +149,17 @@ namespace Infrastructure.Persistence.Migrations
                     b.HasData(
                         new
                         {
-                            Id = new Guid("00000000-0000-0000-0000-000000000001"),
+                            Id = new Guid("34a92614-7d43-41c6-9430-891a92543265"),
                             Name = "Administrator"
                         },
                         new
                         {
-                            Id = new Guid("00000000-0000-0000-0000-000000000002"),
+                            Id = new Guid("97897262-63fe-45f8-b7eb-661bf11f0c23"),
                             Name = "User"
                         },
                         new
                         {
-                            Id = new Guid("00000000-0000-0000-0000-000000000003"),
+                            Id = new Guid("42ad2488-8250-4286-921c-4395e1e19409"),
                             Name = "Coordinator"
                         });
                 });
@@ -221,32 +221,32 @@ namespace Infrastructure.Persistence.Migrations
                     b.HasData(
                         new
                         {
-                            Id = new Guid("00000000-0000-0000-0000-000000000010"),
+                            Id = new Guid("9f2b8c3d-4a5e-6f7a-8b9c-0d1e2f3a4b5c"),
                             ClerkId = "user_38GDF8VSzp5vQGWOBgk0Kv3Td7W",
                             Email = "admin@ostroh.edu.ua",
                             Name = "Адміністратор",
                             PasswordHash = "31jGqnyNWeEpqqSOGrrFYA==:pt36JXYoIE3w8xtI8rEJU/h50muKgFwRs0p/h4am3A0=",
-                            RoleId = new Guid("00000000-0000-0000-0000-000000000001"),
+                            RoleId = new Guid("34a92614-7d43-41c6-9430-891a92543265"),
                             Surname = "Острога"
                         },
                         new
                         {
-                            Id = new Guid("00000000-0000-0000-0000-000000000011"),
+                            Id = new Guid("8e1a2b3c-4d5e-6f7a-8b9c-0d1e2f3a4b5d"),
                             ClerkId = "user_38GDs4xMAfETf7thv21MwyW72bh",
                             Email = "user@ostroh.edu.ua",
                             Name = "Звичайний",
                             PasswordHash = "OeuuWFIVglEfvDvcH349ow==:OXOk32vZFxUcodlJVPaLj/qOApIGP9SSVu9RBy+O4Sc=",
-                            RoleId = new Guid("00000000-0000-0000-0000-000000000002"),
+                            RoleId = new Guid("97897262-63fe-45f8-b7eb-661bf11f0c23"),
                             Surname = "Користувач"
                         },
                         new
                         {
-                            Id = new Guid("00000000-0000-0000-0000-000000000012"),
+                            Id = new Guid("7d0c1b2a-3e4f-5a6b-7c8d-9e0f1a2b3c4d"),
                             ClerkId = "user_38GDlYzZ1LZNY3q4uFLBMyAYp4Y",
                             Email = "coordinator@ostroh.edu.ua",
                             Name = "Координатор",
                             PasswordHash = "DXIF+E53jMJS34YZkf0Jkw==:ccAPZCJbWy/stpuqDGYoAeNnHM5rABefB+bMZL+EaZY=",
-                            RoleId = new Guid("00000000-0000-0000-0000-000000000003"),
+                            RoleId = new Guid("42ad2488-8250-4286-921c-4395e1e19409"),
                             Surname = "Острога"
                         });
                 });
@@ -381,10 +381,10 @@ namespace Infrastructure.Persistence.Migrations
                     b.HasData(
                         new
                         {
-                            Id = new Guid("00000000-0000-0000-0001-000000000001"),
+                            Id = new Guid("6a1b2c3d-4e5f-6a7b-8c9d-0e1f2a3b4c5d"),
                             Categories = "[\"\\u0414\\u043E\\u0440\\u043E\\u0433\\u0438\"]",
                             CreatedAt = new DateTime(2024, 1, 15, 10, 0, 0, 0, DateTimeKind.Utc),
-                            CreatedById = new Guid("00000000-0000-0000-0000-000000000011"),
+                            CreatedById = new Guid("8e1a2b3c-4d5e-6f7a-8b9c-0d1e2f3a4b5d"),
                             Description = "Велика яма на дорозі біля будинку №15. Потребує термінового ремонту.",
                             Latitude = 50.3294,
                             Longitude = 26.514399999999998,
@@ -395,10 +395,10 @@ namespace Infrastructure.Persistence.Migrations
                         },
                         new
                         {
-                            Id = new Guid("00000000-0000-0000-0001-000000000002"),
+                            Id = new Guid("5b2c3d4e-5f6a-7b8c-9d0e-1f2a3b4c5d6e"),
                             Categories = "[\"\\u041E\\u0441\\u0432\\u0456\\u0442\\u043B\\u0435\\u043D\\u043D\\u044F\"]",
                             CreatedAt = new DateTime(2024, 1, 15, 10, 0, 0, 0, DateTimeKind.Utc),
-                            CreatedById = new Guid("00000000-0000-0000-0000-000000000011"),
+                            CreatedById = new Guid("8e1a2b3c-4d5e-6f7a-8b9c-0d1e2f3a4b5d"),
                             Description = "Вже тиждень не світять ліхтарі на ділянці від будинку №5 до №15.",
                             Latitude = 50.328499999999998,
                             Longitude = 26.512499999999999,
@@ -409,10 +409,10 @@ namespace Infrastructure.Persistence.Migrations
                         },
                         new
                         {
-                            Id = new Guid("00000000-0000-0000-0001-000000000003"),
+                            Id = new Guid("4c3d4e5f-6a7b-8c9d-0e1f-2a3b4c5d6e7f"),
                             Categories = "[\"\\u0421\\u043C\\u0456\\u0442\\u0442\\u044F\"]",
                             CreatedAt = new DateTime(2024, 1, 15, 10, 0, 0, 0, DateTimeKind.Utc),
-                            CreatedById = new Guid("00000000-0000-0000-0000-000000000011"),
+                            CreatedById = new Guid("8e1a2b3c-4d5e-6f7a-8b9c-0d1e2f3a4b5d"),
                             Description = "Сміттєві контейнери не вивозяться вже 3 дні, сміття розкидане навколо.",
                             Latitude = 50.330100000000002,
                             Longitude = 26.5167,
@@ -423,10 +423,10 @@ namespace Infrastructure.Persistence.Migrations
                         },
                         new
                         {
-                            Id = new Guid("00000000-0000-0000-0001-000000000004"),
+                            Id = new Guid("3d4e5f6a-7b8c-9d0e-1f2a-3b4c5d6e7f8a"),
                             Categories = "[\"\\u0411\\u0435\\u0437\\u043F\\u0435\\u043A\\u0430\",\"\\u041F\\u0430\\u0440\\u043A\\u0438 \\u0442\\u0430 \\u0437\\u0435\\u043B\\u0435\\u043D\\u0456 \\u0437\\u043E\\u043D\\u0438\"]",
                             CreatedAt = new DateTime(2024, 1, 15, 10, 0, 0, 0, DateTimeKind.Utc),
-                            CreatedById = new Guid("00000000-0000-0000-0000-000000000011"),
+                            CreatedById = new Guid("8e1a2b3c-4d5e-6f7a-8b9c-0d1e2f3a4b5d"),
                             Description = "Старе дерево нахилилося і може впасти на дорогу. Небезпечно для пішоходів.",
                             Latitude = 50.331200000000003,
                             Longitude = 26.509799999999998,
@@ -437,10 +437,10 @@ namespace Infrastructure.Persistence.Migrations
                         },
                         new
                         {
-                            Id = new Guid("00000000-0000-0000-0001-000000000005"),
+                            Id = new Guid("2e5f6a7b-8c9d-0e1f-2a3b-4c5d6e7f8a9b"),
                             Categories = "[\"\\u0414\\u043E\\u0440\\u043E\\u0433\\u0438\",\"\\u0411\\u0435\\u0437\\u043F\\u0435\\u043A\\u0430\"]",
                             CreatedAt = new DateTime(2024, 1, 15, 10, 0, 0, 0, DateTimeKind.Utc),
-                            CreatedById = new Guid("00000000-0000-0000-0000-000000000011"),
+                            CreatedById = new Guid("8e1a2b3c-4d5e-6f7a-8b9c-0d1e2f3a4b5d"),
                             Description = "Пішохідний перехід біля школи №2 без розмітки, небезпечно для дітей.",
                             Latitude = 50.328899999999997,
                             Longitude = 26.515599999999999,
@@ -451,10 +451,10 @@ namespace Infrastructure.Persistence.Migrations
                         },
                         new
                         {
-                            Id = new Guid("00000000-0000-0000-0001-000000000006"),
+                            Id = new Guid("1f6a7b8c-9d0e-1f2a-3b4c-5d6e7f8a9b0c"),
                             Categories = "[\"\\u0414\\u043E\\u0440\\u043E\\u0433\\u0438\"]",
                             CreatedAt = new DateTime(2024, 1, 15, 10, 0, 0, 0, DateTimeKind.Utc),
-                            CreatedById = new Guid("00000000-0000-0000-0000-000000000011"),
+                            CreatedById = new Guid("8e1a2b3c-4d5e-6f7a-8b9c-0d1e2f3a4b5d"),
                             Description = "Великі тріщини на тротуарі, небезпечно для пішоходів та велосипедистів.",
                             Latitude = 50.330500000000001,
                             Longitude = 26.513400000000001,
@@ -465,10 +465,10 @@ namespace Infrastructure.Persistence.Migrations
                         },
                         new
                         {
-                            Id = new Guid("00000000-0000-0000-0001-000000000007"),
+                            Id = new Guid("0a7b8c9d-0e1f-2a3b-4c5d-6e7f8a9b0c1d"),
                             Categories = "[\"\\u0411\\u0435\\u0437\\u043F\\u0435\\u043A\\u0430\",\"\\u041F\\u0430\\u0440\\u043A\\u0438 \\u0442\\u0430 \\u0437\\u0435\\u043B\\u0435\\u043D\\u0456 \\u0437\\u043E\\u043D\\u0438\"]",
                             CreatedAt = new DateTime(2024, 1, 15, 10, 0, 0, 0, DateTimeKind.Utc),
-                            CreatedById = new Guid("00000000-0000-0000-0000-000000000011"),
+                            CreatedById = new Guid("8e1a2b3c-4d5e-6f7a-8b9c-0d1e2f3a4b5d"),
                             Description = "Гойдалки та гірка на дитячому майданчику в аварійному стані.",
                             Latitude = 50.328200000000002,
                             Longitude = 26.514199999999999,
@@ -479,10 +479,10 @@ namespace Infrastructure.Persistence.Migrations
                         },
                         new
                         {
-                            Id = new Guid("00000000-0000-0000-0001-000000000008"),
+                            Id = new Guid("9b8c9d0e-1f2a-3b4c-5d6e-7f8a9b0c1d2e"),
                             Categories = "[\"\\u0412\\u043E\\u0434\\u043E\\u043F\\u043E\\u0441\\u0442\\u0430\\u0447\\u0430\\u043D\\u043D\\u044F\"]",
                             CreatedAt = new DateTime(2024, 1, 15, 10, 0, 0, 0, DateTimeKind.Utc),
-                            CreatedById = new Guid("00000000-0000-0000-0000-000000000011"),
+                            CreatedById = new Guid("8e1a2b3c-4d5e-6f7a-8b9c-0d1e2f3a4b5d"),
                             Description = "Витік води з водопровідної труби, вода заливає дорогу.",
                             Latitude = 50.329099999999997,
                             Longitude = 26.517099999999999,
@@ -493,10 +493,10 @@ namespace Infrastructure.Persistence.Migrations
                         },
                         new
                         {
-                            Id = new Guid("00000000-0000-0000-0001-000000000009"),
+                            Id = new Guid("8c9d0e1f-2a3b-4c5d-6e7f-8a9b0c1d2e3f"),
                             Categories = "[\"\\u041F\\u0430\\u0440\\u043A\\u0438 \\u0442\\u0430 \\u0437\\u0435\\u043B\\u0435\\u043D\\u0456 \\u0437\\u043E\\u043D\\u0438\"]",
                             CreatedAt = new DateTime(2024, 1, 15, 10, 0, 0, 0, DateTimeKind.Utc),
-                            CreatedById = new Guid("00000000-0000-0000-0000-000000000011"),
+                            CreatedById = new Guid("8e1a2b3c-4d5e-6f7a-8b9c-0d1e2f3a4b5d"),
                             Description = "Клумби біля центральної площі не доглядаються, заросли бур'яном.",
                             Latitude = 50.329599999999999,
                             Longitude = 26.514900000000001,
@@ -507,10 +507,10 @@ namespace Infrastructure.Persistence.Migrations
                         },
                         new
                         {
-                            Id = new Guid("00000000-0000-0000-0001-000000000010"),
+                            Id = new Guid("7d0e1f2a-3b4c-5d6e-7f8a-9b0c1d2e3f4a"),
                             Categories = "[\"\\u0411\\u0435\\u0437\\u043F\\u0435\\u043A\\u0430\",\"\\u0414\\u043E\\u0440\\u043E\\u0433\\u0438\"]",
                             CreatedAt = new DateTime(2024, 1, 15, 10, 0, 0, 0, DateTimeKind.Utc),
-                            CreatedById = new Guid("00000000-0000-0000-0000-000000000011"),
+                            CreatedById = new Guid("8e1a2b3c-4d5e-6f7a-8b9c-0d1e2f3a4b5d"),
                             Description = "Світлофор на перехресті не працює вже другий день, створює аварійну ситуацію.",
                             Latitude = 50.331499999999998,
                             Longitude = 26.510200000000001,
@@ -587,75 +587,75 @@ namespace Infrastructure.Persistence.Migrations
                     b.HasData(
                         new
                         {
-                            Id = new Guid("00000000-0000-0000-0003-000000000001"),
+                            Id = new Guid("ace3e57e-07c8-4767-9610-639556214582"),
                             CreatedAt = new DateTime(2024, 1, 17, 11, 0, 0, 0, DateTimeKind.Utc),
                             Points = 5.0,
-                            ProblemId = new Guid("00000000-0000-0000-0001-000000000001"),
-                            UserId = new Guid("00000000-0000-0000-0000-000000000011")
+                            ProblemId = new Guid("6a1b2c3d-4e5f-6a7b-8c9d-0e1f2a3b4c5d"),
+                            UserId = new Guid("8e1a2b3c-4d5e-6f7a-8b9c-0d1e2f3a4b5d")
                         },
                         new
                         {
-                            Id = new Guid("00000000-0000-0000-0003-000000000002"),
+                            Id = new Guid("bde3e57e-07c8-4767-9610-639556214583"),
                             CreatedAt = new DateTime(2024, 1, 17, 12, 0, 0, 0, DateTimeKind.Utc),
                             Points = 4.0,
-                            ProblemId = new Guid("00000000-0000-0000-0001-000000000001"),
-                            UserId = new Guid("00000000-0000-0000-0000-000000000010")
+                            ProblemId = new Guid("6a1b2c3d-4e5f-6a7b-8c9d-0e1f2a3b4c5d"),
+                            UserId = new Guid("9f2b8c3d-4a5e-6f7a-8b9c-0d1e2f3a4b5c")
                         },
                         new
                         {
-                            Id = new Guid("00000000-0000-0000-0003-000000000003"),
+                            Id = new Guid("cde3e57e-07c8-4767-9610-639556214584"),
                             CreatedAt = new DateTime(2024, 1, 17, 13, 0, 0, 0, DateTimeKind.Utc),
                             Points = 4.0,
-                            ProblemId = new Guid("00000000-0000-0000-0001-000000000002"),
-                            UserId = new Guid("00000000-0000-0000-0000-000000000011")
+                            ProblemId = new Guid("5b2c3d4e-5f6a-7b8c-9d0e-1f2a3b4c5d6e"),
+                            UserId = new Guid("8e1a2b3c-4d5e-6f7a-8b9c-0d1e2f3a4b5d")
                         },
                         new
                         {
-                            Id = new Guid("00000000-0000-0000-0003-000000000004"),
+                            Id = new Guid("dde3e57e-07c8-4767-9610-639556214585"),
                             CreatedAt = new DateTime(2024, 1, 17, 14, 0, 0, 0, DateTimeKind.Utc),
                             Points = 5.0,
-                            ProblemId = new Guid("00000000-0000-0000-0001-000000000003"),
-                            UserId = new Guid("00000000-0000-0000-0000-000000000011")
+                            ProblemId = new Guid("4c3d4e5f-6a7b-8c9d-0e1f-2a3b4c5d6e7f"),
+                            UserId = new Guid("8e1a2b3c-4d5e-6f7a-8b9c-0d1e2f3a4b5d")
                         },
                         new
                         {
-                            Id = new Guid("00000000-0000-0000-0003-000000000005"),
+                            Id = new Guid("ede3e57e-07c8-4767-9610-639556214586"),
                             CreatedAt = new DateTime(2024, 1, 17, 15, 0, 0, 0, DateTimeKind.Utc),
                             Points = 5.0,
-                            ProblemId = new Guid("00000000-0000-0000-0001-000000000004"),
-                            UserId = new Guid("00000000-0000-0000-0000-000000000011")
+                            ProblemId = new Guid("3d4e5f6a-7b8c-9d0e-1f2a-3b4c5d6e7f8a"),
+                            UserId = new Guid("8e1a2b3c-4d5e-6f7a-8b9c-0d1e2f3a4b5d")
                         },
                         new
                         {
-                            Id = new Guid("00000000-0000-0000-0003-000000000006"),
+                            Id = new Guid("fde3e57e-07c8-4767-9610-639556214587"),
                             CreatedAt = new DateTime(2024, 1, 17, 16, 0, 0, 0, DateTimeKind.Utc),
                             Points = 4.0,
-                            ProblemId = new Guid("00000000-0000-0000-0001-000000000005"),
-                            UserId = new Guid("00000000-0000-0000-0000-000000000011")
+                            ProblemId = new Guid("2e5f6a7b-8c9d-0e1f-2a3b-4c5d6e7f8a9b"),
+                            UserId = new Guid("8e1a2b3c-4d5e-6f7a-8b9c-0d1e2f3a4b5d")
                         },
                         new
                         {
-                            Id = new Guid("00000000-0000-0000-0003-000000000007"),
+                            Id = new Guid("00e3e57e-07c8-4767-9610-639556214588"),
                             CreatedAt = new DateTime(2024, 1, 17, 17, 0, 0, 0, DateTimeKind.Utc),
                             Points = 3.0,
-                            ProblemId = new Guid("00000000-0000-0000-0001-000000000006"),
-                            UserId = new Guid("00000000-0000-0000-0000-000000000011")
+                            ProblemId = new Guid("1f6a7b8c-9d0e-1f2a-3b4c-5d6e7f8a9b0c"),
+                            UserId = new Guid("8e1a2b3c-4d5e-6f7a-8b9c-0d1e2f3a4b5d")
                         },
                         new
                         {
-                            Id = new Guid("00000000-0000-0000-0003-000000000008"),
+                            Id = new Guid("11e3e57e-07c8-4767-9610-639556214589"),
                             CreatedAt = new DateTime(2024, 1, 17, 18, 0, 0, 0, DateTimeKind.Utc),
                             Points = 5.0,
-                            ProblemId = new Guid("00000000-0000-0000-0001-000000000008"),
-                            UserId = new Guid("00000000-0000-0000-0000-000000000011")
+                            ProblemId = new Guid("9b8c9d0e-1f2a-3b4c-5d6e-7f8a9b0c1d2e"),
+                            UserId = new Guid("8e1a2b3c-4d5e-6f7a-8b9c-0d1e2f3a4b5d")
                         },
                         new
                         {
-                            Id = new Guid("00000000-0000-0000-0003-000000000009"),
+                            Id = new Guid("22e3e57e-07c8-4767-9610-639556214590"),
                             CreatedAt = new DateTime(2024, 1, 17, 19, 0, 0, 0, DateTimeKind.Utc),
                             Points = 5.0,
-                            ProblemId = new Guid("00000000-0000-0000-0001-000000000010"),
-                            UserId = new Guid("00000000-0000-0000-0000-000000000011")
+                            ProblemId = new Guid("7d0e1f2a-3b4c-5d6e-7f8a-9b0c1d2e3f4a"),
+                            UserId = new Guid("8e1a2b3c-4d5e-6f7a-8b9c-0d1e2f3a4b5d")
                         });
                 });
 
