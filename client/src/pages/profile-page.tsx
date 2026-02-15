@@ -10,10 +10,12 @@ import { Label } from '@/components/ui/label'
 import { User, FileText, Eye, EyeOff } from 'lucide-react'
 import { designSystem } from '@/lib/design-system'
 import { toast } from '@/lib/toast'
+import { useQueryClient } from '@tanstack/react-query'
 
 export function ProfilePage() {
   const { getClerkToken, signOut } = useAuth()
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
   const [userDetails, setUserDetails] = useState<UserDto | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
@@ -211,9 +213,13 @@ export function ProfilePage() {
         token
       )
       setUserDetails(updated)
+      // Invalidate the currentUser query to update the header avatar
+      queryClient.invalidateQueries({ queryKey: ['currentUser', userDetails.id] })
+      toast.success('Аватарка успішно оновлена')
       e.target.value = ''
     } catch (error) {
       console.error('Failed to upload image:', error)
+      toast.error('Не вдалося оновити аватарку')
     } finally {
       setIsSaving(false)
     }

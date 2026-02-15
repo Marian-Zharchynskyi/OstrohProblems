@@ -266,7 +266,7 @@ export function AdminUsersPage() {
                         <div className="flex gap-1 flex-wrap">
                           {user.role ? (
                             <span
-                              className="inline-flex items-center gap-1 px-2 py-1 bg-primary/10 text-primary rounded text-xs"
+                              className="inline-flex items-center gap-1 px-2 py-1 bg-black/10 text-black rounded text-xs"
                             >
                               <Shield className="w-3 h-3" />
                               {user.role.name === 'Administrator' ? 'Адміністратор' : user.role.name === 'Coordinator' ? 'Координатор' : user.role.name === 'User' ? 'Користувач' : user.role.name}
@@ -389,11 +389,10 @@ export function AdminUsersPage() {
                     key={role.id}
                     type="button"
                     onClick={() => toggleCreateRole(role.id)}
-                    className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-md text-sm border transition-colors ${
-                      createForm.roleId === role.id
-                        ? 'bg-primary text-primary-foreground border-primary'
-                        : 'border-[#D0D5DD] text-[#292929] bg-transparent hover:bg-[#F5F5F5]'
-                    }`}
+                    className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-md text-sm border transition-colors ${createForm.roleId === role.id
+                      ? 'bg-black text-white border-black'
+                      : 'border-[#D0D5DD] text-[#292929] bg-transparent hover:bg-[#F5F5F5]'
+                      }`}
                   >
                     <Shield className="w-3 h-3" />
                     {role.name === 'Administrator' ? 'Адміністратор' : role.name === 'Coordinator' ? 'Координатор' : role.name === 'User' ? 'Користувач' : role.name}
@@ -467,14 +466,13 @@ export function AdminUsersPage() {
                     key={role.id}
                     type="button"
                     onClick={() => toggleEditRole(role.id)}
-                    className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-md text-sm border transition-colors ${
-                      editForm.roleId === role.id
-                        ? 'bg-primary text-primary-foreground border-primary'
-                        : 'border-[#D0D5DD] text-[#292929] bg-transparent hover:bg-[#F5F5F5]'
-                    }`}
+                    className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-md text-sm border transition-colors ${editForm.roleId === role.id
+                      ? 'bg-black text-white border-black'
+                      : 'border-[#D0D5DD] text-[#292929] bg-transparent hover:bg-[#F5F5F5]'
+                      }`}
                   >
                     <Shield className="w-3 h-3" />
-                    {role.name}
+                    {role.name === 'Administrator' ? 'Адміністратор' : role.name === 'Coordinator' ? 'Координатор' : role.name === 'User' ? 'Користувач' : role.name}
                   </button>
                 ))}
               </div>

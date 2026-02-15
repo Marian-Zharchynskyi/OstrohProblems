@@ -17,7 +17,7 @@ if (!PUBLISHABLE_KEY) {
 }
 
 function ClerkAuthWrapper({ children }: ClerkAuthProviderProps) {
-  const { isSignedIn, getToken } = useClerkAuth()
+  const { isSignedIn, getToken, isLoaded } = useClerkAuth()
   const { user: clerkUser } = useUser()
   const [user, setUser] = useState<User | null>(null)
 
@@ -86,9 +86,12 @@ function ClerkAuthWrapper({ children }: ClerkAuthProviderProps) {
     throw new Error('Use Clerk sign-up methods')
   }
 
-  const signOut = async () => {
+  const signOut = async (navigate?: (path: string) => void) => {
     await clerkSignOut()
     setUser(null)
+    if (navigate) {
+      navigate('/map')
+    }
   }
 
   // Provide a way to get the Clerk token for API calls
@@ -105,7 +108,8 @@ function ClerkAuthWrapper({ children }: ClerkAuthProviderProps) {
         user,
         tokens: null,
         isAuthenticated: !!user && (isSignedIn ?? false),
-        isLoading: isLoading || !!(isSignedIn && !user),
+        // CRITICAL: Include Clerk's isLoaded to prevent redirects before auth state is ready
+        isLoading: !isLoaded || isLoading || !!(isSignedIn && !user),
         signIn,
         signUp,
         signOut,
@@ -122,7 +126,6 @@ export function ClerkAuthProvider({ children }: ClerkAuthProviderProps) {
     <ClerkProvider
       publishableKey={PUBLISHABLE_KEY}
       localization={ukUA}
-      afterSignOutUrl="/map"
       signInUrl="/login"
       signUpUrl="/register"
     >

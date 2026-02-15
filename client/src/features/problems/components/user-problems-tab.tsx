@@ -18,11 +18,11 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { toast } from '@/lib/toast'
 import { useQueryClient } from '@tanstack/react-query'
-import { 
-  Search, 
-  MapPin, 
-  Star, 
-  ChevronDown, 
+import {
+  Search,
+  MapPin,
+  Star,
+  ChevronDown,
   ChevronUp,
   Loader2,
   X,
@@ -75,12 +75,12 @@ const CommentsBlock = memo(function CommentsBlock({ comments, problemId, onViewA
   const { user } = useAuth()
   const realtimeComments = useRealtimeComments(problemId, comments)
   const sortedComments = useMemo(() => {
-    return [...realtimeComments].sort((a, b) => 
+    return [...realtimeComments].sort((a, b) =>
       new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
     )
   }, [realtimeComments])
   const displayedComments = sortedComments.slice(0, 3)
-  
+
   const [editingComment, setEditingComment] = useState<Comment | null>(null)
   const [isEditOpen, setIsEditOpen] = useState(false)
   const [commentToDelete, setCommentToDelete] = useState<string | null>(null)
@@ -127,8 +127,8 @@ const CommentsBlock = memo(function CommentsBlock({ comments, problemId, onViewA
       <h2 className="text-xl font-bold text-[#1F2732] font-['Mulish'] mb-4">
         Останні коментарі
       </h2>
-      
-      <Card className="bg-white border border-gray-200 rounded-lg flex flex-col h-fit">
+
+      <Card className="bg-white border border-gray-200 rounded-lg flex flex-col min-h-[300px]">
         <CardContent className="p-5">
           {sortedComments.length === 0 ? (
             <p className="text-gray-500 text-sm">Коментарів поки немає</p>
@@ -142,7 +142,7 @@ const CommentsBlock = memo(function CommentsBlock({ comments, problemId, onViewA
                     <div className="py-3 px-4 md:px-5">
                       <div className="flex items-center justify-between gap-6 mb-5">
                         <span className="text-sm font-bold text-[#292929]">
-                          {comment?.user?.name} {comment?.user?.surname}
+                          {comment?.user?.name} {comment?.user?.surname}{canEdit ? ' (Ви)' : ''}
                         </span>
                         <div className="flex items-center gap-2">
                           <span className="text-xs font-bold text-[#292929]">
@@ -150,7 +150,7 @@ const CommentsBlock = memo(function CommentsBlock({ comments, problemId, onViewA
                           </span>
                           {canEdit && (
                             <div className="flex items-center gap-2 ml-2">
-                              <button 
+                              <button
                                 type="button"
                                 onClick={() => {
                                   setEditingComment(comment)
@@ -161,7 +161,7 @@ const CommentsBlock = memo(function CommentsBlock({ comments, problemId, onViewA
                               >
                                 <Pencil className="w-3.5 h-3.5 text-gray-500 hover:text-blue-600" />
                               </button>
-                              <button 
+                              <button
                                 type="button"
                                 onClick={() => setCommentToDelete(comment.id)}
                                 className="p-0 bg-transparent border-none shadow-none transition-opacity hover:opacity-80 outline-none focus:outline-none focus:ring-0"
@@ -181,7 +181,7 @@ const CommentsBlock = memo(function CommentsBlock({ comments, problemId, onViewA
                   </div>
                 )
               })}
-              
+
               {sortedComments.length > 0 && (
                 <>
                   <hr className="border-gray-200 border-b-[1px] mt-3 mx-4 md:mx-5" />
@@ -198,8 +198,8 @@ const CommentsBlock = memo(function CommentsBlock({ comments, problemId, onViewA
           )}
         </CardContent>
       </Card>
-      
-      <Button 
+
+      <Button
         onClick={() => setIsCreateOpen(true)}
         className="mt-4 bg-[#E42556] hover:bg-[#E42556]/90 text-white font-bold rounded-md self-center px-8 py-2 w-auto min-h-0 h-auto focus-visible:ring-0 focus-visible:ring-offset-0 focus:ring-0 border-0 outline-none"
         style={{ boxShadow: 'none', borderColor: 'transparent' }}
@@ -253,7 +253,7 @@ const AllCommentsModal = memo(function AllCommentsModal({ open, onOpenChange, co
           </DialogTitle>
           <p className="text-sm text-gray-600 mt-2">{problemTitle}</p>
         </DialogHeader>
-        
+
         <div className="flex-1 overflow-y-auto pr-2">
           {realtimeComments.length === 0 ? (
             <p className="text-gray-500 text-sm text-center py-8">Коментарів поки немає</p>
@@ -267,12 +267,12 @@ const AllCommentsModal = memo(function AllCommentsModal({ open, onOpenChange, co
                         {comment?.user?.name} {comment?.user?.surname}
                       </span>
                       <span className="text-xs text-gray-500">
-                        {new Date(comment.createdAt).toLocaleDateString('uk-UA', { 
-                          day: '2-digit', 
-                          month: '2-digit', 
+                        {new Date(comment.createdAt).toLocaleDateString('uk-UA', {
+                          day: '2-digit',
+                          month: '2-digit',
                           year: 'numeric',
-                          hour: '2-digit', 
-                          minute: '2-digit' 
+                          hour: '2-digit',
+                          minute: '2-digit'
                         })}
                       </span>
                     </div>
@@ -328,7 +328,7 @@ const DescriptionBlock = memo(function DescriptionBlock({ problem, onUpdate }: D
       <h2 className="text-xl font-bold text-[#1F2732] font-['Mulish'] mb-4 flex items-center gap-2">
         Опис
         {!isEditing && (
-          <button 
+          <button
             type="button"
             className="p-0 !bg-transparent border-none shadow-none transition-opacity opacity-100 hover:opacity-80 outline-none focus:outline-none focus:ring-0"
             onClick={() => setIsEditing(true)}
@@ -374,7 +374,7 @@ const DescriptionBlock = memo(function DescriptionBlock({ problem, onUpdate }: D
               <p className={`text-gray-600 whitespace-pre-wrap break-words ${!expanded && isLongDescription ? 'line-clamp-3' : ''}`}>
                 {problem.description}
               </p>
-              
+
               {isLongDescription && (
                 <button
                   onClick={() => setExpanded(!expanded)}
@@ -435,15 +435,15 @@ const ProblemDetailsCard = memo(function ProblemDetailsCard({ problem, onUpdate 
         )
         const data = await response.json()
         const addr = data.address || {}
-        const streetName = addr.road || addr.pedestrian || addr.footway || 
-                          addr.street || addr.suburb || addr.neighbourhood || 
-                          addr.city || 'Невідома вулиця'
+        const streetName = addr.road || addr.pedestrian || addr.footway ||
+          addr.street || addr.suburb || addr.neighbourhood ||
+          addr.city || 'Невідома вулиця'
         setAddress(streetName)
       } catch {
         setAddress('Не вдалося визначити адресу')
       }
     }
-    
+
     fetchAddress()
   }, [problem.latitude, problem.longitude])
 
@@ -525,8 +525,8 @@ const ProblemDetailsCard = memo(function ProblemDetailsCard({ problem, onUpdate 
   }
 
   const toggleCategory = (category: string) => {
-    setEditCategories(prev => 
-      prev.includes(category) 
+    setEditCategories(prev =>
+      prev.includes(category)
         ? prev.filter(c => c !== category)
         : [...prev, category]
     )
@@ -604,7 +604,7 @@ const ProblemDetailsCard = memo(function ProblemDetailsCard({ problem, onUpdate 
       <h2 className="text-xl font-bold text-[#1F2732] font-['Mulish'] mb-4 flex items-center gap-2">
         Характеристики
         {!isEditing && (
-          <button 
+          <button
             type="button"
             className="p-0 !bg-transparent border-none shadow-none transition-opacity opacity-100 hover:opacity-80 outline-none focus:outline-none focus:ring-0"
             onClick={() => setIsEditing(true)}
@@ -635,11 +635,10 @@ const ProblemDetailsCard = memo(function ProblemDetailsCard({ problem, onUpdate 
                       key={cat}
                       type="button"
                       onClick={() => toggleCategory(cat)}
-                      className={`px-3 py-1 text-xs rounded-full border transition-colors ${
-                        editCategories.includes(cat)
-                          ? 'bg-[#E42556] text-white border-[#E42556]'
-                          : 'bg-white text-gray-600 border-gray-300 hover:border-[#E42556]'
-                      }`}
+                      className={`px-3 py-1 text-xs rounded-full border transition-colors ${editCategories.includes(cat)
+                        ? 'bg-[#E42556] text-white border-[#E42556]'
+                        : 'bg-white text-gray-600 border-gray-300 hover:border-[#E42556]'
+                        }`}
                     >
                       {cat}
                     </button>
@@ -733,12 +732,12 @@ const ProblemDetailsCard = memo(function ProblemDetailsCard({ problem, onUpdate 
                 <div className="flex justify-between items-start my-1">
                   <span className="font-bold text-gray-700">Категорія</span>
                   <div className="flex flex-col items-end">
-                    {problem.categories && problem.categories.length > 0 
+                    {problem.categories && problem.categories.length > 0
                       ? problem.categories.map((cat, index) => (
-                          <span key={index} className="text-gray-600">
-                            {cat}
-                          </span>
-                        ))
+                        <span key={index} className="text-gray-600">
+                          {cat}
+                        </span>
+                      ))
                       : <span className="text-gray-600">Не вказано</span>}
                   </div>
                 </div>
@@ -862,7 +861,7 @@ const ProblemDetailsCard = memo(function ProblemDetailsCard({ problem, onUpdate 
 
 function MapRefUpdater({ onReady }: { onReady: (map: LeafletMap) => void }) {
   const map = useMap()
-  
+
   useEffect(() => {
     onReady(map)
   }, [map, onReady])
@@ -893,19 +892,29 @@ export function UserProblemsTab() {
   const [showAllCommentsModal, setShowAllCommentsModal] = useState(false)
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [searchTerm, setSearchTerm] = useState('')
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('')
   const [categoryFilter, setCategoryFilter] = useState<string>('')
   const [priorityFilter, setPriorityFilter] = useState<string>('')
   const [dateFilter, setDateFilter] = useState<string>('')
 
+  // Update debounced search term when search term changes
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm)
+    }, 500)
+
+    return () => clearTimeout(timer)
+  }, [searchTerm])
+
   const filter: UserProblemsFilter = useMemo(() => ({
-    searchTerm: searchTerm || undefined,
+    searchTerm: debouncedSearchTerm || undefined,
     status: statusFilter !== 'all' ? statusFilter : undefined,
     category: categoryFilter || undefined,
     priority: priorityFilter || undefined,
     sortBy: 'createdAt',
     sortDescending: true,
     dateFilter: dateFilter || undefined,
-  }), [searchTerm, statusFilter, categoryFilter, priorityFilter, dateFilter])
+  }), [debouncedSearchTerm, statusFilter, categoryFilter, priorityFilter, dateFilter])
 
   const { data: problems, isLoading, refetch } = useProblemsByUserFiltered(user?.id || '', filter)
 
@@ -942,7 +951,7 @@ export function UserProblemsTab() {
   ] as const, [])
 
   const statusTabColors = designSystem.colors.profile.tabs
-type StatusTabStyle = CSSProperties & { '--tab-hover-color'?: string }
+  type StatusTabStyle = CSSProperties & { '--tab-hover-color'?: string }
   const getStatusTabStyle = useCallback((isActive: boolean): StatusTabStyle => ({
     color: isActive ? statusTabColors.text : statusTabColors.inactiveText,
     backgroundColor: 'transparent',
@@ -1003,7 +1012,7 @@ type StatusTabStyle = CSSProperties & { '--tab-hover-color'?: string }
             className="pl-10 bg-white border border-[#464646] rounded-[10px] text-[#464646] focus-visible:ring-0 focus-visible:border-[2px]"
           />
         </div>
-        
+
         <Select value={categoryFilter} onValueChange={setCategoryFilter}>
           <SelectTrigger className="w-[180px] bg-white border border-[#464646] rounded-[10px] text-[#464646] focus:ring-0 focus:ring-offset-0 focus:border-[2px]">
             <SelectValue placeholder="Категорія" />
@@ -1049,7 +1058,7 @@ type StatusTabStyle = CSSProperties & { '--tab-hover-color'?: string }
         <Card className="bg-white border border-gray-200 rounded-[10px] h-[500px] flex items-center justify-center">
           <div className="text-center p-8">
             <p className="text-gray-500 text-lg">
-              {statusFilter === 'all' 
+              {statusFilter === 'all'
                 ? 'У вас ще немає звернень'
                 : 'Немає звернень з таким статусом'}
             </p>
@@ -1098,8 +1107,8 @@ type StatusTabStyle = CSSProperties & { '--tab-hover-color'?: string }
             {/* Коментарі - займає ~40% ширини (2 з 5 колонок) */}
             <div className="lg:col-span-2 h-[500px]">
               {selectedProblem && showDetails ? (
-                <CommentsBlock 
-                  comments={selectedProblem.comments || []} 
+                <CommentsBlock
+                  comments={selectedProblem.comments || []}
                   problemId={selectedProblem.id}
                   onViewAllComments={handleViewAllComments}
                   onCommentUpdate={handleProblemUpdate}
@@ -1119,11 +1128,11 @@ type StatusTabStyle = CSSProperties & { '--tab-hover-color'?: string }
               <div className="lg:col-span-2">
                 <DescriptionBlock problem={selectedProblem} onUpdate={handleProblemUpdate} />
               </div>
-              
+
               {/* Деталі проблеми - займає більше місця справа (3 з 5 колонок) */}
               <div className="lg:col-span-3">
-                <ProblemDetailsCard 
-                  problem={selectedProblem} 
+                <ProblemDetailsCard
+                  problem={selectedProblem}
                   onUpdate={handleProblemUpdate}
                   onViewAllComments={handleViewAllComments}
                 />
