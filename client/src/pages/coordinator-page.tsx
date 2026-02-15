@@ -98,7 +98,7 @@ export default function CoordinatorPage() {
             onClick={() => setActiveTab(tab.key)}
             size="sm"
             className={`justify-between min-w-[150px] focus:outline-none focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0 ${activeTab === tab.key
-              ? 'shadow-sm border-transparent'
+              ? 'shadow-sm border-transparent !bg-[#FF3366] !text-white hover:!bg-[#E62E5C]'
               : 'border-[#D0D5DD] bg-transparent text-[#1F2732] hover:bg-[#F5F5F5] hover:text-[#1F2732]'
               }`}
           >

@@ -37,15 +37,20 @@
 
 @layer base {
   :root {
-    --background: 210 17% 98%; /* #F8F9FA */
-    --foreground: 210 11% 15%; /* #212529 */
+    scrollbar-gutter: stable;
+    --background: 210 17% 98%;
+    /* #F8F9FA */
+    --foreground: 210 11% 15%;
+    /* #212529 */
     --card: 0 0% 100%;
     --card-foreground: 210 11% 15%;
     --popover: 0 0% 100%;
     --popover-foreground: 210 11% 15%;
-    --primary: 345 100% 60%; /* #FF3366 */
+    --primary: 345 100% 60%;
+    /* #FF3366 */
     --primary-foreground: 0 0% 100%;
-    --secondary: 210 14% 53%; /* #6C757D */
+    --secondary: 210 14% 53%;
+    /* #6C757D */
     --secondary-foreground: 0 0% 100%;
     --muted: 210 17% 95%;
     --muted-foreground: 210 14% 53%;
@@ -86,22 +91,33 @@
   * {
     @apply border-border;
   }
+
   body {
     @apply bg-background text-foreground;
     font-family: 'Mulish', system-ui, Avenir, Helvetica, Arial, sans-serif;
   }
-  h1, h2, h3, h4, h5, h6 {
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     font-family: 'Sora', system-ui, Avenir, Helvetica, Arial, sans-serif;
   }
+
   a {
     @apply text-primary;
   }
+
   a:hover {
     @apply text-primary-foreground;
   }
+
   h1 {
     @apply text-[1.875rem];
   }
+
   button {
     @apply bg-primary text-primary-foreground rounded-[var(--radius)];
     border: 1px solid transparent;
@@ -112,9 +128,11 @@
     cursor: pointer;
     transition: border-color 0.25s;
   }
+
   button:hover {
     @apply border-primary-foreground;
   }
+
   button:focus,
   button:focus-visible {
     outline: 4px auto -webkit-focus-ring-color;

@@ -46,7 +46,7 @@ export function AppRoutes() {
 
       {/* Admin only routes */}
       <Route
-        path="/dashboard"
+        path="/admin/dashboard"
         element={
           <ProtectedRoute allowedRoles={['Administrator']}>
             <Layout>
@@ -56,7 +56,7 @@ export function AppRoutes() {
         }
       />
       <Route
-        path="/problems"
+        path="/admin/problems"
         element={
           <ProtectedRoute allowedRoles={['Administrator']}>
             <Layout>
@@ -66,7 +66,7 @@ export function AppRoutes() {
         }
       />
       <Route
-        path="/comments"
+        path="/admin/comments"
         element={
           <ProtectedRoute allowedRoles={['Administrator']}>
             <Layout>
@@ -76,7 +76,7 @@ export function AppRoutes() {
         }
       />
       <Route
-        path="/ratings"
+        path="/admin/ratings"
         element={
           <ProtectedRoute allowedRoles={['Administrator']}>
             <Layout>

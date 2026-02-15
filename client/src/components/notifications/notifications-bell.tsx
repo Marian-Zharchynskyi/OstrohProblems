@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom'
 import { cn } from '@/lib/utils'
 
 export function NotificationsBell() {
-  const { notifications, unreadCount, markAsRead, markAllAsRead } = useSignalR()
+  const { notifications, unreadCount, markAsRead, markAllAsRead, clearNotifications } = useSignalR()
   const [isOpen, setIsOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
   const navigate = useNavigate()
@@ -105,11 +105,13 @@ export function NotificationsBell() {
                   <div className="flex items-start gap-3">
                     <span className="text-xl flex-shrink-0">{getNotificationIcon(notification.type)}</span>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm text-gray-900 font-medium line-clamp-2">
+                      <p className="text-sm text-gray-900 font-medium break-words whitespace-normal">
                         {notification.message}
                       </p>
-                      <p className="text-xs text-gray-500 mt-1 truncate">
-                        {notification.problemTitle}
+                      <p className="text-xs text-gray-500 mt-1" title={notification.problemTitle}>
+                        {notification.problemTitle && notification.problemTitle.length > 50
+                          ? `${notification.problemTitle.substring(0, 50)}...`
+                          : notification.problemTitle}
                       </p>
                       <p className="text-xs text-gray-400 mt-1">
                         {formatTime(notification.createdAt)}
@@ -125,12 +127,21 @@ export function NotificationsBell() {
           )}
 
           {notifications.length > 0 && (
-            <div className="border-t border-gray-100 p-2 bg-gray-50/50">
+            <div className="border-t border-gray-100 p-2 bg-gray-50/50 space-y-2">
               <button
                 onClick={markAllAsRead}
                 className="w-full flex items-center justify-center gap-2 py-2 text-sm font-medium text-[#1F2732] bg-white border border-[#D0D5DD] rounded-md hover:bg-[#F5F5F5] transition-all focus:outline-none focus:ring-0 active:scale-[0.98]"
               >
                 Позначити всі як прочитані
+              </button>
+              <button
+                onClick={() => {
+                  clearNotifications()
+                  setIsOpen(false)
+                }}
+                className="w-full flex items-center justify-center gap-2 py-2 text-sm font-medium text-[#E42556] bg-white border border-[#E42556] rounded-md hover:bg-[#E42556]/10 transition-all focus:outline-none focus:ring-0 active:scale-[0.98]"
+              >
+                Очистити всі нотифікації
               </button>
             </div>
           )}
