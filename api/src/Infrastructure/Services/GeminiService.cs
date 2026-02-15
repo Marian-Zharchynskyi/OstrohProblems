@@ -15,6 +15,8 @@ public class GeminiService : IGeminiService
     private readonly IConfiguration _configuration;
     private readonly IProblemQueries _problemQueries;
     private readonly IRatingQueries _ratingQueries;
+    private readonly IUserQueries _userQueries;
+    private readonly ICommentQueries _commentQueries;
     private readonly ILogger<GeminiService> _logger;
     
     private const string GeminiFlashModel = "gemini-2.5-flash";
@@ -27,12 +29,16 @@ public class GeminiService : IGeminiService
         IConfiguration configuration,
         IProblemQueries problemQueries,
         IRatingQueries ratingQueries,
+        IUserQueries userQueries,
+        ICommentQueries commentQueries,
         ILogger<GeminiService> logger)
     {
         _httpClient = httpClient;
         _configuration = configuration;
         _problemQueries = problemQueries;
         _ratingQueries = ratingQueries;
+        _userQueries = userQueries;
+        _commentQueries = commentQueries;
         _logger = logger;
     }
 
@@ -1293,6 +1299,274 @@ public class GeminiService : IGeminiService
             return "Низький";
 
         return "Середній";
+    }
+
+    public async Task<DashboardStatistics> GetDashboardStatisticsAsync(CancellationToken cancellationToken = default)
+    {
+        var allProblems = await _problemQueries.GetAll(cancellationToken);
+        var allUsers = await _userQueries.GetAll(cancellationToken);
+        var allComments = await _commentQueries.GetAll(cancellationToken);
+        var allRatings = await _ratingQueries.GetAll(cancellationToken);
+
+        var now = DateTime.UtcNow;
+        var startOfMonth = new DateTime(now.Year, now.Month, 1);
+        var startOfLastMonth = startOfMonth.AddMonths(-1);
+
+        // Status counts
+        var newCount = allProblems.Count(p => p.Status.Value == "Нова");
+        var inProgressCount = allProblems.Count(p => p.Status.Value == "В роботі");
+        var completedCount = allProblems.Count(p => p.Status.Value == "Виконано");
+        var rejectedCount = allProblems.Count(p => p.Status.Value == "Відхилено");
+
+        // Priority counts
+        var criticalCount = allProblems.Count(p => p.Priority.Value == "Критичний");
+        var highCount = allProblems.Count(p => p.Priority.Value == "Високий");
+
+        // Time-based
+        var thisMonthCount = allProblems.Count(p => p.CreatedAt >= startOfMonth);
+        var lastMonthCount = allProblems.Count(p => p.CreatedAt >= startOfLastMonth && p.CreatedAt < startOfMonth);
+
+        // Resolution rate
+        var resolutionRate = allProblems.Count > 0
+            ? (double)completedCount / allProblems.Count * 100
+            : 0;
+
+        // Average resolution time (for completed problems)
+        var completedProblems = allProblems.Where(p => p.Status.Value == "Виконано").ToList();
+        var avgResolutionDays = completedProblems.Any()
+            ? completedProblems.Average(p => (p.UpdatedAt - p.CreatedAt).TotalDays)
+            : 0;
+
+        // Average rating
+        var avgRating = allRatings.Any() ? allRatings.Average(r => r.Points) : 0;
+
+        // Category stats
+        var categoryGroups = allProblems
+            .SelectMany(p => p.Categories)
+            .GroupBy(c => c.Value)
+            .Select(g => new CategoryStat(
+                g.Key,
+                g.Count(),
+                allProblems.Count > 0 ? Math.Round((double)g.Count() / allProblems.Count * 100, 1) : 0
+            ))
+            .OrderByDescending(x => x.Count)
+            .ToList();
+
+        // Status stats
+        var statusGroups = allProblems
+            .GroupBy(p => p.Status.Value)
+            .Select(g => new StatusStat(
+                g.Key,
+                g.Count(),
+                Math.Round((double)g.Count() / allProblems.Count * 100, 1)
+            ))
+            .ToList();
+
+        // Priority stats
+        var priorityGroups = allProblems
+            .GroupBy(p => p.Priority.Value)
+            .Select(g => new PriorityStat(
+                g.Key,
+                g.Count(),
+                Math.Round((double)g.Count() / allProblems.Count * 100, 1)
+            ))
+            .ToList();
+
+        // Monthly trends (last 6 months)
+        var monthlyTrends = new List<MonthlyTrend>();
+        for (var i = 5; i >= 0; i--)
+        {
+            var monthStart = new DateTime(now.Year, now.Month, 1).AddMonths(-i);
+            var monthEnd = monthStart.AddMonths(1);
+            var monthName = monthStart.ToString("MMM yyyy", new System.Globalization.CultureInfo("uk-UA"));
+            var created = allProblems.Count(p => p.CreatedAt >= monthStart && p.CreatedAt < monthEnd);
+            var resolved = allProblems.Count(p =>
+                p.Status.Value == "Виконано" &&
+                p.UpdatedAt >= monthStart && p.UpdatedAt < monthEnd);
+            monthlyTrends.Add(new MonthlyTrend(monthName, created, resolved));
+        }
+
+        // Recent and top rated problems
+        var recentProblems = new List<ProblemSummaryForChat>();
+        foreach (var problem in allProblems.OrderByDescending(p => p.CreatedAt).Take(5))
+        {
+            var ratings = await _ratingQueries.GetByProblemId(problem.Id, cancellationToken);
+            var avg = ratings.Any() ? ratings.Average(r => r.Points) : 0;
+            recentProblems.Add(MapToProblemSummary(problem, avg));
+        }
+
+        var problemsWithRatings = new List<(Domain.Problems.Problem Problem, double AvgRating)>();
+        foreach (var problem in allProblems)
+        {
+            var ratings = await _ratingQueries.GetByProblemId(problem.Id, cancellationToken);
+            var avg = ratings.Any() ? ratings.Average(r => r.Points) : 0;
+            problemsWithRatings.Add((problem, avg));
+        }
+        
+        var topRated = problemsWithRatings
+            .OrderByDescending(p => p.AvgRating)
+            .Take(5)
+            .Select(p => MapToProblemSummary(p.Problem, p.AvgRating))
+            .ToList();
+
+        return new DashboardStatistics(
+            TotalProblems: allProblems.Count,
+            NewProblems: newCount,
+            InProgressProblems: inProgressCount,
+            CompletedProblems: completedCount,
+            RejectedProblems: rejectedCount,
+            TotalUsers: allUsers.Count,
+            TotalComments: allComments.Count,
+            AverageRating: Math.Round(avgRating, 1),
+            CriticalProblems: criticalCount,
+            HighPriorityProblems: highCount,
+            ProblemsThisMonth: thisMonthCount,
+            ProblemsLastMonth: lastMonthCount,
+            ResolutionRate: Math.Round(resolutionRate, 1),
+            AvgResolutionTimeDays: Math.Round(avgResolutionDays, 1),
+            CategoryStats: categoryGroups,
+            StatusStats: statusGroups,
+            PriorityStats: priorityGroups,
+            MonthlyTrends: monthlyTrends,
+            RecentProblems: recentProblems,
+            TopRatedProblems: topRated
+        );
+    }
+
+    public async Task<AdminChatResponse> ProcessAdminChatMessageAsync(string message, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            // Gather full statistics context
+            var stats = await GetDashboardStatisticsAsync(cancellationToken);
+
+            var dataContext = new StringBuilder();
+            dataContext.AppendLine("=== ПОВНА СТАТИСТИКА СИСТЕМИ ===");
+            dataContext.AppendLine($"Всього проблем: {stats.TotalProblems}");
+            dataContext.AppendLine($"Нових: {stats.NewProblems}");
+            dataContext.AppendLine($"В роботі: {stats.InProgressProblems}");
+            dataContext.AppendLine($"Виконано: {stats.CompletedProblems}");
+            dataContext.AppendLine($"Відхилено: {stats.RejectedProblems}");
+            dataContext.AppendLine($"Всього користувачів: {stats.TotalUsers}");
+            dataContext.AppendLine($"Всього коментарів: {stats.TotalComments}");
+            dataContext.AppendLine($"Середній рейтинг: {stats.AverageRating}");
+            dataContext.AppendLine($"Критичних проблем: {stats.CriticalProblems}");
+            dataContext.AppendLine($"Високого пріоритету: {stats.HighPriorityProblems}");
+            dataContext.AppendLine($"Проблем цього місяця: {stats.ProblemsThisMonth}");
+            dataContext.AppendLine($"Проблем минулого місяця: {stats.ProblemsLastMonth}");
+            dataContext.AppendLine($"Рівень вирішення: {stats.ResolutionRate}%");
+            dataContext.AppendLine($"Середній час вирішення: {stats.AvgResolutionTimeDays} днів");
+            dataContext.AppendLine();
+
+            dataContext.AppendLine("СТАТИСТИКА ЗА КАТЕГОРІЯМИ:");
+            foreach (var cat in stats.CategoryStats)
+                dataContext.AppendLine($"  - {cat.Category}: {cat.Count} ({cat.Percentage}%)");
+            dataContext.AppendLine();
+
+            dataContext.AppendLine("СТАТИСТИКА ЗА СТАТУСАМИ:");
+            foreach (var s in stats.StatusStats)
+                dataContext.AppendLine($"  - {s.Status}: {s.Count} ({s.Percentage}%)");
+            dataContext.AppendLine();
+
+            dataContext.AppendLine("СТАТИСТИКА ЗА ПРІОРИТЕТАМИ:");
+            foreach (var p in stats.PriorityStats)
+                dataContext.AppendLine($"  - {p.Priority}: {p.Count} ({p.Percentage}%)");
+            dataContext.AppendLine();
+
+            dataContext.AppendLine("ТРЕНДИ ПО МІСЯЦЯХ:");
+            foreach (var t in stats.MonthlyTrends)
+                dataContext.AppendLine($"  - {t.Month}: створено {t.Created}, вирішено {t.Resolved}");
+            dataContext.AppendLine();
+
+            dataContext.AppendLine("ОСТАННІ 5 ПРОБЛЕМ:");
+            foreach (var p in stats.RecentProblems)
+                dataContext.AppendLine($"  - \"{p.Title}\" ({p.Status}, {p.Priority}, категорії: {string.Join(", ", p.Categories)}, рейтинг: {p.AverageRating?.ToString("F1") ?? "N/A"})");
+            dataContext.AppendLine();
+
+            dataContext.AppendLine("ТОП-5 ЗА РЕЙТИНГОМ:");
+            foreach (var p in stats.TopRatedProblems)
+                dataContext.AppendLine($"  - \"{p.Title}\" (рейтинг: {p.AverageRating?.ToString("F1") ?? "N/A"}, {p.Status}, коментарів: {p.CommentsCount})");
+
+            var prompt = $$"""
+                Ти - AI-помічник адміністратора платформи "Острог Разом" для вирішення міських проблем.
+                Ти маєш ПОВНИЙ доступ до всіх даних системи та статистики.
+
+                ТВОЇ МОЖЛИВОСТІ ДЛЯ АДМІНІСТРАТОРА:
+                1. Аналіз тренів - показати як змінюється кількість проблем з часом
+                2. Порівняння категорій - яка категорія найпроблемніша
+                3. Оцінка ефективності - рівень вирішення, середній час
+                4. Виявлення гарячих точок - критичні проблеми, проблеми що довго не вирішуються
+                5. Рекомендації - конкретні поради щодо покращення роботи
+                6. Прогнозування - на основі трендів
+                7. Звіти - можеш згенерувати текстовий звіт для будь-якого аспекту
+                8. Фільтрація - якщо адмін хоче побачити конкретні дані на дашборді
+
+                ПОТОЧНА СТАТИСТИКА СИСТЕМИ:
+                {{dataContext}}
+
+                ЗАПИТ АДМІНІСТРАТОРА: "{{message}}"
+
+                ІНСТРУКЦІЇ:
+                1. Відповідай як професійний аналітик даних
+                2. Використовуй конкретні цифри та факти з наданих даних
+                3. Структуруй відповідь з заголовками, списками
+                4. Якщо запитують про тренди - аналізуй місячні дані
+                5. Давай конкретні рекомендації
+                6. Використовуй емодзі помірно
+                7. Відповідай українською мовою
+                8. Якщо адмін хоче побачити конкретні проблеми на дашборді - вкажи у кінці відповіді блок FILTER_JSON:
+                   Наприклад якщо адмін каже "покажи критичні проблеми" додай:
+                   FILTER_JSON:{"status":null,"category":null,"priority":"Критичний","dateRange":null,"sortBy":null}
+                   Або "покажи нові проблеми з дорогами":
+                   FILTER_JSON:{"status":"Нова","category":"Дороги","priority":null,"dateRange":null,"sortBy":null}
+                9. Дай ПОВНУ та ДЕТАЛЬНУ відповідь (мінімум 150-250 слів)
+                10. НЕ обрізай відповідь - завершуй думки
+                """;
+
+            var response = await CallGeminiAsyncExtended(prompt, GeminiFlashModel, cancellationToken, maxTokens: 4096, temperature: 0.7);
+
+            // Extract filter from response if present
+            DashboardFilter? filter = null;
+            var cleanMessage = response;
+            
+            var filterIndex = response.IndexOf("FILTER_JSON:", StringComparison.OrdinalIgnoreCase);
+            if (filterIndex >= 0)
+            {
+                cleanMessage = response[..filterIndex].TrimEnd();
+                var filterJson = response[(filterIndex + "FILTER_JSON:".Length)..].Trim();
+                
+                // Clean up markdown code blocks if present
+                if (filterJson.StartsWith("```json"))
+                    filterJson = filterJson[7..];
+                if (filterJson.StartsWith("```"))
+                    filterJson = filterJson[3..];
+                if (filterJson.EndsWith("```"))
+                    filterJson = filterJson[..^3];
+                filterJson = filterJson.Trim();
+                
+                try
+                {
+                    var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+                    filter = JsonSerializer.Deserialize<DashboardFilter>(filterJson, options);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Failed to parse dashboard filter JSON: {Json}", filterJson);
+                }
+            }
+
+            var responseType = filter != null ? ChatResponseType.DashboardUpdate : ChatResponseType.Text;
+
+            return new AdminChatResponse(cleanMessage, responseType, filter);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error processing admin chat message");
+            return new AdminChatResponse(
+                "Вибачте, сталася помилка при обробці запиту. Спробуйте ще раз.",
+                ChatResponseType.Error
+            );
+        }
     }
 }
 

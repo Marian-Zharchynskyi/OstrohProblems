@@ -1,5 +1,5 @@
 import axios from 'axios'
-import type { ChatMessageRequest, ChatMessageResponse, ExtractedProblemData } from '@/types/chat'
+import type { ChatMessageRequest, ChatMessageResponse, ExtractedProblemData, DashboardStatistics, AdminChatResponse } from '@/types/chat'
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5146'
 
@@ -104,6 +104,36 @@ export const chatService = {
       }
     )
 
+    return response.data
+  },
+
+  async getDashboardStatistics(
+    token: string
+  ): Promise<DashboardStatistics> {
+    const response = await axios.get<DashboardStatistics>(
+      `${API_URL}/chat/admin/statistics`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    )
+    return response.data
+  },
+
+  async sendAdminMessage(
+    message: string,
+    token: string
+  ): Promise<AdminChatResponse> {
+    const response = await axios.post<AdminChatResponse>(
+      `${API_URL}/chat/admin/message`,
+      { message },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    )
     return response.data
   },
 }

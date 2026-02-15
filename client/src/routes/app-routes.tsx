@@ -3,7 +3,7 @@ import { Layout } from '@/components/shared/layout'
 import { ProtectedRoute } from '@/components/auth/protected-route'
 import { PublicRoute } from '@/components/auth/public-route'
 import { ErrorPage } from '@/pages/error-page'
-import { HomePage } from '@/pages/home-page'
+import { AdminDashboardPage } from '@/pages/admin-dashboard-page'
 import { ClerkLoginPage } from '@/pages/clerk-login-page'
 import { ClerkRegisterPage } from '@/pages/clerk-register-page'
 import { ProblemsPage } from '@/pages/problems-page'
@@ -50,7 +50,7 @@ export function AppRoutes() {
         element={
           <ProtectedRoute allowedRoles={['Administrator']}>
             <Layout>
-              <HomePage />
+              <AdminDashboardPage />
             </Layout>
           </ProtectedRoute>
         }
