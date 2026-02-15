@@ -185,4 +185,70 @@ public class ChatController(IGeminiService geminiService, IIdentityService ident
             result.IsComplete
         );
     }
+
+    [Authorize(Roles = "Administrator")]
+    [HttpGet("admin/statistics")]
+    public async Task<ActionResult<DashboardStatisticsResponse>> GetDashboardStatistics(
+        CancellationToken cancellationToken)
+    {
+        var stats = await geminiService.GetDashboardStatisticsAsync(cancellationToken);
+
+        return new DashboardStatisticsResponse(
+            stats.TotalProblems,
+            stats.NewProblems,
+            stats.InProgressProblems,
+            stats.CompletedProblems,
+            stats.RejectedProblems,
+            stats.TotalUsers,
+            stats.TotalComments,
+            stats.AverageRating,
+            stats.CriticalProblems,
+            stats.HighPriorityProblems,
+            stats.ProblemsThisMonth,
+            stats.ProblemsLastMonth,
+            stats.ResolutionRate,
+            stats.AvgResolutionTimeDays,
+            stats.CategoryStats.Select(c => new CategoryStatDto(c.Category, c.Count, c.Percentage)).ToList(),
+            stats.StatusStats.Select(s => new StatusStatDto(s.Status, s.Count, s.Percentage)).ToList(),
+            stats.PriorityStats.Select(p => new PriorityStatDto(p.Priority, p.Count, p.Percentage)).ToList(),
+            stats.MonthlyTrends.Select(t => new MonthlyTrendDto(t.Month, t.Created, t.Resolved)).ToList(),
+            stats.RecentProblems.Select(p => new ProblemSummaryDto(
+                p.Id, p.Title, p.Description, p.Status, p.Priority,
+                p.Latitude, p.Longitude, p.Categories,
+                p.AverageRating, p.CommentsCount, p.CreatedAt, p.CreatorName
+            )).ToList(),
+            stats.TopRatedProblems.Select(p => new ProblemSummaryDto(
+                p.Id, p.Title, p.Description, p.Status, p.Priority,
+                p.Latitude, p.Longitude, p.Categories,
+                p.AverageRating, p.CommentsCount, p.CreatedAt, p.CreatorName
+            )).ToList()
+        );
+    }
+
+    [Authorize(Roles = "Administrator")]
+    [HttpPost("admin/message")]
+    public async Task<ActionResult<AdminChatMessageResponse>> SendAdminMessage(
+        [FromBody] AdminChatMessageRequest request,
+        CancellationToken cancellationToken)
+    {
+        var response = await geminiService.ProcessAdminChatMessageAsync(request.Message, cancellationToken);
+
+        return new AdminChatMessageResponse(
+            response.Message,
+            response.ResponseType.ToString(),
+            response.SuggestedFilter != null
+                ? new DashboardFilterDto(
+                    response.SuggestedFilter.Status,
+                    response.SuggestedFilter.Category,
+                    response.SuggestedFilter.Priority,
+                    response.SuggestedFilter.DateRange,
+                    response.SuggestedFilter.SortBy)
+                : null,
+            response.Problems?.Select(p => new ProblemSummaryDto(
+                p.Id, p.Title, p.Description, p.Status, p.Priority,
+                p.Latitude, p.Longitude, p.Categories,
+                p.AverageRating, p.CommentsCount, p.CreatedAt, p.CreatorName
+            )).ToList()
+        );
+    }
 }

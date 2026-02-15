@@ -7,6 +7,8 @@ public interface IGeminiService
     Task<ChatResponse> ProcessVoiceMessageAsync(Stream audioStream, string userRole, Guid? userId = null, CancellationToken cancellationToken = default);
     Task<ExtractedProblemData> ExtractProblemDataAsync(string userMessage, CancellationToken cancellationToken = default);
     Task<ExtractedProblemData> ExtractProblemDataFromVoiceAsync(Stream audioStream, CancellationToken cancellationToken = default);
+    Task<DashboardStatistics> GetDashboardStatisticsAsync(CancellationToken cancellationToken = default);
+    Task<AdminChatResponse> ProcessAdminChatMessageAsync(string message, CancellationToken cancellationToken = default);
 }
 
 public record ChatRequest(
@@ -27,7 +29,8 @@ public enum ChatResponseType
     ProblemsList,
     SingleProblem,
     Help,
-    Error
+    Error,
+    DashboardUpdate
 }
 
 public record ProblemSummaryForChat(
@@ -55,4 +58,48 @@ public record ExtractedProblemData(
     double? Longitude,
     string? AiMessage,
     bool IsComplete
+);
+
+// Dashboard Statistics models
+public record DashboardStatistics(
+    int TotalProblems,
+    int NewProblems,
+    int InProgressProblems,
+    int CompletedProblems,
+    int RejectedProblems,
+    int TotalUsers,
+    int TotalComments,
+    double AverageRating,
+    int CriticalProblems,
+    int HighPriorityProblems,
+    int ProblemsThisMonth,
+    int ProblemsLastMonth,
+    double ResolutionRate,
+    double AvgResolutionTimeDays,
+    List<CategoryStat> CategoryStats,
+    List<StatusStat> StatusStats,
+    List<PriorityStat> PriorityStats,
+    List<MonthlyTrend> MonthlyTrends,
+    List<ProblemSummaryForChat> RecentProblems,
+    List<ProblemSummaryForChat> TopRatedProblems
+);
+
+public record CategoryStat(string Category, int Count, double Percentage);
+public record StatusStat(string Status, int Count, double Percentage);
+public record PriorityStat(string Priority, int Count, double Percentage);
+public record MonthlyTrend(string Month, int Created, int Resolved);
+
+public record AdminChatResponse(
+    string Message,
+    ChatResponseType ResponseType,
+    DashboardFilter? SuggestedFilter = null,
+    List<ProblemSummaryForChat>? Problems = null
+);
+
+public record DashboardFilter(
+    string? Status,
+    string? Category,
+    string? Priority,
+    string? DateRange,
+    string? SortBy
 );
