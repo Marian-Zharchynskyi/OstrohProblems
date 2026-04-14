@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
-import { LogOut, Plus, ChevronDown, User as UserIcon, FileText } from 'lucide-react'
+import { LogOut, ChevronDown, User as UserIcon, FileText, Plus } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/contexts/auth-context'
 import { NotificationsBell } from '@/components/notifications/notifications-bell'

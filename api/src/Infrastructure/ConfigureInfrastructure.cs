@@ -1,4 +1,5 @@
 using Application.Common.Interfaces;
+using Application.Services.GeminiService;
 using Infrastructure.Persistence;
 using Infrastructure.Services;
 using Infrastructure.SignalR;
@@ -18,5 +19,8 @@ public static class ConfigureInfrastructure
         
         // Register Clerk API service for syncing users with Clerk Dashboard
         services.AddHttpClient<IClerkApiService, ClerkApiService>();
+        
+        // Register Gemini AI service
+        services.AddHttpClient<IGeminiService, GeminiService>();
     }
 }
