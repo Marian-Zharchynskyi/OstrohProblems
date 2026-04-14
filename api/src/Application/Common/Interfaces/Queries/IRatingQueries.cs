@@ -13,4 +13,5 @@ public interface IRatingQueries
         CancellationToken cancellationToken);
     Task<double> GetAverageByProblemId(ProblemId problemId, CancellationToken cancellationToken);
     Task<Option<Rating>> GetByUserAndProblem(UserId userId, ProblemId problemId, CancellationToken cancellationToken);
+    Task<IReadOnlyList<Rating>> GetByProblemId(ProblemId problemId, CancellationToken cancellationToken);
 }
