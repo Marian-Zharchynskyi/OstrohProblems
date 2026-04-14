@@ -40,6 +40,10 @@ export function ProblemImagesManager({
 
   const displayTitle = title || (imageType === 'coordinator' ? 'Фото координатора' : 'Зображення')
 
+  if ((!images || images.length === 0) && selectedFiles.length === 0 && !canEdit) {
+    return null
+  }
+
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || [])
     const remainingSlots = maxImages - currentImagesCount - selectedFiles.length
