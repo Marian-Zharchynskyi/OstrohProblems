@@ -3,7 +3,7 @@ import { Layout } from '@/components/shared/layout'
 import { ProtectedRoute } from '@/components/auth/protected-route'
 import { PublicRoute } from '@/components/auth/public-route'
 import { ErrorPage } from '@/pages/error-page'
-import { HomePage } from '@/pages/home-page'
+import { AdminDashboardPage } from '@/pages/admin-dashboard-page'
 import { ClerkLoginPage } from '@/pages/clerk-login-page'
 import { ClerkRegisterPage } from '@/pages/clerk-register-page'
 import { ProblemsPage } from '@/pages/problems-page'
@@ -13,6 +13,7 @@ import { MapPage } from '@/pages/map-page'
 import { ProfilePage } from '@/pages/profile-page'
 import { AdminUsersPage } from '@/pages/admin-users-page'
 import { CreateIssuePage } from '@/pages/create-issue-page'
+import { CreateIssueAiPage } from '@/pages/create-issue-ai-page'
 import { ProblemDetailPage } from '@/pages/problem-detail-page'
 import { ProblemCommentsPage } from '@/pages/problem-comments-page'
 import { MySubmittedProblemsPageWithTabs } from '@/pages/my-submitted-problems-page-with-tabs'
@@ -49,7 +50,7 @@ export function AppRoutes() {
         element={
           <ProtectedRoute allowedRoles={['Administrator']}>
             <Layout>
-              <HomePage />
+              <AdminDashboardPage />
             </Layout>
           </ProtectedRoute>
         }
@@ -142,6 +143,16 @@ export function AppRoutes() {
           <ProtectedRoute allowedRoles={['User', 'Administrator']}>
             <Layout>
               <CreateIssuePage />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/problems/create-ai"
+        element={
+          <ProtectedRoute allowedRoles={['User', 'Administrator']}>
+            <Layout>
+              <CreateIssueAiPage />
             </Layout>
           </ProtectedRoute>
         }

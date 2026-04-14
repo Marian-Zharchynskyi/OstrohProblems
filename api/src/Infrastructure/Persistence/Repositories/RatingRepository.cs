@@ -96,4 +96,13 @@ public class RatingRepository(ApplicationDbContext context) : IRatingQueries, IR
 
         return ratings.Average(x => x.Points);
     }
+
+    public async Task<IReadOnlyList<Rating>> GetByProblemId(ProblemId problemId, CancellationToken cancellationToken)
+    {
+        return await context.Ratings
+            .Where(x => x.ProblemId == problemId)
+            .Include(x => x.User)
+            .AsNoTracking()
+            .ToListAsync(cancellationToken);
+    }
 }

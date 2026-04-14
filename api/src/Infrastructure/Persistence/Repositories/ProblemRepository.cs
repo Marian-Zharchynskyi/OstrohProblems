@@ -43,6 +43,7 @@ public class ProblemRepository(ApplicationDbContext context) : IProblemQueries, 
             .Include(x => x.Ratings)
             .AsSplitQuery()
             .AsNoTracking()
+            .OrderByDescending(x => x.CreatedAt)
             .ToListAsync(cancellationToken);
     }
 
