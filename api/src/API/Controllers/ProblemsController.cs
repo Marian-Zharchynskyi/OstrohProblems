@@ -190,7 +190,7 @@ public class ProblemsController(ISender sender, IProblemQueries problemQueries, 
 
     [Authorize(Roles = $"{RoleNames.Admin}, {RoleNames.User}")]
     [HttpPut("delete-image/{problemId:guid}")]
-    public async Task<ActionResult<ProblemDto>> Upload([FromRoute] Guid problemId, Guid problemImageId,
+    public async Task<ActionResult<ProblemDto>> DeleteImage([FromRoute] Guid problemId, Guid problemImageId,
         CancellationToken cancellationToken)
     {
         var input = new DeleteProblemImageCommand()
