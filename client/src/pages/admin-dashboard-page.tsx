@@ -263,7 +263,7 @@ export function AdminDashboardPage() {
                     label="Критичних"
                     value={stats.criticalProblems}
                     color="#EF4444"
-                    subtitle={`${stats.highPriorityProblems} високого пріор.`}
+                    subtitle={`${stats.highPriorityProblems} високого пріорітету`}
                 />
             </div>
 
@@ -606,14 +606,14 @@ export function AdminDashboardPage() {
                         onChange={(e) => setChatInput(e.target.value)}
                         placeholder="Запитайте AI про статистику..."
                         disabled={isChatLoading}
-                        className="flex-1 px-4 py-2.5 rounded-xl bg-gray-100 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#E42556]/30 focus:bg-white border border-transparent focus:border-[#E42556]/30 transition-all disabled:opacity-50"
+                        className="flex-1 px-4 py-2.5 rounded-xl bg-gray-100 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-transparent focus:bg-white border border-transparent focus:border-gray-300 transition-all disabled:opacity-50"
                     />
                     <button
                         type="submit"
                         disabled={isChatLoading || !chatInput.trim()}
-                        className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#E42556] to-[#c8204b] text-white flex items-center justify-center hover:shadow-lg hover:scale-105 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                        className="group relative inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-2xl text-sm font-semibold text-[#E42556] bg-white border border-[#E42556]/40 shadow-[0_10px_25px_rgba(228,37,86,0.15)] transition-all hover:-translate-y-0.5 hover:bg-gradient-to-r hover:from-[#E42556] hover:to-[#c8204b] hover:text-white hover:shadow-[0_12px_30px_rgba(228,37,86,0.35)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#E42556]/40 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:-translate-y-0"
                     >
-                        <Send className="w-4 h-4" />
+                        <Send className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-0.5" />
                     </button>
                 </form>
             </div>

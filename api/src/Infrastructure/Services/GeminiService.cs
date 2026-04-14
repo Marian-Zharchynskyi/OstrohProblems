@@ -19,9 +19,9 @@ public class GeminiService : IGeminiService
     private readonly ICommentQueries _commentQueries;
     private readonly ILogger<GeminiService> _logger;
     
-    private const string GeminiFlashModel = "gemini-2.5-flash";
-    private const string GeminiLiteModel = "gemini-2.5-flash";
-    private const string GeminiProModel = "gemini-2.5-pro";
+    private const string GeminiFlashModel = "gemini-3-flash-preview";
+    private const string GeminiLiteModel = "gemini-3-flash-preview";
+    private const string GeminiProModel = "gemini-3-flash-preview";
     private const string GeminiEmbeddingModel = "text-embedding-004";
 
     public GeminiService(
@@ -803,8 +803,20 @@ public class GeminiService : IGeminiService
 
     private async Task<ChatResponse> HandleAnalyzeProblemsAsync(ChatRequest request, CancellationToken cancellationToken)
     {
+        bool hasStatusFilter = request.Message.Contains("нов", StringComparison.OrdinalIgnoreCase) || 
+                               request.Message.Contains("робот", StringComparison.OrdinalIgnoreCase) || 
+                               request.Message.Contains("прогрес", StringComparison.OrdinalIgnoreCase) ||
+                               request.Message.Contains("викон", StringComparison.OrdinalIgnoreCase) || 
+                               request.Message.Contains("завершен", StringComparison.OrdinalIgnoreCase) || 
+                               request.Message.Contains("відхил", StringComparison.OrdinalIgnoreCase) ||
+                               request.Message.Contains("статус", StringComparison.OrdinalIgnoreCase);
+
         // Get all problems with ratings for analysis
-        var allProblems = await _problemQueries.GetAll(cancellationToken);
+        var allProblemsQuery = await _problemQueries.GetAll(cancellationToken);
+        
+        var allProblems = hasStatusFilter 
+            ? allProblemsQuery.ToList() 
+            : allProblemsQuery.Where(p => p.Status.Value == "В роботі").ToList();
         var problemsWithRatings = new List<(Problem Problem, double AvgRating, int CommentsCount)>();
 
         foreach (var problem in allProblems)
@@ -1228,6 +1240,7 @@ public class GeminiService : IGeminiService
                             7. Використовуй живу розмовну мову, а не формальні заготовки
                             8. Можеш використовувати емодзі для виразності, але помірно
                             9. Це демо-проект, тому деякі дані є ілюстративними
+                            10. Не вітайся з користувачем на кожен запит (лише якщо це перше повідомлення або користувач сам привітався). Відповідай одразу по суті.
                 """;
     }
 
@@ -1521,6 +1534,8 @@ public class GeminiService : IGeminiService
                    FILTER_JSON:{"status":"Нова","category":"Дороги","priority":null,"dateRange":null,"sortBy":null}
                 9. Дай ПОВНУ та ДЕТАЛЬНУ відповідь (мінімум 150-250 слів)
                 10. НЕ обрізай відповідь - завершуй думки
+                11. Не вітайся з користувачем на кожен запит (лише якщо це перше повідомлення або користувач сам привітався). Одразу переходь до аналітики.
+                12. Обов'язково роби подвійні відступи (порожні рядки) між абзацами та розділами для кращого візуального сприйняття тексту.
                 """;
 
             var response = await CallGeminiAsyncExtended(prompt, GeminiFlashModel, cancellationToken, maxTokens: 4096, temperature: 0.7);
