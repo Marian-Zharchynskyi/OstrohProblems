@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
-import { LogOut, ChevronDown, User as UserIcon, FileText, Plus } from 'lucide-react'
+import { LogOut, ChevronDown, User as UserIcon, FileText, Plus, Sparkles, PenLine } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/contexts/auth-context'
 import { NotificationsBell } from '@/components/notifications/notifications-bell'
@@ -34,6 +34,8 @@ export const Header = () => {
   const { isAuthenticated, user, signOut, getClerkToken } = useAuth()
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
+  const [isCreateDropdownOpen, setIsCreateDropdownOpen] = useState(false)
+  const createDropdownRef = useRef<HTMLDivElement>(null)
 
   // Fetch full user details to get avatar
   const { data: userProfile } = useQuery({
@@ -52,6 +54,9 @@ export const Header = () => {
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setIsDropdownOpen(false)
+      }
+      if (createDropdownRef.current && !createDropdownRef.current.contains(event.target as Node)) {
+        setIsCreateDropdownOpen(false)
       }
     }
     document.addEventListener('mousedown', handleClickOutside)
@@ -133,19 +138,50 @@ export const Header = () => {
                 {/* Regular User Actions */}
                 {isUser && (
                   <>
-                    <Link
-                      to="/problems/create"
-                      className="hidden sm:flex items-center gap-2 text-sm font-medium px-5 py-2.5 rounded-full transition-all shadow-sm active:scale-95"
-                      style={{
-                        backgroundColor: '#E42556',
-                        color: '#FFFFFF',
-                      }}
-                      onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#c8204b' }}
-                      onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#E42556' }}
-                    >
-                      <Plus className="h-4 w-4" />
-                      Подати проблему
-                    </Link>
+                    <div className="relative hidden sm:block" ref={createDropdownRef}>
+                      <button
+                        onClick={() => setIsCreateDropdownOpen(!isCreateDropdownOpen)}
+                        className="flex items-center gap-2 text-sm font-medium px-5 py-2.5 rounded-full transition-all shadow-sm active:scale-95 outline-none focus:outline-none border-none"
+                        style={{
+                          backgroundColor: '#E42556',
+                          color: '#FFFFFF',
+                        }}
+                        onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#c8204b' }}
+                        onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#E42556' }}
+                      >
+                        <Plus className="h-4 w-4" />
+                        Подати проблему
+                        <ChevronDown className={cn("w-4 h-4 transition-transform duration-200", isCreateDropdownOpen && "rotate-180")} />
+                      </button>
+
+                      {isCreateDropdownOpen && (
+                        <div className="absolute right-0 top-full mt-2 w-56 bg-white rounded-2xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.2)] border border-gray-100 p-2 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+                          <div className="space-y-1">
+                            <Link
+                              to="/problems/create-ai"
+                              onClick={() => setIsCreateDropdownOpen(false)}
+                              className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-violet-50 text-violet-700 transition-colors group"
+                            >
+                              <div className="w-8 h-8 rounded-full bg-violet-100 flex items-center justify-center text-violet-600 group-hover:bg-white group-hover:shadow-sm transition-all">
+                                <Sparkles className="w-4 h-4" />
+                              </div>
+                              <span className="font-medium text-sm">За допомогою AI</span>
+                            </Link>
+
+                            <Link
+                              to="/problems/create"
+                              onClick={() => setIsCreateDropdownOpen(false)}
+                              className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-50 text-gray-700 transition-colors group"
+                            >
+                              <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 group-hover:bg-white group-hover:shadow-sm transition-all">
+                                <PenLine className="w-4 h-4" />
+                              </div>
+                              <span className="font-medium text-sm">Створити вручну</span>
+                            </Link>
+                          </div>
+                        </div>
+                      )}
+                    </div>
 
                     <NotificationsBell />
                   </>
