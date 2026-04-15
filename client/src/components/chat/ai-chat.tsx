@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
-import { MessageCircle, X, Send, Mic, MicOff, Trash2, Loader2, Bot, User, MapPin, Star, Clock, Sparkles } from 'lucide-react'
+import { MessageCircle, X, Send, Mic, MicOff, Trash2, Loader2, Bot, User, MapPin, Star, Clock, Sparkles, Check } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { chatService } from '@/services/chat.service'
 import { useAuth } from '@/contexts/auth-context'
@@ -391,15 +391,26 @@ export function AiChat() {
               <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse" />
               <span className="text-sm text-gray-600">Запис...</span>
             </div>
-            <button
-              onClick={cancelRecording}
-              className="p-2 text-gray-500 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors focus:outline-none focus-visible:ring-violet-300 group"
-              aria-label="Скасувати запис"
-            >
-              <span className="inline-flex items-center justify-center w-6 h-6 rounded-md border text-red-600 bg-white group-hover:bg-red-50 transition-colors">
-                <Trash2 className="w-3.5 h-3.5" strokeWidth={2.3} />
-              </span>
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={cancelRecording}
+                className="p-2 text-gray-500 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors focus:outline-none focus-visible:ring-violet-300 group"
+                aria-label="Скасувати запис"
+              >
+                <span className="inline-flex items-center justify-center w-6 h-6 rounded-md border text-red-600 bg-white group-hover:bg-red-50 transition-colors">
+                  <Trash2 className="w-3.5 h-3.5" strokeWidth={2.3} />
+                </span>
+              </button>
+              <button
+                onClick={stopRecording}
+                className="p-2 text-green-600 bg-green-300 rounded-lg hover:bg-green-300 transition-colors focus:outline-none focus-visible:ring-green-300 group"
+                aria-label="Надіслати запис"
+              >
+                <span className="inline-flex items-center justify-center w-6 h-6 rounded-md bg-white group-hover:bg-green-50 transition-colors">
+                  <Check className="w-3.5 h-3.5" strokeWidth={2.3} />
+                </span>
+              </button>
+            </div>
           </div>
         )}
 
