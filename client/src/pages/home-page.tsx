@@ -1,6 +1,6 @@
-import { Link } from 'react-router-dom'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { MessageSquare, Star, AlertCircle, Users, MapPin } from 'lucide-react'
+import { Link } from 'react-router-dom';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { MessageSquare, Star, AlertCircle, Users, MapPin } from 'lucide-react';
 
 const features = [
   {
@@ -38,21 +38,19 @@ const features = [
     path: '/map',
     color: 'text-green-500',
   },
-]
+];
 
 export function HomePage() {
   return (
     <div className="space-y-8">
       <div>
         <h1 className="text-4xl font-bold tracking-tight">Панель адміністратора</h1>
-        <p className="text-muted-foreground mt-2">
-          Управління та відстеження проблем громади
-        </p>
+        <p className="text-muted-foreground mt-2">Управління та відстеження проблем громади</p>
       </div>
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {features.map((feature) => {
-          const Icon = feature.icon
+          const Icon = feature.icon;
           return (
             <Link key={feature.path} to={feature.path}>
               <Card className="hover:shadow-lg transition-shadow cursor-pointer h-full">
@@ -66,15 +64,13 @@ export function HomePage() {
                   <CardDescription>{feature.description}</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-sm text-muted-foreground">
-                    Натисніть для управління
-                  </p>
+                  <p className="text-sm text-muted-foreground">Натисніть для управління</p>
                 </CardContent>
               </Card>
             </Link>
-          )
+          );
         })}
       </div>
     </div>
-  )
+  );
 }

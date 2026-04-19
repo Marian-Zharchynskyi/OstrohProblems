@@ -1,107 +1,99 @@
-import { useState, useRef } from 'react'
-import type { ProblemImage, CoordinatorImage } from '@/types'
-import { problemsApi } from '@/features/problems/api/problems-api'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Upload, Trash2, Image as ImageIcon, X } from 'lucide-react'
-import { toast } from '@/lib/toast'
-import { ImageLightbox } from '@/components/shared/image-lightbox'
+import { useState, useRef } from 'react';
+import type { ProblemImage, CoordinatorImage } from '@/types';
+import { problemsApi } from '@/features/problems/api/problems-api';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Upload, Trash2, Image as ImageIcon, X } from 'lucide-react';
+import { toast } from '@/lib/toast';
+import { ImageLightbox } from '@/components/shared/image-lightbox';
 
-type ImageType = 'problem' | 'coordinator'
+type ImageType = 'problem' | 'coordinator';
 
 interface ProblemImagesManagerProps {
-  problemId: string
-  images: ProblemImage[] | CoordinatorImage[] | null
-  onImagesChange: () => void
-  maxImages?: number
-  canEdit?: boolean
-  imageType?: ImageType
-  title?: string
+  problemId: string;
+  images: ProblemImage[] | CoordinatorImage[] | null;
+  onImagesChange: () => void;
+  maxImages?: number;
+  canEdit?: boolean;
+  imageType?: ImageType;
+  title?: string;
 }
 
-export function ProblemImagesManager({
-  problemId,
-  images,
-  onImagesChange,
-  maxImages = 6,
-  canEdit = true,
-  imageType = 'problem',
-  title,
-}: ProblemImagesManagerProps) {
-  const [isUploading, setIsUploading] = useState(false)
-  const [isDeleting, setIsDeleting] = useState<string | null>(null)
-  const [selectedFiles, setSelectedFiles] = useState<File[]>([])
-  const fileInputRef = useRef<HTMLInputElement>(null)
-  const [lightboxOpen, setLightboxOpen] = useState(false)
-  const [lightboxInitialIndex, setLightboxInitialIndex] = useState(0)
+export function ProblemImagesManager({ problemId, images, onImagesChange, maxImages = 6, canEdit = true, imageType = 'problem', title }: ProblemImagesManagerProps) {
+  const [isUploading, setIsUploading] = useState(false);
+  const [isDeleting, setIsDeleting] = useState<string | null>(null);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [lightboxInitialIndex, setLightboxInitialIndex] = useState(0);
 
-  const currentImagesCount = images?.length || 0
-  const canAddMore = currentImagesCount + selectedFiles.length < maxImages
+  const currentImagesCount = images?.length || 0;
+  const canAddMore = currentImagesCount + selectedFiles.length < maxImages;
 
-  const displayTitle = title || (imageType === 'coordinator' ? 'Фото координатора' : 'Зображення')
+  const displayTitle = title || (imageType === 'coordinator' ? 'Фото координатора' : 'Зображення');
 
   if ((!images || images.length === 0) && selectedFiles.length === 0 && !canEdit) {
-    return null
+    return null;
   }
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || [])
-    const remainingSlots = maxImages - currentImagesCount - selectedFiles.length
-    
+    const files = Array.from(e.target.files || []);
+    const remainingSlots = maxImages - currentImagesCount - selectedFiles.length;
+
     if (files.length > remainingSlots) {
-      toast.error(`Можна додати ще максимум ${remainingSlots} зображень`)
-      return
+      toast.error(`Можна додати ще максимум ${remainingSlots} зображень`);
+      return;
     }
 
-    setSelectedFiles((prev) => [...prev, ...files])
+    setSelectedFiles((prev) => [...prev, ...files]);
     if (fileInputRef.current) {
-      fileInputRef.current.value = ''
+      fileInputRef.current.value = '';
     }
-  }
+  };
 
   const handleRemoveSelectedFile = (index: number) => {
-    setSelectedFiles((prev) => prev.filter((_, i) => i !== index))
-  }
+    setSelectedFiles((prev) => prev.filter((_, i) => i !== index));
+  };
 
   const handleUpload = async () => {
-    if (selectedFiles.length === 0) return
+    if (selectedFiles.length === 0) return;
 
     try {
-      setIsUploading(true)
-      const fileList = new DataTransfer()
-      selectedFiles.forEach((file) => fileList.items.add(file))
-      
+      setIsUploading(true);
+      const fileList = new DataTransfer();
+      selectedFiles.forEach((file) => fileList.items.add(file));
+
       if (imageType === 'coordinator') {
-        await problemsApi.uploadCoordinatorImages(problemId, fileList.files)
+        await problemsApi.uploadCoordinatorImages(problemId, fileList.files);
       } else {
-        await problemsApi.uploadImages(problemId, fileList.files)
+        await problemsApi.uploadImages(problemId, fileList.files);
       }
-      setSelectedFiles([])
-      toast.success('Зображення завантажено')
-      onImagesChange()
+      setSelectedFiles([]);
+      toast.success('Зображення завантажено');
+      onImagesChange();
     } catch {
-      toast.error('Не вдалося завантажити зображення')
+      toast.error('Не вдалося завантажити зображення');
     } finally {
-      setIsUploading(false)
+      setIsUploading(false);
     }
-  }
+  };
 
   const handleDeleteImage = async (imageId: string) => {
     try {
-      setIsDeleting(imageId)
+      setIsDeleting(imageId);
       if (imageType === 'coordinator') {
-        await problemsApi.deleteCoordinatorImage(problemId, imageId)
+        await problemsApi.deleteCoordinatorImage(problemId, imageId);
       } else {
-        await problemsApi.deleteImage(problemId, imageId)
+        await problemsApi.deleteImage(problemId, imageId);
       }
-      toast.success('Зображення видалено')
-      onImagesChange()
+      toast.success('Зображення видалено');
+      onImagesChange();
     } catch {
-      toast.error('Не вдалося видалити зображення')
+      toast.error('Не вдалося видалити зображення');
     } finally {
-      setIsDeleting(null)
+      setIsDeleting(null);
     }
-  }
+  };
 
   return (
     <Card>
@@ -110,9 +102,7 @@ export function ProblemImagesManager({
           <ImageIcon className="w-5 h-5" />
           {displayTitle} ({currentImagesCount}/{maxImages})
         </CardTitle>
-        <CardDescription>
-          Максимум {maxImages} зображень
-        </CardDescription>
+        <CardDescription>Максимум {maxImages} зображень</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         {/* Existing Images */}
@@ -125,19 +115,18 @@ export function ProblemImagesManager({
                   alt="Problem"
                   className="h-32 w-full rounded-lg object-cover cursor-pointer hover:opacity-90 transition-opacity"
                   onClick={() => {
-                    setLightboxInitialIndex(index)
-                    setLightboxOpen(true)
+                    setLightboxInitialIndex(index);
+                    setLightboxOpen(true);
                   }}
                 />
                 {canEdit && (
                   <button
                     onClick={(e) => {
-                      e.stopPropagation()
-                      if (image.id) handleDeleteImage(image.id)
+                      e.stopPropagation();
+                      if (image.id) handleDeleteImage(image.id);
                     }}
                     disabled={isDeleting === image.id}
-                    className="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity disabled:opacity-50"
-                  >
+                    className="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity disabled:opacity-50">
                     {isDeleting === image.id ? (
                       <span className="w-4 h-4 block animate-spin border-2 border-white border-t-transparent rounded-full" />
                     ) : (
@@ -157,15 +146,8 @@ export function ProblemImagesManager({
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
               {selectedFiles.map((file, index) => (
                 <div key={index} className="relative group">
-                  <img
-                    src={URL.createObjectURL(file)}
-                    alt={file.name}
-                    className="h-32 w-full rounded-lg object-cover border-2 border-dashed border-primary"
-                  />
-                  <button
-                    onClick={() => handleRemoveSelectedFile(index)}
-                    className="absolute top-2 right-2 p-1.5 bg-gray-500 text-white rounded-full"
-                  >
+                  <img src={URL.createObjectURL(file)} alt={file.name} className="h-32 w-full rounded-lg object-cover border-2 border-dashed border-primary" />
+                  <button onClick={() => handleRemoveSelectedFile(index)} className="absolute top-2 right-2 p-1.5 bg-gray-500 text-white rounded-full">
                     <X className="w-4 h-4" />
                   </button>
                 </div>
@@ -177,38 +159,25 @@ export function ProblemImagesManager({
         {/* Upload Controls */}
         {canEdit && (
           <div className="flex flex-wrap gap-2">
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              multiple
-              onChange={handleFileSelect}
-              className="hidden"
-              disabled={!canAddMore || isUploading}
-            />
+            <input ref={fileInputRef} type="file" accept="image/*" multiple onChange={handleFileSelect} className="hidden" disabled={!canAddMore || isUploading} />
             <Button
               variant="outline"
               onClick={() => fileInputRef.current?.click()}
               disabled={!canAddMore || isUploading}
-              className="border border-[#D0D5DD] bg-white text-[#292929] hover:bg-[#F5F5F5] hover:text-[#292929]"
-            >
+              className="border border-[#D0D5DD] bg-white text-[#292929] hover:bg-[#F5F5F5] hover:text-[#292929]">
               <Upload className="w-4 h-4 mr-2" />
               Обрати файли
             </Button>
             {selectedFiles.length > 0 && (
               <>
-                <Button
-                  onClick={handleUpload}
-                  disabled={isUploading}
-                >
+                <Button onClick={handleUpload} disabled={isUploading}>
                   {isUploading ? 'Завантаження...' : `Завантажити (${selectedFiles.length})`}
                 </Button>
                 <Button
                   variant="outline"
                   onClick={() => setSelectedFiles([])}
                   disabled={isUploading}
-                  className="border border-[#E42556] text-[#E42556] bg-transparent hover:bg-[#E42556]/10 hover:text-[#E42556]"
-                >
+                  className="border border-[#E42556] text-[#E42556] bg-transparent hover:bg-[#E42556]/10 hover:text-[#E42556]">
                   Скасувати
                 </Button>
               </>
@@ -226,12 +195,7 @@ export function ProblemImagesManager({
         )}
       </CardContent>
 
-      <ImageLightbox
-        images={images || []}
-        initialIndex={lightboxInitialIndex}
-        open={lightboxOpen}
-        onClose={() => setLightboxOpen(false)}
-      />
+      <ImageLightbox images={images || []} initialIndex={lightboxInitialIndex} open={lightboxOpen} onClose={() => setLightboxOpen(false)} />
     </Card>
-  )
+  );
 }

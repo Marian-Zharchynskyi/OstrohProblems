@@ -1,144 +1,134 @@
-import { useState, useEffect } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
-import { useProblem } from '@/features/problems/hooks/use-problems'
-import { useRealtimeComments } from '@/hooks/use-realtime-comments'
-import { useAuth } from '@/contexts/auth-context'
-import { useSnackbar } from '@/contexts/snackbar-provider'
-import { commentsApi } from '@/features/comments/api/comments-api'
-import { ratingsApi } from '@/features/ratings/api/ratings-api'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { ProblemImagesManager } from '@/components/problem-images-manager'
-import {
-  User,
-  Tag,
-  ArrowLeft,
-  MessageSquare,
-  Star,
-  Send
-} from 'lucide-react'
-import { LocationPickerMap } from '@/components/location-picker-map'
-import { toast } from '@/lib/toast'
+import { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { useProblem } from '@/features/problems/hooks/use-problems';
+import { useRealtimeComments } from '@/hooks/use-realtime-comments';
+import { useAuth } from '@/contexts/auth-context';
+import { useSnackbar } from '@/contexts/snackbar-provider';
+import { commentsApi } from '@/features/comments/api/comments-api';
+import { ratingsApi } from '@/features/ratings/api/ratings-api';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { ProblemImagesManager } from '@/components/problem-images-manager';
+import { User, Tag, ArrowLeft, MessageSquare, Star, Send } from 'lucide-react';
+import { LocationPickerMap } from '@/components/location-picker-map';
+import { toast } from '@/lib/toast';
 
 export function ProblemDetailPage() {
-  const { id } = useParams<{ id: string }>()
-  const navigate = useNavigate()
-  const { user, isAuthenticated } = useAuth()
-  const snackbar = useSnackbar()
-  const isCoordinator = user?.roles?.includes('Coordinator')
-  const { data: problem, isLoading, refetch } = useProblem(id || '')
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  const { user, isAuthenticated } = useAuth();
+  const snackbar = useSnackbar();
+  const isCoordinator = user?.roles?.includes('Coordinator');
+  const { data: problem, isLoading, refetch } = useProblem(id || '');
 
-  const realtimeComments = useRealtimeComments(id || null, problem?.comments ?? undefined)
+  const realtimeComments = useRealtimeComments(id || null, problem?.comments ?? undefined);
 
-  const [newComment, setNewComment] = useState('')
-  const [isSubmittingComment, setIsSubmittingComment] = useState(false)
+  const [newComment, setNewComment] = useState('');
+  const [isSubmittingComment, setIsSubmittingComment] = useState(false);
 
-  const [newRating, setNewRating] = useState<number>(5)
-  const [isSubmittingRating, setIsSubmittingRating] = useState(false)
-  const [userRating, setUserRating] = useState<number | null>(null)
-  const [hasUserRated, setHasUserRated] = useState(false)
-  const [isRatingModalOpen, setIsRatingModalOpen] = useState(false)
-  const [averageRating, setAverageRating] = useState<number>(0)
+  const [newRating, setNewRating] = useState<number>(5);
+  const [isSubmittingRating, setIsSubmittingRating] = useState(false);
+  const [userRating, setUserRating] = useState<number | null>(null);
+  const [hasUserRated, setHasUserRated] = useState(false);
+  const [isRatingModalOpen, setIsRatingModalOpen] = useState(false);
+  const [averageRating, setAverageRating] = useState<number>(0);
 
-  const isAdmin = user?.roles?.includes('Administrator')
+  const isAdmin = user?.roles?.includes('Administrator');
 
   const handleBackNavigation = () => {
     if (isCoordinator) {
-      navigate('/coordinator')
+      navigate('/coordinator');
     } else if (isAdmin) {
-      navigate('/admin/problems')
+      navigate('/admin/problems');
     } else {
-      navigate('/map')
+      navigate('/map');
     }
-  }
+  };
 
   const handleSubmitComment = async () => {
-    if (!id || !newComment.trim()) return
+    if (!id || !newComment.trim()) return;
 
     try {
-      setIsSubmittingComment(true)
-      await commentsApi.create({ content: newComment, problemId: id })
-      setNewComment('')
-      toast.success('Коментар додано')
-      refetch()
+      setIsSubmittingComment(true);
+      await commentsApi.create({ content: newComment, problemId: id });
+      setNewComment('');
+      toast.success('Коментар додано');
+      refetch();
     } catch {
-      toast.error('Не вдалося додати коментар')
+      toast.error('Не вдалося додати коментар');
     } finally {
-      setIsSubmittingComment(false)
+      setIsSubmittingComment(false);
     }
-  }
+  };
 
   const fetchUserRating = async () => {
-    if (!id) return
+    if (!id) return;
     try {
-      const rating = await ratingsApi.getUserRatingForProblem(id)
+      const rating = await ratingsApi.getUserRatingForProblem(id);
       if (rating) {
-        setUserRating(rating.points)
-        setHasUserRated(true)
+        setUserRating(rating.points);
+        setHasUserRated(true);
       } else {
-        setUserRating(null)
-        setHasUserRated(false)
+        setUserRating(null);
+        setHasUserRated(false);
       }
 
-      const avgRating = await ratingsApi.getAverageByProblemId(id)
-      setAverageRating(avgRating)
+      const avgRating = await ratingsApi.getAverageByProblemId(id);
+      setAverageRating(avgRating);
     } catch {
-      setUserRating(null)
-      setHasUserRated(false)
-      setAverageRating(0)
+      setUserRating(null);
+      setHasUserRated(false);
+      setAverageRating(0);
     }
-  }
+  };
 
   const handleSubmitRating = async () => {
-    if (!id) return
+    if (!id) return;
 
     try {
-      setIsSubmittingRating(true)
-      await ratingsApi.create({ points: newRating, problemId: id })
-      toast.success('Оцінку додано')
-      setIsRatingModalOpen(false)
-      await fetchUserRating()
-      refetch()
+      setIsSubmittingRating(true);
+      await ratingsApi.create({ points: newRating, problemId: id });
+      toast.success('Оцінку додано');
+      setIsRatingModalOpen(false);
+      await fetchUserRating();
+      refetch();
     } catch {
-      toast.error('Не вдалося додати оцінку')
+      toast.error('Не вдалося додати оцінку');
     } finally {
-      setIsSubmittingRating(false)
+      setIsSubmittingRating(false);
     }
-  }
+  };
 
   const renderStars = (rating: number) => {
     return [1, 2, 3, 4, 5].map((star) => {
-      const fillPercentage = Math.max(0, Math.min(100, (rating - star + 1) * 100))
+      const fillPercentage = Math.max(0, Math.min(100, (rating - star + 1) * 100));
 
       return (
         <div key={star} className="relative w-6 h-6">
           <Star className="w-6 h-6 text-gray-300 absolute" />
-          <div
-            className="overflow-hidden absolute"
-            style={{ width: `${fillPercentage}%` }}
-          >
+          <div className="overflow-hidden absolute" style={{ width: `${fillPercentage}%` }}>
             <Star className="w-6 h-6 text-yellow-500 fill-yellow-500" />
           </div>
         </div>
-      )
-    })
-  }
+      );
+    });
+  };
 
   useEffect(() => {
     if (id) {
-      fetchUserRating()
+      fetchUserRating();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id, isAuthenticated])
+  }, [id, isAuthenticated]);
 
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
         <p className="text-muted-foreground">Завантаження...</p>
       </div>
-    )
+    );
   }
 
   if (!problem) {
@@ -150,9 +140,8 @@ export function ProblemDetailPage() {
           Повернутися до списку
         </Button>
       </div>
-    )
+    );
   }
-
 
   return (
     <div className="space-y-6">
@@ -162,14 +151,14 @@ export function ProblemDetailPage() {
           variant="outline"
           size="icon"
           onClick={handleBackNavigation}
-          className="h-9 w-9 border border-[#D0D5DD] bg-white text-[#292929] hover:bg-[#F5F5F5] hover:text-[#292929]"
-        >
+          className="h-9 w-9 border border-[#D0D5DD] bg-white text-[#292929] hover:bg-[#F5F5F5] hover:text-[#292929]">
           <ArrowLeft className="w-4 h-4 text-[#292929]" />
         </Button>
         <div>
           <h1 className="text-2xl font-bold">{problem.title}</h1>
           <p className="text-muted-foreground">
-            Створено: {new Date(problem.createdAt).toLocaleDateString('uk-UA', {
+            Створено:{' '}
+            {new Date(problem.createdAt).toLocaleDateString('uk-UA', {
               year: 'numeric',
               month: 'long',
               day: 'numeric',
@@ -209,10 +198,7 @@ export function ProblemDetailPage() {
               <CardTitle>Опис проблеми</CardTitle>
             </CardHeader>
             <CardContent>
-              <p
-                className="text-gray-600 whitespace-pre-wrap break-words"
-                style={{ overflowWrap: 'anywhere' }}
-              >
+              <p className="text-gray-600 whitespace-pre-wrap break-words" style={{ overflowWrap: 'anywhere' }}>
                 {problem.description}
               </p>
             </CardContent>
@@ -237,8 +223,8 @@ export function ProblemDetailPage() {
                     onChange={(e) => setNewComment(e.target.value)}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter' && !e.shiftKey) {
-                        e.preventDefault()
-                        handleSubmitComment()
+                        e.preventDefault();
+                        handleSubmitComment();
                       }
                     }}
                     className="flex-1"
@@ -248,27 +234,16 @@ export function ProblemDetailPage() {
                     disabled={isSubmittingComment || !newComment.trim()}
                     variant="outline"
                     size="icon"
-                    className="h-10 w-10 border border-[#D0D5DD] bg-white text-[#292929] hover:bg-[#F5F5F5] hover:text-[#292929] disabled:bg-white disabled:text-[#292929]"
-                  >
+                    className="h-10 w-10 border border-[#D0D5DD] bg-white text-[#292929] hover:bg-[#F5F5F5] hover:text-[#292929] disabled:bg-white disabled:text-[#292929]">
                     <Send className="w-5 h-5 text-[#292929]" />
                   </Button>
                 </div>
               ) : (
                 <div
                   className="flex gap-2 cursor-pointer"
-                  onClick={() => snackbar.show('У анонімному перегляді доступно лише перегляд проблем. Увійдіть, щоб залишити коментар.', 'info', 5000)}
-                >
-                  <Input
-                    placeholder="Напишіть коментар..."
-                    disabled
-                    className="flex-1 cursor-pointer"
-                  />
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    disabled
-                    className="h-10 w-10 border border-[#D0D5DD] bg-white text-[#292929]"
-                  >
+                  onClick={() => snackbar.show('У анонімному перегляді доступно лише перегляд проблем. Увійдіть, щоб залишити коментар.', 'info', 5000)}>
+                  <Input placeholder="Напишіть коментар..." disabled className="flex-1 cursor-pointer" />
+                  <Button variant="outline" size="icon" disabled className="h-10 w-10 border border-[#D0D5DD] bg-white text-[#292929]">
                     <Send className="w-5 h-5 text-[#292929]" />
                   </Button>
                 </div>
@@ -276,20 +251,14 @@ export function ProblemDetailPage() {
 
               {/* Comments list */}
               {realtimeComments.length === 0 ? (
-                <p className="text-muted-foreground text-center py-4">
-                  Поки немає коментарів
-                </p>
+                <p className="text-muted-foreground text-center py-4">Поки немає коментарів</p>
               ) : (
                 <div className="space-y-3">
                   {realtimeComments.map((comment) => (
                     <div key={comment.id} className="rounded-lg bg-muted p-3">
                       <div className="mb-1 flex items-center justify-between">
-                        <span className="text-sm font-medium">
-                          {comment.user?.email || 'Анонім'}
-                        </span>
-                        <span className="text-xs text-muted-foreground">
-                          {new Date(comment.createdAt).toLocaleDateString('uk-UA')}
-                        </span>
+                        <span className="text-sm font-medium">{comment.user?.email || 'Анонім'}</span>
+                        <span className="text-xs text-muted-foreground">{new Date(comment.createdAt).toLocaleDateString('uk-UA')}</span>
                       </div>
                       <p className="text-sm">{comment.content}</p>
                     </div>
@@ -308,12 +277,7 @@ export function ProblemDetailPage() {
               <CardTitle>Місце на карті</CardTitle>
             </CardHeader>
             <CardContent>
-              <LocationPickerMap
-                latitude={problem.latitude}
-                longitude={problem.longitude}
-                readonly={true}
-                height="300px"
-              />
+              <LocationPickerMap latitude={problem.latitude} longitude={problem.longitude} readonly={true} height="300px" />
             </CardContent>
           </Card>
 
@@ -323,9 +287,7 @@ export function ProblemDetailPage() {
               <CardTitle>Статус</CardTitle>
             </CardHeader>
             <CardContent>
-              <span className="inline-flex items-center rounded-full bg-blue-50 px-3 py-1 text-sm text-blue-700">
-                {problem.status || 'Невідомо'}
-              </span>
+              <span className="inline-flex items-center rounded-full bg-blue-50 px-3 py-1 text-sm text-blue-700">{problem.status || 'Невідомо'}</span>
             </CardContent>
           </Card>
 
@@ -335,11 +297,17 @@ export function ProblemDetailPage() {
               <CardTitle>Пріоритет</CardTitle>
             </CardHeader>
             <CardContent>
-              <span className={`inline-flex items-center rounded-full px-3 py-1 text-sm font-medium ${problem.priority === 'Критичний' ? 'bg-red-50 text-red-700' :
-                problem.priority === 'Високий' ? 'bg-orange-50 text-orange-700' :
-                  problem.priority === 'Середній' ? 'bg-yellow-50 text-yellow-700' :
-                    problem.priority === 'Низький' ? 'bg-green-50 text-green-700' :
-                      'bg-gray-50 text-gray-700'
+              <span
+                className={`inline-flex items-center rounded-full px-3 py-1 text-sm font-medium ${
+                  problem.priority === 'Критичний'
+                    ? 'bg-red-50 text-red-700'
+                    : problem.priority === 'Високий'
+                      ? 'bg-orange-50 text-orange-700'
+                      : problem.priority === 'Середній'
+                        ? 'bg-yellow-50 text-yellow-700'
+                        : problem.priority === 'Низький'
+                          ? 'bg-green-50 text-green-700'
+                          : 'bg-gray-50 text-gray-700'
                 }`}>
                 {problem.priority || 'Невідомо'}
               </span>
@@ -370,10 +338,7 @@ export function ProblemDetailPage() {
               <CardContent>
                 <div className="flex flex-wrap gap-2">
                   {problem.categories.map((category, index) => (
-                    <span
-                      key={index}
-                      className="inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-sm text-primary"
-                    >
+                    <span key={index} className="inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-sm text-primary">
                       {category}
                     </span>
                   ))}
@@ -428,21 +393,16 @@ export function ProblemDetailPage() {
                           size="sm"
                           variant="outline"
                           onClick={() => setIsRatingModalOpen(true)}
-                          className="border border-[#D0D5DD] text-[#292929] bg-white hover:bg-[#F5F5F5] hover:text-[#292929]"
-                        >
+                          className="border border-[#D0D5DD] text-[#292929] bg-white hover:bg-[#F5F5F5] hover:text-[#292929]">
                           Оновити оцінку
                         </Button>
                       </div>
-                      <div className="flex gap-1">
-                        {renderStars(userRating || 0)}
-                      </div>
+                      <div className="flex gap-1">{renderStars(userRating || 0)}</div>
                     </div>
                     {averageRating > 0 ? (
                       <div className="p-3 bg-blue-50 rounded-lg">
                         <p className="text-sm font-medium text-blue-800 mb-2">Середня оцінка</p>
-                        <div className="flex gap-1">
-                          {renderStars(averageRating)}
-                        </div>
+                        <div className="flex gap-1">{renderStars(averageRating)}</div>
                       </div>
                     ) : (
                       <div className="p-3 bg-gray-50 rounded-lg">
@@ -457,8 +417,7 @@ export function ProblemDetailPage() {
                         <p className="text-sm font-medium text-blue-800 mb-3">Середнього рейтингу не має</p>
                         <Button
                           onClick={() => setIsRatingModalOpen(true)}
-                          className="w-full bg-[#E42556] hover:bg-[#E42556]/90 text-white font-semibold shadow-md hover:shadow-lg transition-all duration-200"
-                        >
+                          className="w-full bg-[#E42556] hover:bg-[#E42556]/90 text-white font-semibold shadow-md hover:shadow-lg transition-all duration-200">
                           Оцінити проблему
                         </Button>
                       </div>
@@ -466,14 +425,11 @@ export function ProblemDetailPage() {
                       <div className="space-y-3">
                         <div className="p-3 bg-blue-50 rounded-lg">
                           <p className="text-sm font-medium text-blue-800 mb-2">Середня оцінка</p>
-                          <div className="flex gap-1">
-                            {renderStars(averageRating)}
-                          </div>
+                          <div className="flex gap-1">{renderStars(averageRating)}</div>
                         </div>
                         <Button
                           onClick={() => setIsRatingModalOpen(true)}
-                          className="w-full bg-[#E42556] hover:bg-[#E42556]/90 text-white font-semibold shadow-md hover:shadow-lg transition-all duration-200"
-                        >
+                          className="w-full bg-[#E42556] hover:bg-[#E42556]/90 text-white font-semibold shadow-md hover:shadow-lg transition-all duration-200">
                           Оцінити проблему
                         </Button>
                       </div>
@@ -485,9 +441,7 @@ export function ProblemDetailPage() {
                   {averageRating > 0 ? (
                     <div className="p-3 bg-blue-50 rounded-lg">
                       <p className="text-sm font-medium text-blue-800 mb-2">Середня оцінка</p>
-                      <div className="flex gap-1">
-                        {renderStars(averageRating)}
-                      </div>
+                      <div className="flex gap-1">{renderStars(averageRating)}</div>
                     </div>
                   ) : (
                     <div className="p-3 bg-gray-50 rounded-lg">
@@ -496,8 +450,7 @@ export function ProblemDetailPage() {
                   )}
                   <Button
                     onClick={() => snackbar.show('У анонімному перегляді доступно лише перегляд проблем. Увійдіть, щоб оцінити проблему.', 'info', 5000)}
-                    className="w-full bg-[#E42556] hover:bg-[#E42556]/90 text-white font-semibold shadow-md hover:shadow-lg transition-all duration-200"
-                  >
+                    className="w-full bg-[#E42556] hover:bg-[#E42556]/90 text-white font-semibold shadow-md hover:shadow-lg transition-all duration-200">
                     Оцінити проблему
                   </Button>
                 </div>
@@ -522,17 +475,15 @@ export function ProblemDetailPage() {
                 step="0.1"
                 value={newRating}
                 onChange={(e) => {
-                  const val = parseFloat(e.target.value)
+                  const val = parseFloat(e.target.value);
                   if (!isNaN(val)) {
-                    setNewRating(val)
+                    setNewRating(val);
                   }
                 }}
                 className="w-24 text-center text-lg"
               />
             </div>
-            <p className="text-sm text-gray-500 text-center">
-              Введіть оцінку від 1 до 5 (можна використовувати дробові числа)
-            </p>
+            <p className="text-sm text-gray-500 text-center">Введіть оцінку від 1 до 5 (можна використовувати дробові числа)</p>
           </div>
           <DialogFooter>
             <Button
@@ -540,20 +491,15 @@ export function ProblemDetailPage() {
               variant="outline"
               onClick={() => setIsRatingModalOpen(false)}
               disabled={isSubmittingRating}
-              className="border border-[#D0D5DD] text-[#292929] bg-transparent hover:bg-[#F5F5F5] hover:text-[#292929]"
-            >
+              className="border border-[#D0D5DD] text-[#292929] bg-transparent hover:bg-[#F5F5F5] hover:text-[#292929]">
               Скасувати
             </Button>
-            <Button
-              onClick={handleSubmitRating}
-              disabled={isSubmittingRating}
-              className="bg-[#E42556] hover:bg-[#E42556]/90 text-white"
-            >
+            <Button onClick={handleSubmitRating} disabled={isSubmittingRating} className="bg-[#E42556] hover:bg-[#E42556]/90 text-white">
               {isSubmittingRating ? 'Збереження...' : hasUserRated ? 'Оновити оцінку' : 'Зберегти'}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
-  )
+  );
 }

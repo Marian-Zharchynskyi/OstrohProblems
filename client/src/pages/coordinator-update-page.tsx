@@ -1,229 +1,234 @@
-import { useState, useRef, useEffect } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
-import { problemsApi } from '@/features/problems/api/problems-api'
-import { useProblem } from '@/features/problems/hooks/use-problems'
-import { ProblemStatusConstants, PriorityConstants } from '@/types'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Textarea } from '@/components/ui/textarea'
-import { Label } from '@/components/ui/label'
-import { useAuth } from '@/contexts/auth-context'
-import { toast } from '@/lib/toast'
-import { useQueryClient } from '@tanstack/react-query'
-import { LocationPickerMap } from '@/components/location-picker-map'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { ArrowLeft, Camera, Plus, X } from 'lucide-react'
+import { useState, useRef, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { problemsApi } from '@/features/problems/api/problems-api';
+import { useProblem } from '@/features/problems/hooks/use-problems';
+import { ProblemStatusConstants, PriorityConstants } from '@/types';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import { useAuth } from '@/contexts/auth-context';
+import { toast } from '@/lib/toast';
+import { useQueryClient } from '@tanstack/react-query';
+import { LocationPickerMap } from '@/components/location-picker-map';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { ArrowLeft, Camera, Plus, X } from 'lucide-react';
 
-const MAX_COORDINATOR_IMAGES = 6
+const MAX_COORDINATOR_IMAGES = 6;
 
 export default function CoordinatorUpdatePage() {
-  const { id } = useParams<{ id: string }>()
-  const navigate = useNavigate()
-  const { user } = useAuth()
-  const queryClient = useQueryClient()
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
 
-  const { data: problem, isLoading } = useProblem(id || '')
+  const { data: problem, isLoading } = useProblem(id || '');
 
-  const [rejectionReason, setRejectionReason] = useState('')
-  const [currentStateInput, setCurrentStateInput] = useState('')
-  const [coordinatorFiles, setCoordinatorFiles] = useState<FileList | null>(null)
-  const [imagePreviews, setImagePreviews] = useState<string[]>([])
-  const [selectedPriority, setSelectedPriority] = useState<string>('')
-  const [newLocation, setNewLocation] = useState<{ lat: number; lng: number } | null>(null)
-  const fileInputRef = useRef<HTMLInputElement>(null)
+  const [rejectionReason, setRejectionReason] = useState('');
+  const [currentStateInput, setCurrentStateInput] = useState('');
+  const [coordinatorFiles, setCoordinatorFiles] = useState<FileList | null>(null);
+  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
+  const [selectedPriority, setSelectedPriority] = useState<string>('');
+  const [newLocation, setNewLocation] = useState<{ lat: number; lng: number } | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Initialize state from problem data
   useEffect(() => {
     if (problem) {
-      if (problem.currentState) setCurrentStateInput(problem.currentState)
-      if (problem.priority) setSelectedPriority(problem.priority)
+      if (problem.currentState) setCurrentStateInput(problem.currentState);
+      if (problem.priority) setSelectedPriority(problem.priority);
     }
-  }, [problem])
+  }, [problem]);
 
   // Cleanup preview URLs on unmount
   useEffect(() => {
     return () => {
-      imagePreviews.forEach(url => URL.revokeObjectURL(url))
-    }
-  }, [imagePreviews])
+      imagePreviews.forEach((url) => URL.revokeObjectURL(url));
+    };
+  }, [imagePreviews]);
 
   if (isLoading || !problem) {
-    return <div className="container mx-auto p-6">Завантаження...</div>
+    return <div className="container mx-auto p-6">Завантаження...</div>;
   }
 
   const invalidateQueries = () => {
-    queryClient.invalidateQueries({ queryKey: ['problems'] })
-  }
+    queryClient.invalidateQueries({ queryKey: ['problems'] });
+  };
 
   const handleAssignToMe = async () => {
-    if (!user?.id || !problem.id) return
+    if (!user?.id || !problem.id) return;
     try {
-      const priorityToUse = selectedPriority || problem.priority
-      await problemsApi.assignCoordinator(problem.id, user.id, priorityToUse)
-      toast.success('Проблему взято в роботу')
-      invalidateQueries()
+      const priorityToUse = selectedPriority || problem.priority;
+      await problemsApi.assignCoordinator(problem.id, user.id, priorityToUse);
+      toast.success('Проблему взято в роботу');
+      invalidateQueries();
       // Stay on page or navigate?
     } catch {
-      toast.error('Помилка призначення')
+      toast.error('Помилка призначення');
     }
-  }
+  };
 
   const handleReject = async () => {
     if (!rejectionReason.trim()) {
-      toast.error('Вкажіть причину відхилення')
-      return
+      toast.error('Вкажіть причину відхилення');
+      return;
     }
-    if (!user?.id || !problem.id) return
+    if (!user?.id || !problem.id) return;
     try {
-      await problemsApi.reject(problem.id, user.id, rejectionReason)
-      toast.success('Проблему відхилено')
-      setRejectionReason('')
-      invalidateQueries()
-      navigate('/coordinator')
+      await problemsApi.reject(problem.id, user.id, rejectionReason);
+      toast.success('Проблему відхилено');
+      setRejectionReason('');
+      invalidateQueries();
+      navigate('/coordinator');
     } catch {
-      toast.error('Помилка відхилення')
+      toast.error('Помилка відхилення');
     }
-  }
+  };
 
   const handleUpdateCurrentState = async () => {
     if (!currentStateInput.trim()) {
-      toast.error('Введіть поточний стан')
-      return
+      toast.error('Введіть поточний стан');
+      return;
     }
 
-    if (!problem.id) return
+    if (!problem.id) return;
 
-    const currentImagesCount = problem.coordinatorImages?.length || 0
-    const newFilesCount = coordinatorFiles?.length || 0
+    const currentImagesCount = problem.coordinatorImages?.length || 0;
+    const newFilesCount = coordinatorFiles?.length || 0;
     if (currentImagesCount + newFilesCount > MAX_COORDINATOR_IMAGES) {
-      toast.error(`Максимальна кількість фото: ${MAX_COORDINATOR_IMAGES}. Вже завантажено: ${currentImagesCount}`)
-      return
+      toast.error(`Максимальна кількість фото: ${MAX_COORDINATOR_IMAGES}. Вже завантажено: ${currentImagesCount}`);
+      return;
     }
 
     try {
       if (selectedPriority && selectedPriority !== problem.priority) {
-        await problemsApi.assignCoordinator(problem.id, user?.id || '', selectedPriority)
+        await problemsApi.assignCoordinator(problem.id, user?.id || '', selectedPriority);
       }
 
-      await problemsApi.updateCurrentState(problem.id, currentStateInput)
+      await problemsApi.updateCurrentState(problem.id, currentStateInput);
 
       if (coordinatorFiles && coordinatorFiles.length > 0) {
-        await problemsApi.uploadCoordinatorImages(problem.id, coordinatorFiles)
+        await problemsApi.uploadCoordinatorImages(problem.id, coordinatorFiles);
       }
 
-      toast.success('Поточний стан оновлено')
-      setCoordinatorFiles(null)
-      setImagePreviews([])
-      if (fileInputRef.current) fileInputRef.current.value = ''
-      invalidateQueries()
-      navigate('/coordinator')
+      toast.success('Поточний стан оновлено');
+      setCoordinatorFiles(null);
+      setImagePreviews([]);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+      invalidateQueries();
+      navigate('/coordinator');
     } catch {
-      toast.error('Помилка оновлення')
+      toast.error('Помилка оновлення');
     }
-  }
+  };
 
   const handleUpdateLocation = async () => {
     if (!newLocation || !problem.id) {
-      toast.error('Оберіть нову локацію на карті')
-      return
+      toast.error('Оберіть нову локацію на карті');
+      return;
     }
     try {
-      await problemsApi.updateLocation(problem.id, newLocation.lat, newLocation.lng)
-      toast.success('Адресу оновлено')
-      setNewLocation(null)
-      invalidateQueries()
+      await problemsApi.updateLocation(problem.id, newLocation.lat, newLocation.lng);
+      toast.success('Адресу оновлено');
+      setNewLocation(null);
+      invalidateQueries();
     } catch {
-      toast.error('Помилка оновлення адреси')
+      toast.error('Помилка оновлення адреси');
     }
-  }
+  };
 
   const handleCompleteProblem = async () => {
     if (!currentStateInput.trim()) {
-      toast.error('Опишіть що було зроблено')
-      return
+      toast.error('Опишіть що було зроблено');
+      return;
     }
-    if (!problem.id) return
+    if (!problem.id) return;
 
-    const currentImagesCount = problem.coordinatorImages?.length || 0
-    const newFilesCount = coordinatorFiles?.length || 0
+    const currentImagesCount = problem.coordinatorImages?.length || 0;
+    const newFilesCount = coordinatorFiles?.length || 0;
     if (currentImagesCount + newFilesCount > MAX_COORDINATOR_IMAGES) {
-      toast.error(`Максимальна кількість фото: ${MAX_COORDINATOR_IMAGES}. Вже завантажено: ${currentImagesCount}`)
-      return
+      toast.error(`Максимальна кількість фото: ${MAX_COORDINATOR_IMAGES}. Вже завантажено: ${currentImagesCount}`);
+      return;
     }
     try {
-      await problemsApi.completeProblem(problem.id, currentStateInput)
+      await problemsApi.completeProblem(problem.id, currentStateInput);
 
       if (coordinatorFiles && coordinatorFiles.length > 0) {
-        await problemsApi.uploadCoordinatorImages(problem.id, coordinatorFiles)
+        await problemsApi.uploadCoordinatorImages(problem.id, coordinatorFiles);
       }
 
-      toast.success('Проблему завершено')
-      setCoordinatorFiles(null)
-      setImagePreviews([])
-      if (fileInputRef.current) fileInputRef.current.value = ''
-      invalidateQueries()
-      navigate('/coordinator')
+      toast.success('Проблему завершено');
+      setCoordinatorFiles(null);
+      setImagePreviews([]);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+      invalidateQueries();
+      navigate('/coordinator');
     } catch {
-      toast.error('Помилка завершення')
+      toast.error('Помилка завершення');
     }
-  }
+  };
 
   const handleCoordinatorFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const selectedFiles = e.target.files
-    const currentImagesCount = problem.coordinatorImages?.length || 0
-    const maxNewFiles = MAX_COORDINATOR_IMAGES - currentImagesCount
+    const selectedFiles = e.target.files;
+    const currentImagesCount = problem.coordinatorImages?.length || 0;
+    const maxNewFiles = MAX_COORDINATOR_IMAGES - currentImagesCount;
 
     if (selectedFiles && selectedFiles.length > maxNewFiles) {
-      toast.error(`Можна додати ще ${maxNewFiles} фото (максимум ${MAX_COORDINATOR_IMAGES})`)
-      e.target.value = ''
-      setCoordinatorFiles(null)
-      setImagePreviews([])
-      return
+      toast.error(`Можна додати ще ${maxNewFiles} фото (максимум ${MAX_COORDINATOR_IMAGES})`);
+      e.target.value = '';
+      setCoordinatorFiles(null);
+      setImagePreviews([]);
+      return;
     }
 
     // Cleanup old previews
-    imagePreviews.forEach(url => URL.revokeObjectURL(url))
+    imagePreviews.forEach((url) => URL.revokeObjectURL(url));
 
     // Create new previews
     if (selectedFiles && selectedFiles.length > 0) {
-      const previews = Array.from(selectedFiles).map(file => URL.createObjectURL(file))
-      setImagePreviews(previews)
+      const previews = Array.from(selectedFiles).map((file) => URL.createObjectURL(file));
+      setImagePreviews(previews);
     } else {
-      setImagePreviews([])
+      setImagePreviews([]);
     }
 
-    setCoordinatorFiles(selectedFiles)
-  }
+    setCoordinatorFiles(selectedFiles);
+  };
 
   const handleRemoveImage = (index: number) => {
-    if (!coordinatorFiles) return
+    if (!coordinatorFiles) return;
 
     // Cleanup the preview URL
-    URL.revokeObjectURL(imagePreviews[index])
+    URL.revokeObjectURL(imagePreviews[index]);
 
     // Create new FileList without the removed file
-    const dt = new DataTransfer()
+    const dt = new DataTransfer();
     Array.from(coordinatorFiles).forEach((file, i) => {
-      if (i !== index) dt.items.add(file)
-    })
+      if (i !== index) dt.items.add(file);
+    });
 
-    const newFiles = dt.files.length > 0 ? dt.files : null
-    setCoordinatorFiles(newFiles)
-    setImagePreviews(prev => prev.filter((_, i) => i !== index))
+    const newFiles = dt.files.length > 0 ? dt.files : null;
+    setCoordinatorFiles(newFiles);
+    setImagePreviews((prev) => prev.filter((_, i) => i !== index));
 
     // Reset input value
-    if (fileInputRef.current) fileInputRef.current.value = ''
-  }
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
 
   const getStatusBadgeClass = (status: string) => {
     switch (status) {
-      case ProblemStatusConstants.New: return 'bg-blue-100 text-blue-800'
-      case ProblemStatusConstants.InProgress: return 'bg-yellow-100 text-yellow-800'
-      case ProblemStatusConstants.Completed: return 'bg-green-100 text-green-800'
-      case ProblemStatusConstants.Rejected: return 'bg-red-100 text-red-800'
-      default: return 'bg-gray-100 text-gray-800'
+      case ProblemStatusConstants.New:
+        return 'bg-blue-100 text-blue-800';
+      case ProblemStatusConstants.InProgress:
+        return 'bg-yellow-100 text-yellow-800';
+      case ProblemStatusConstants.Completed:
+        return 'bg-green-100 text-green-800';
+      case ProblemStatusConstants.Rejected:
+        return 'bg-red-100 text-red-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
     }
-  }
+  };
 
   return (
     <div className="container mx-auto p-6 space-y-6">
@@ -232,8 +237,7 @@ export default function CoordinatorUpdatePage() {
           variant="outline"
           size="icon"
           onClick={() => navigate('/coordinator')}
-          className="h-9 w-9 border border-[#D0D5DD] bg-white text-[#292929] hover:bg-[#F5F5F5] hover:text-[#292929]"
-        >
+          className="h-9 w-9 border border-[#D0D5DD] bg-white text-[#292929] hover:bg-[#F5F5F5] hover:text-[#292929]">
           <ArrowLeft className="w-4 h-4 text-[#292929]" />
         </Button>
         <h1 className="text-2xl font-bold">Оновлення стану проблеми</h1>
@@ -279,22 +283,33 @@ export default function CoordinatorUpdatePage() {
               {(problem.status === ProblemStatusConstants.New || problem.status === ProblemStatusConstants.InProgress) && (
                 <div className="space-y-4">
                   <div className="space-y-6">
-                    <Label className="block text-sm font-medium text-[#1F2732] mb-3">
-                      Пріоритет проблеми
-                    </Label>
+                    <Label className="block text-sm font-medium text-[#1F2732] mb-3">Пріоритет проблеми</Label>
                     <div className="mb-6">
-                      <Select
-                        value={selectedPriority || problem.priority || ''}
-                        onValueChange={setSelectedPriority}
-                      >
+                      <Select value={selectedPriority || problem.priority || ''} onValueChange={setSelectedPriority}>
                         <SelectTrigger className="w-full bg-white border border-gray-300 text-gray-900 focus:ring-offset-0 focus-visible:ring-offset-0">
                           <SelectValue placeholder="Оберіть пріоритет" />
                         </SelectTrigger>
                         <SelectContent className="bg-white border border-gray-200 shadow-lg text-gray-900">
-                          <SelectItem value={PriorityConstants.Low} className="hover:bg-gray-100 hover:text-black cursor-pointer focus:bg-gray-100 focus:text-black data-[highlighted]:bg-gray-100 data-[highlighted]:text-black">{PriorityConstants.Low}</SelectItem>
-                          <SelectItem value={PriorityConstants.Medium} className="hover:bg-gray-100 hover:text-black cursor-pointer focus:bg-gray-100 focus:text-black data-[highlighted]:bg-gray-100 data-[highlighted]:text-black">{PriorityConstants.Medium}</SelectItem>
-                          <SelectItem value={PriorityConstants.High} className="hover:bg-gray-100 hover:text-black cursor-pointer focus:bg-gray-100 focus:text-black data-[highlighted]:bg-gray-100 data-[highlighted]:text-black">{PriorityConstants.High}</SelectItem>
-                          <SelectItem value={PriorityConstants.Critical} className="hover:bg-gray-100 hover:text-black cursor-pointer focus:bg-gray-100 focus:text-black data-[highlighted]:bg-gray-100 data-[highlighted]:text-black">{PriorityConstants.Critical}</SelectItem>
+                          <SelectItem
+                            value={PriorityConstants.Low}
+                            className="hover:bg-gray-100 hover:text-black cursor-pointer focus:bg-gray-100 focus:text-black data-[highlighted]:bg-gray-100 data-[highlighted]:text-black">
+                            {PriorityConstants.Low}
+                          </SelectItem>
+                          <SelectItem
+                            value={PriorityConstants.Medium}
+                            className="hover:bg-gray-100 hover:text-black cursor-pointer focus:bg-gray-100 focus:text-black data-[highlighted]:bg-gray-100 data-[highlighted]:text-black">
+                            {PriorityConstants.Medium}
+                          </SelectItem>
+                          <SelectItem
+                            value={PriorityConstants.High}
+                            className="hover:bg-gray-100 hover:text-black cursor-pointer focus:bg-gray-100 focus:text-black data-[highlighted]:bg-gray-100 data-[highlighted]:text-black">
+                            {PriorityConstants.High}
+                          </SelectItem>
+                          <SelectItem
+                            value={PriorityConstants.Critical}
+                            className="hover:bg-gray-100 hover:text-black cursor-pointer focus:bg-gray-100 focus:text-black data-[highlighted]:bg-gray-100 data-[highlighted]:text-black">
+                            {PriorityConstants.Critical}
+                          </SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -302,26 +317,17 @@ export default function CoordinatorUpdatePage() {
 
                   {/* State / Comments */}
                   <div className="space-y-4">
-                    <Label className="block text-sm font-medium text-[#1F2732] mb-3">
-                      Поточний стан / Коментар до виконання
-                    </Label>
+                    <Label className="block text-sm font-medium text-[#1F2732] mb-3">Поточний стан / Коментар до виконання</Label>
                     <Textarea
-                      placeholder={"Опишіть поточний стан виконання або причину відхилення (якщо відхиляєте)..."}
+                      placeholder={'Опишіть поточний стан виконання або причину відхилення (якщо відхиляєте)...'}
                       value={problem.status === ProblemStatusConstants.New ? rejectionReason : currentStateInput}
-                      onChange={(e) => problem.status === ProblemStatusConstants.New ? setRejectionReason(e.target.value) : setCurrentStateInput(e.target.value)}
+                      onChange={(e) => (problem.status === ProblemStatusConstants.New ? setRejectionReason(e.target.value) : setCurrentStateInput(e.target.value))}
                       className="min-h-[100px] focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-black"
                     />
                   </div>
 
                   {/* Hidden Image Upload Input - triggered by photo section below */}
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    multiple
-                    accept="image/*"
-                    onChange={handleCoordinatorFileChange}
-                    className="hidden"
-                  />
+                  <input ref={fileInputRef} type="file" multiple accept="image/*" onChange={handleCoordinatorFileChange} className="hidden" />
 
                   {/* Buttons */}
                   <div className="flex flex-wrap gap-3 pt-4 border-t">
@@ -347,10 +353,13 @@ export default function CoordinatorUpdatePage() {
                         <Button onClick={handleCompleteProblem} className="bg-green-600 hover:bg-green-700 text-white">
                           Завершити
                         </Button>
-                        <Button variant="outline" onClick={() => {
-                          setRejectionReason('Відхилено під час виконання')
-                          handleReject()
-                        }} className="border-red-200 text-red-700 hover:bg-red-50 hover:text-red-800">
+                        <Button
+                          variant="outline"
+                          onClick={() => {
+                            setRejectionReason('Відхилено під час виконання');
+                            handleReject();
+                          }}
+                          className="border-red-200 text-red-700 hover:bg-red-50 hover:text-red-800">
                           Відхилити
                         </Button>
                         <Button variant="outline" onClick={() => navigate('/coordinator')} className="border-[#D0D5DD] text-[#292929] hover:bg-[#F5F5F5] hover:text-[#292929]">
@@ -385,8 +394,7 @@ export default function CoordinatorUpdatePage() {
                     onClick={handleUpdateLocation}
                     disabled={!newLocation}
                     variant="outline"
-                    className="border-primary text-primary hover:bg-primary/10 hover:text-primary transition-colors"
-                  >
+                    className="border-primary text-primary hover:bg-primary/10 hover:text-primary transition-colors">
                     Зберегти нову адресу
                   </Button>
                 </div>
@@ -398,41 +406,31 @@ export default function CoordinatorUpdatePage() {
           {problem.status === ProblemStatusConstants.InProgress && (
             <Card>
               <CardHeader className="border-b border-gray-100 bg-white pb-4">
-                <CardTitle className="font-heading font-semibold text-lg text-[#1F2732]">
-                  Фото
-                </CardTitle>
-                <p className="text-sm text-gray-500 font-sans">
-                  Для кращого відображення прогресу ви можете прикріпити фото
-                </p>
+                <CardTitle className="font-heading font-semibold text-lg text-[#1F2732]">Фото</CardTitle>
+                <p className="text-sm text-gray-500 font-sans">Для кращого відображення прогресу ви можете прикріпити фото</p>
               </CardHeader>
               <CardContent className="p-6">
                 <div className="grid grid-cols-2 gap-4">
                   {/* Add Button Slot */}
                   <div
                     onClick={() => fileInputRef.current?.click()}
-                    className="aspect-[2/1] bg-[#F5F6F7] rounded-[10px] flex flex-col items-center justify-center cursor-pointer hover:bg-gray-200 transition-colors group"
-                  >
+                    className="aspect-[2/1] bg-[#F5F6F7] rounded-[10px] flex flex-col items-center justify-center cursor-pointer hover:bg-gray-200 transition-colors group">
                     <span className="text-sm text-[#1F2732] border-b border-black pb-0.5 mb-1 font-medium">Додати фото</span>
                   </div>
 
                   {/* Preview Slots or Placeholders */}
                   {[...Array(5)].map((_, i) => {
-                    const hasPreview = imagePreviews[i]
+                    const hasPreview = imagePreviews[i];
 
                     return (
                       <div key={i} className="aspect-[2/1] bg-[#F5F6F7] rounded-[10px] flex items-center justify-center relative overflow-hidden">
                         {hasPreview ? (
                           <>
-                            <img
-                              src={hasPreview}
-                              alt={`Preview ${i + 1}`}
-                              className="w-full h-full object-cover"
-                            />
+                            <img src={hasPreview} alt={`Preview ${i + 1}`} className="w-full h-full object-cover" />
                             <button
                               type="button"
                               onClick={() => handleRemoveImage(i)}
-                              className="absolute top-1 right-1 bg-red-500 hover:bg-red-600 text-white rounded-full p-1 transition-colors"
-                            >
+                              className="absolute top-1 right-1 bg-red-500 hover:bg-red-600 text-white rounded-full p-1 transition-colors">
                               <X className="w-3 h-3" />
                             </button>
                           </>
@@ -443,7 +441,7 @@ export default function CoordinatorUpdatePage() {
                           </div>
                         )}
                       </div>
-                    )
+                    );
                   })}
                 </div>
                 {coordinatorFiles && coordinatorFiles.length > 0 && (
@@ -457,5 +455,5 @@ export default function CoordinatorUpdatePage() {
         </div>
       </div>
     </div>
-  )
+  );
 }

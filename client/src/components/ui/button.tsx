@@ -1,24 +1,14 @@
-import * as React from "react"
-import { cn } from "@/lib/utils"
-import { buttonVariants, type ButtonVariantProps } from "./button-variants"
+import * as React from 'react';
+import { cn } from '@/lib/utils';
+import { buttonVariants, type ButtonVariantProps } from './button-variants';
 
-export interface ButtonProps
-  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
-    ButtonVariantProps {
-  asChild?: boolean
+export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement>, ButtonVariantProps {
+  asChild?: boolean;
 }
 
-const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant, size, ...props }, ref) => {
-    return (
-      <button
-        className={cn(buttonVariants({ variant, size, className }))}
-        ref={ref}
-        {...props}
-      />
-    )
-  }
-)
-Button.displayName = "Button"
+const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(({ className, variant, size, ...props }, ref) => {
+  return <button className={cn(buttonVariants({ variant, size, className }))} ref={ref} {...props} />;
+});
+Button.displayName = 'Button';
 
-export { Button }
+export { Button };

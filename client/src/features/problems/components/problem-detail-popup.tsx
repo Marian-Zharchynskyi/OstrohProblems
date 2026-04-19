@@ -1,37 +1,23 @@
-import type { Problem } from '@/types'
-import { MapPin, Calendar, User, Tag } from 'lucide-react'
-import { useRealtimeComments } from '@/hooks/use-realtime-comments'
+import type { Problem } from '@/types';
+import { MapPin, Calendar, User, Tag } from 'lucide-react';
+import { useRealtimeComments } from '@/hooks/use-realtime-comments';
 
 interface ProblemDetailPopupProps {
-  problem: Problem
-  onClose: () => void
+  problem: Problem;
+  onClose: () => void;
 }
 
 export function ProblemDetailPopup({ problem, onClose }: ProblemDetailPopupProps) {
-  const realtimeComments = useRealtimeComments(problem.id, problem.comments || [])
+  const realtimeComments = useRealtimeComments(problem.id, problem.comments || []);
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
       <div className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-lg bg-white shadow-xl">
         {/* Header */}
         <div className="sticky top-0 z-10 flex items-center justify-between border-b bg-white p-4">
           <h2 className="text-xl font-semibold text-gray-900">{problem.title}</h2>
-          <button
-            onClick={onClose}
-            className="rounded-lg p-2 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
-            aria-label="Закрити"
-          >
-            <svg
-              className="h-5 w-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M6 18L18 6M6 6l12 12"
-              />
+          <button onClick={onClose} className="rounded-lg p-2 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600" aria-label="Закрити">
+            <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
         </div>
@@ -42,12 +28,7 @@ export function ProblemDetailPopup({ problem, onClose }: ProblemDetailPopupProps
           {problem.images && problem.images.length > 0 && (
             <div className="grid grid-cols-2 gap-4">
               {problem.images.map((image) => (
-                <img
-                  key={image.id}
-                  src={image.url}
-                  alt={problem.title}
-                  className="h-48 w-full rounded-lg object-cover"
-                />
+                <img key={image.id} src={image.url} alt={problem.title} className="h-48 w-full rounded-lg object-cover" />
               ))}
             </div>
           )}
@@ -86,13 +67,19 @@ export function ProblemDetailPopup({ problem, onClose }: ProblemDetailPopupProps
           {problem.priority && (
             <div className="flex items-start gap-2">
               <div className="h-5 w-5 mt-0.5">
-                <div className={`h-3 w-3 rounded-full ${
-                  problem.priority === 'Критичний' ? 'bg-red-500' :
-                  problem.priority === 'Високий' ? 'bg-orange-500' :
-                  problem.priority === 'Середній' ? 'bg-yellow-500' :
-                  problem.priority === 'Низький' ? 'bg-green-500' :
-                  'bg-gray-500'
-                }`} />
+                <div
+                  className={`h-3 w-3 rounded-full ${
+                    problem.priority === 'Критичний'
+                      ? 'bg-red-500'
+                      : problem.priority === 'Високий'
+                        ? 'bg-orange-500'
+                        : problem.priority === 'Середній'
+                          ? 'bg-yellow-500'
+                          : problem.priority === 'Низький'
+                            ? 'bg-green-500'
+                            : 'bg-gray-500'
+                  }`}
+                />
               </div>
               <div>
                 <h3 className="text-sm font-medium text-gray-700">Пріоритет</h3>
@@ -109,10 +96,7 @@ export function ProblemDetailPopup({ problem, onClose }: ProblemDetailPopupProps
                 <h3 className="text-sm font-medium text-gray-700 mb-2">Категорії</h3>
                 <div className="flex flex-wrap gap-2">
                   {problem.categories.map((category, index) => (
-                    <span
-                      key={index}
-                      className="inline-flex items-center rounded-full bg-blue-50 px-3 py-1 text-sm text-blue-700"
-                    >
+                    <span key={index} className="inline-flex items-center rounded-full bg-blue-50 px-3 py-1 text-sm text-blue-700">
                       {category}
                     </span>
                   ))}
@@ -154,9 +138,7 @@ export function ProblemDetailPopup({ problem, onClose }: ProblemDetailPopupProps
           {/* Comments */}
           {realtimeComments && realtimeComments.length > 0 && (
             <div>
-              <h3 className="mb-3 text-sm font-medium text-gray-700">
-                Коментарі ({realtimeComments.length})
-              </h3>
+              <h3 className="mb-3 text-sm font-medium text-gray-700">Коментарі ({realtimeComments.length})</h3>
               <div className="space-y-3">
                 {realtimeComments.map((comment) => (
                   <div key={comment.id} className="rounded-lg bg-gray-50 p-3">
@@ -164,9 +146,7 @@ export function ProblemDetailPopup({ problem, onClose }: ProblemDetailPopupProps
                       <span className="text-sm font-medium text-gray-900">
                         {comment.user?.name} {comment.user?.surname}
                       </span>
-                      <span className="text-xs text-gray-500">
-                        {new Date(comment.createdAt).toLocaleDateString('uk-UA')}
-                      </span>
+                      <span className="text-xs text-gray-500">{new Date(comment.createdAt).toLocaleDateString('uk-UA')}</span>
                     </div>
                     <p className="text-sm text-gray-600">{comment.content}</p>
                   </div>
@@ -177,5 +157,5 @@ export function ProblemDetailPopup({ problem, onClose }: ProblemDetailPopupProps
         </div>
       </div>
     </div>
-  )
+  );
 }

@@ -1,41 +1,29 @@
-import { useState, useEffect } from 'react'
-import type { Problem, CreateProblem } from '@/types'
-import { PriorityConstants } from '@/types'
-import { FormField } from '@/components/shared/form-field'
-import { Button } from '@/components/ui/button'
-import { Label } from '@/components/ui/label'
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
-import { Info } from 'lucide-react'
-import { CATEGORIES } from '@/constants/categories'
+import { useState, useEffect } from 'react';
+import type { Problem, CreateProblem } from '@/types';
+import { PriorityConstants } from '@/types';
+import { FormField } from '@/components/shared/form-field';
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Info } from 'lucide-react';
+import { CATEGORIES } from '@/constants/categories';
 
 const PRIORITIES = [
   { value: PriorityConstants.Low, label: 'Низький' },
   { value: PriorityConstants.Medium, label: 'Середній' },
   { value: PriorityConstants.High, label: 'Високий' },
   { value: PriorityConstants.Critical, label: 'Критичний' },
-]
+];
 
 interface ProblemFormProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  onSubmit: (data: CreateProblem, id?: string) => void
-  initialData?: Problem | null
-  isLoading?: boolean
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onSubmit: (data: CreateProblem, id?: string) => void;
+  initialData?: Problem | null;
+  isLoading?: boolean;
 }
 
-export function ProblemForm({
-  open,
-  onOpenChange,
-  onSubmit,
-  initialData,
-  isLoading,
-}: ProblemFormProps) {
+export function ProblemForm({ open, onOpenChange, onSubmit, initialData, isLoading }: ProblemFormProps) {
   const [formData, setFormData] = useState<CreateProblem>({
     title: '',
     latitude: 0,
@@ -43,7 +31,7 @@ export function ProblemForm({
     description: '',
     categoryNames: [],
     priority: PriorityConstants.Medium,
-  })
+  });
 
   useEffect(() => {
     if (initialData) {
@@ -54,7 +42,7 @@ export function ProblemForm({
         description: initialData.description,
         categoryNames: initialData.categories || [],
         priority: initialData.priority || PriorityConstants.Medium,
-      })
+      });
     } else {
       setFormData({
         title: '',
@@ -63,31 +51,27 @@ export function ProblemForm({
         description: '',
         categoryNames: [],
         priority: PriorityConstants.Medium,
-      })
+      });
     }
-  }, [initialData, open])
+  }, [initialData, open]);
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    onSubmit(formData, initialData?.id || undefined)
-  }
+    e.preventDefault();
+    onSubmit(formData, initialData?.id || undefined);
+  };
 
   const handleCategoryToggle = (categoryName: string) => {
     setFormData((prev) => ({
       ...prev,
-      categoryNames: prev.categoryNames.includes(categoryName)
-        ? prev.categoryNames.filter((name) => name !== categoryName)
-        : [...prev.categoryNames, categoryName],
-    }))
-  }
+      categoryNames: prev.categoryNames.includes(categoryName) ? prev.categoryNames.filter((name) => name !== categoryName) : [...prev.categoryNames, categoryName],
+    }));
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>
-            {initialData ? 'Редагувати проблему' : 'Створити проблему'}
-          </DialogTitle>
+          <DialogTitle>{initialData ? 'Редагувати проблему' : 'Створити проблему'}</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit}>
           <div className="space-y-4 py-4">
@@ -96,9 +80,7 @@ export function ProblemForm({
                 label="Заголовок"
                 name="title"
                 value={formData.title}
-                onChange={(value) =>
-                  setFormData({ ...formData, title: value as string })
-                }
+                onChange={(value) => setFormData({ ...formData, title: value as string })}
                 required
                 placeholder="Введіть заголовок проблеми"
               />
@@ -110,9 +92,7 @@ export function ProblemForm({
                 name="description"
                 type="textarea"
                 value={formData.description}
-                onChange={(value) =>
-                  setFormData({ ...formData, description: value as string })
-                }
+                onChange={(value) => setFormData({ ...formData, description: value as string })}
                 required
                 placeholder="Введіть опис проблеми"
               />
@@ -125,9 +105,7 @@ export function ProblemForm({
                   name="latitude"
                   type="number"
                   value={formData.latitude}
-                  onChange={(value) =>
-                    setFormData({ ...formData, latitude: value as number })
-                  }
+                  onChange={(value) => setFormData({ ...formData, latitude: value as number })}
                   required
                   placeholder="Введіть широту"
                 />
@@ -137,9 +115,7 @@ export function ProblemForm({
                   name="longitude"
                   type="number"
                   value={formData.longitude}
-                  onChange={(value) =>
-                    setFormData({ ...formData, longitude: value as number })
-                  }
+                  onChange={(value) => setFormData({ ...formData, longitude: value as number })}
                   required
                   placeholder="Введіть довготу"
                 />
@@ -149,18 +125,14 @@ export function ProblemForm({
             <div className="space-y-2">
               <div className="flex items-center gap-2">
                 <Label>Пріоритет</Label>
-                <span
-                  title="Пріоритет може бути змінений координатором під час валідації проблеми"
-                  className="cursor-help"
-                >
+                <span title="Пріоритет може бути змінений координатором під час валідації проблеми" className="cursor-help">
                   <Info className="h-4 w-4 text-gray-400" />
                 </span>
               </div>
               <select
                 value={formData.priority || PriorityConstants.Medium}
                 onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
-                className="w-full border rounded-md p-2 bg-white"
-              >
+                className="w-full border rounded-md p-2 bg-white">
                 {PRIORITIES.map((priority) => (
                   <option key={priority.value} value={priority.value}>
                     {priority.label}
@@ -181,10 +153,7 @@ export function ProblemForm({
                       onChange={() => handleCategoryToggle(category.value)}
                       className="h-4 w-4"
                     />
-                    <label
-                      htmlFor={`category-${category.value}`}
-                      className="text-sm cursor-pointer"
-                    >
+                    <label htmlFor={`category-${category.value}`} className="text-sm cursor-pointer">
                       {category.label}
                     </label>
                   </div>
@@ -198,8 +167,7 @@ export function ProblemForm({
               variant="outline"
               onClick={() => onOpenChange(false)}
               disabled={isLoading}
-              className="border border-[#D0D5DD] text-[#292929] bg-transparent hover:bg-[#F5F5F5] hover:text-[#292929] focus:outline-none focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0"
-            >
+              className="border border-[#D0D5DD] text-[#292929] bg-transparent hover:bg-[#F5F5F5] hover:text-[#292929] focus:outline-none focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0">
               Скасувати
             </Button>
             <Button type="submit" disabled={isLoading}>
@@ -209,5 +177,5 @@ export function ProblemForm({
         </form>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

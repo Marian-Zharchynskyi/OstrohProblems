@@ -1,25 +1,23 @@
-import { createContext, useContext } from 'react'
-import type { User, JwtTokens } from '@/types/auth'
+import { createContext, useContext } from 'react';
+import type { User, JwtTokens } from '@/types/auth';
 
 export interface AuthContextType {
-  user: User | null
-  tokens: JwtTokens | null
-  isAuthenticated: boolean
-  isLoading: boolean
-  signIn: (email: string, password: string, rememberMe?: boolean) => Promise<User | null>
-  signUp: (email: string, password: string, name?: string, surname?: string) => Promise<void>
-  signOut: (navigate?: (path: string) => void) => void
-  getClerkToken?: () => Promise<string | null>
+  user: User | null;
+  tokens: JwtTokens | null;
+  isAuthenticated: boolean;
+  isLoading: boolean;
+  signIn: (email: string, password: string, rememberMe?: boolean) => Promise<User | null>;
+  signUp: (email: string, password: string, name?: string, surname?: string) => Promise<void>;
+  signOut: (navigate?: (path: string) => void) => void;
+  getClerkToken?: () => Promise<string | null>;
 }
 
-export const AuthContext = createContext<AuthContextType | undefined>(
-  undefined
-)
+export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function useAuth() {
-  const context = useContext(AuthContext)
+  const context = useContext(AuthContext);
   if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider')
+    throw new Error('useAuth must be used within an AuthProvider');
   }
-  return context
+  return context;
 }

@@ -1,61 +1,60 @@
-import { useState, useEffect, useCallback } from 'react'
-import { X, ChevronLeft, ChevronRight, ZoomIn, ZoomOut } from 'lucide-react'
+import { useState, useEffect, useCallback } from 'react';
+import { X, ChevronLeft, ChevronRight, ZoomIn, ZoomOut } from 'lucide-react';
 
 interface ImageLightboxProps {
-  images: { id: string | null; url: string }[]
-  initialIndex?: number
-  open: boolean
-  onClose: () => void
+  images: { id: string | null; url: string }[];
+  initialIndex?: number;
+  open: boolean;
+  onClose: () => void;
 }
 
 export function ImageLightbox({ images, initialIndex = 0, open, onClose }: ImageLightboxProps) {
-  const [currentIndex, setCurrentIndex] = useState(initialIndex)
-  const [scale, setScale] = useState(1)
+  const [currentIndex, setCurrentIndex] = useState(initialIndex);
+  const [scale, setScale] = useState(1);
 
   useEffect(() => {
-    setCurrentIndex(initialIndex)
-    setScale(1)
-  }, [initialIndex, open])
+    setCurrentIndex(initialIndex);
+    setScale(1);
+  }, [initialIndex, open]);
 
   const handlePrev = useCallback(() => {
-    setCurrentIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1))
-    setScale(1)
-  }, [images.length])
+    setCurrentIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
+    setScale(1);
+  }, [images.length]);
 
   const handleNext = useCallback(() => {
-    setCurrentIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1))
-    setScale(1)
-  }, [images.length])
+    setCurrentIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1));
+    setScale(1);
+  }, [images.length]);
 
   const handleZoomIn = () => {
-    setScale((prev) => Math.min(prev + 0.5, 3))
-  }
+    setScale((prev) => Math.min(prev + 0.5, 3));
+  };
 
   const handleZoomOut = () => {
-    setScale((prev) => Math.max(prev - 0.5, 0.5))
-  }
+    setScale((prev) => Math.max(prev - 0.5, 0.5));
+  };
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (!open) return
-      if (e.key === 'Escape') onClose()
-      if (e.key === 'ArrowLeft') handlePrev()
-      if (e.key === 'ArrowRight') handleNext()
-    }
+      if (!open) return;
+      if (e.key === 'Escape') onClose();
+      if (e.key === 'ArrowLeft') handlePrev();
+      if (e.key === 'ArrowRight') handleNext();
+    };
 
-    window.addEventListener('keydown', handleKeyDown)
-    return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [open, onClose, handlePrev, handleNext])
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [open, onClose, handlePrev, handleNext]);
 
-  if (!open || images.length === 0) return null
+  if (!open || images.length === 0) return null;
 
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/90">
       <button
         onClick={onClose}
         className="absolute top-4 right-4 p-2 text-white bg-white/10 hover:bg-white/10 rounded-full transition-colors z-10 focus:outline-none focus:ring-0"
-        aria-label="Закрити"
-      >
+        aria-label="Закрити">
         <X className="w-[1.8rem] h-[1.8rem]" />
       </button>
 
@@ -63,16 +62,14 @@ export function ImageLightbox({ images, initialIndex = 0, open, onClose }: Image
         <button
           onClick={handleZoomOut}
           className="p-2 text-white bg-white/10 hover:bg-white/10 rounded-full transition-colors focus:outline-none focus:ring-0"
-          aria-label="Зменшити"
-        >
+          aria-label="Зменшити">
           <ZoomOut className="w-6 h-6" />
         </button>
         <span className="text-white text-sm">{Math.round(scale * 100)}%</span>
         <button
           onClick={handleZoomIn}
           className="p-2 text-white bg-white/10 hover:bg-white/10 rounded-full transition-colors focus:outline-none focus:ring-0"
-          aria-label="Збільшити"
-        >
+          aria-label="Збільшити">
           <ZoomIn className="w-6 h-6" />
         </button>
       </div>
@@ -82,15 +79,13 @@ export function ImageLightbox({ images, initialIndex = 0, open, onClose }: Image
           <button
             onClick={handlePrev}
             className="absolute left-4 p-2 text-white bg-white/10 hover:bg-white/10 rounded-full transition-colors z-10 focus:outline-none focus:ring-0"
-            aria-label="Попереднє"
-          >
+            aria-label="Попереднє">
             <ChevronLeft className="w-[2.4rem] h-[2.4rem]" />
           </button>
           <button
             onClick={handleNext}
             className="absolute right-4 p-2 text-white bg-white/10 hover:bg-white/10 rounded-full transition-colors z-10 focus:outline-none focus:ring-0"
-            aria-label="Наступне"
-          >
+            aria-label="Наступне">
             <ChevronRight className="w-[2.4rem] h-[2.4rem]" />
           </button>
         </>
@@ -114,5 +109,5 @@ export function ImageLightbox({ images, initialIndex = 0, open, onClose }: Image
         </div>
       )}
     </div>
-  )
+  );
 }

@@ -1,15 +1,15 @@
-import { type ReactNode } from 'react'
-import { Button } from '@/components/ui/button'
-import { Plus } from 'lucide-react'
+import { type ReactNode } from 'react';
+import { Button } from '@/components/ui/button';
+import { Plus } from 'lucide-react';
 
 interface PageHeaderProps {
-  title: string
-  description?: string
+  title: string;
+  description?: string;
   action?: {
-    label: string
-    onClick: () => void
-  }
-  children?: ReactNode
+    label: string;
+    onClick: () => void;
+  };
+  children?: ReactNode;
 }
 
 export function PageHeader({ title, description, action, children }: PageHeaderProps) {
@@ -17,9 +17,7 @@ export function PageHeader({ title, description, action, children }: PageHeaderP
     <div className="flex items-center justify-between mb-6">
       <div>
         <h1 className="text-3xl font-bold tracking-tight">{title}</h1>
-        {description && (
-          <p className="text-muted-foreground mt-2">{description}</p>
-        )}
+        {description && <p className="text-muted-foreground mt-2">{description}</p>}
       </div>
       {action && (
         <Button onClick={action.onClick}>
@@ -29,5 +27,5 @@ export function PageHeader({ title, description, action, children }: PageHeaderP
       )}
       {children}
     </div>
-  )
+  );
 }

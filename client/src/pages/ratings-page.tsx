@@ -1,5 +1,5 @@
-import { RatingsList } from '@/features/ratings/components/ratings-list'
+import { RatingsList } from '@/features/ratings/components/ratings-list';
 
 export function RatingsPage() {
-  return <RatingsList />
+  return <RatingsList />;
 }

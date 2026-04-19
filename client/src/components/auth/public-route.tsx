@@ -1,13 +1,13 @@
-import { Navigate } from 'react-router-dom'
-import { useAuth } from '@/contexts/auth-context'
-import { getDefaultRouteForUser } from '@/lib/auth-routes'
+import { Navigate } from 'react-router-dom';
+import { useAuth } from '@/contexts/auth-context';
+import { getDefaultRouteForUser } from '@/lib/auth-routes';
 
 interface PublicRouteProps {
-  children: React.ReactNode
+  children: React.ReactNode;
 }
 
 export function PublicRoute({ children }: PublicRouteProps) {
-  const { isAuthenticated, isLoading, user } = useAuth()
+  const { isAuthenticated, isLoading, user } = useAuth();
 
   if (isLoading) {
     return (
@@ -17,12 +17,12 @@ export function PublicRoute({ children }: PublicRouteProps) {
           <p className="mt-4 text-gray-600">Loading...</p>
         </div>
       </div>
-    )
+    );
   }
 
   if (isAuthenticated) {
-    return <Navigate to={getDefaultRouteForUser(user)} replace />
+    return <Navigate to={getDefaultRouteForUser(user)} replace />;
   }
 
-  return <>{children}</>
+  return <>{children}</>;
 }

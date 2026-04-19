@@ -1,9 +1,9 @@
-import { type ReactNode } from 'react'
-import { Header } from './header'
-import { AiChat } from '@/components/chat/ai-chat'
+import { type ReactNode } from 'react';
+import { Header } from './header';
+import { AiChat } from '@/components/chat/ai-chat';
 
 interface LayoutProps {
-  children: ReactNode
+  children: ReactNode;
 }
 
 export const Layout = ({ children }: LayoutProps) => {
@@ -13,5 +13,5 @@ export const Layout = ({ children }: LayoutProps) => {
       <main className="container mx-auto px-4 py-8 flex-1 flex flex-col">{children}</main>
       <AiChat />
     </div>
-  )
-}
+  );
+};

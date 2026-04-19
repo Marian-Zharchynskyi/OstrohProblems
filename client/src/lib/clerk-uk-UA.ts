@@ -226,7 +226,7 @@ export const ukUA = {
         destructiveAction: 'Видалити номер телефону',
       },
       connectedAccountsSection: {
-        title: "Підключені акаунти",
+        title: 'Підключені акаунти',
         primaryButton: 'Підключити акаунт',
         subtitle__reauthorize: 'Потрібні дозволи було оновлено, і ви можете мати обмежену функціональність. Будь ласка, повторно авторизуйте цей застосунок, щоб уникнути проблем.',
         actionLabel__connectionFailed: 'Повторити спробу',
@@ -288,7 +288,7 @@ export const ukUA = {
         title: 'Небезпечна зона',
         deleteAccountButton: 'Видалити акаунт',
         deleteAccountTitle: 'Видалити акаунт',
-        deleteAccountDescription: 'Видалити ваш акаунт та всі пов\'язані з ним дані',
+        deleteAccountDescription: "Видалити ваш акаунт та всі пов'язані з ним дані",
       },
     },
     profilePage: {
@@ -312,9 +312,9 @@ export const ukUA = {
       verifySubtitle: 'Введіть код підтвердження, згенерований вашим автентифікатором',
       successMessage: 'Двофакторну автентифікацію тепер увімкнено. При вході вам потрібно буде ввести код підтвердження з цього автентифікатора як додатковий крок.',
       authenticatorApp: {
-        infoText__ableToScan: 'Налаштуйте новий метод входу у вашому застосунку-автентифікаторі та відскануйте наступний QR-код, щоб зв\'язати його з вашим акаунтом.',
+        infoText__ableToScan: "Налаштуйте новий метод входу у вашому застосунку-автентифікаторі та відскануйте наступний QR-код, щоб зв'язати його з вашим акаунтом.",
         infoText__unableToScan: 'Налаштуйте новий метод входу у вашому автентифікаторі та введіть ключ, наданий нижче.',
-        inputLabel__unableToScan1: 'Переконайтеся, що увімкнено одноразові паролі на основі часу, потім завершіть зв\'язування вашого акаунту.',
+        inputLabel__unableToScan1: "Переконайтеся, що увімкнено одноразові паролі на основі часу, потім завершіть зв'язування вашого акаунту.",
         inputLabel__unableToScan2: 'Альтернативно, якщо ваш автентифікатор підтримує TOTP URI, ви також можете скопіювати повний URI.',
         buttonAbleToScan__nonPrimary: 'Замість цього відсканувати QR-код',
         buttonUnableToScan__nonPrimary: 'Не вдається відсканувати QR-код?',
@@ -325,7 +325,8 @@ export const ukUA = {
       primaryButton__addPhoneNumber: 'Додати номер телефону',
       subtitle__availablePhoneNumbers: 'Виберіть номер телефону для реєстрації на підтвердження через SMS-код.',
       subtitle__unavailablePhoneNumbers: 'Немає доступних номерів телефону для реєстрації на підтвердження через SMS-код.',
-      successMessage: 'Підтвердження через SMS-код тепер увімкнено для цього номера телефону. При вході вам потрібно буде ввести код підтвердження, надісланий на цей номер телефону, як додатковий крок.',
+      successMessage:
+        'Підтвердження через SMS-код тепер увімкнено для цього номера телефону. При вході вам потрібно буде ввести код підтвердження, надісланий на цей номер телефону, як додатковий крок.',
       removeResource: {
         title: 'Видалити підтвердження через SMS-код',
         messageLine1: '{{identifier}} більше не буде отримувати коди підтвердження при вході.',
@@ -340,7 +341,8 @@ export const ukUA = {
       infoText1: 'Резервні коди будуть увімкнені для цього акаунту.',
       infoText2: 'Тримайте резервні коди в таємниці та зберігайте їх у безпечному місці. Ви можете згенерувати нові резервні коди, якщо підозрюєте, що вони були скомпрометовані.',
       successSubtitle: 'Ви можете використовувати один з них для входу у ваш акаунт, якщо втратите доступ до вашого пристрою автентифікації.',
-      successMessage: 'Резервні коди тепер увімкнені. Ви можете використовувати один з них для входу у ваш акаунт, якщо втратите доступ до вашого пристрою автентифікації. Кожен код можна використовувати лише один раз.',
+      successMessage:
+        'Резервні коди тепер увімкнені. Ви можете використовувати один з них для входу у ваш акаунт, якщо втратите доступ до вашого пристрою автентифікації. Кожен код можна використовувати лише один раз.',
       actionLabel__copy: 'Копіювати все',
       actionLabel__copied: 'Скопійовано!',
       actionLabel__download: 'Завантажити .txt',
@@ -366,15 +368,15 @@ export const ukUA = {
   // Form fields
   formFieldLabel__emailAddress: 'Електронна пошта',
   formFieldAction__forgotPassword: "Не пам'ятаю пароль",
-  formFieldLabel__emailAddress_username: 'Електронна пошта або ім\'я користувача',
-  formFieldLabel__username: 'Ім\'я користувача',
+  formFieldLabel__emailAddress_username: "Електронна пошта або ім'я користувача",
+  formFieldLabel__username: "Ім'я користувача",
   formFieldLabel__phoneNumber: 'Номер телефону',
   formFieldLabel__password: 'Пароль',
   formFieldLabel__newPassword: 'Новий пароль',
   formFieldLabel__confirmPassword: 'Підтвердіть пароль',
   formFieldLabel__currentPassword: 'Поточний пароль',
   formFieldLabel__signOutOfOtherSessions: 'Вийти з інших пристроїв',
-  formFieldLabel__firstName: 'Ім\'я',
+  formFieldLabel__firstName: "Ім'я",
   formFieldLabel__lastName: 'Прізвище',
   formFieldLabel__role: 'Роль',
   formFieldLabel__organizationName: 'Назва організації',
@@ -386,11 +388,11 @@ export const ukUA = {
 
   // Form field placeholders
   formFieldInputPlaceholder__emailAddress: 'name@example.com',
-  formFieldInputPlaceholder__emailAddress_username: 'name@example.com або ім\'я користувача',
+  formFieldInputPlaceholder__emailAddress_username: "name@example.com або ім'я користувача",
   formFieldInputPlaceholder__emailAddresses: 'name@example.com, name2@example.com',
   formFieldInputPlaceholder__phoneNumber: '+380',
-  formFieldInputPlaceholder__username: 'ім\'я_користувача',
-  formFieldInputPlaceholder__firstName: 'Ваше ім\'я',
+  formFieldInputPlaceholder__username: "ім'я_користувача",
+  formFieldInputPlaceholder__firstName: "Ваше ім'я",
   formFieldInputPlaceholder__lastName: 'Ваше прізвище',
   formFieldInputPlaceholder__backupCode: '',
   formFieldInputPlaceholder__organizationName: 'Моя організація',
@@ -406,7 +408,7 @@ export const ukUA = {
   formFieldError__verificationLinkExpired: 'Термін дії посилання закінчився. Будь ласка, запросіть нове посилання.',
 
   // Form field hints
-  formFieldHintText__optional: 'Необов\'язково',
+  formFieldHintText__optional: "Необов'язково",
   formFieldHintText__slug: 'Ідентифікатор - це читабельний ID, який має бути унікальним. Часто використовується в URL.',
 
   // Form buttons
@@ -455,7 +457,6 @@ export const ukUA = {
     primary: 'Основний',
   },
 
-
   // Buttons
   backButton: 'Назад',
   continue: 'Продовжити',
@@ -486,14 +487,14 @@ export const ukUA = {
     form_identifier_not_found: 'Не вдалося знайти ваш акаунт.',
     form_password_incorrect: 'Неправильний пароль. Будь ласка, спробуйте ще раз.',
     form_password_pwned: 'Цей пароль був скомпрометований в результаті витоку даних і не може бути використаний. Будь ласка, спробуйте інший пароль.',
-    form_username_invalid_length: 'Ім\'я користувача має неправильну довжину.',
-    form_username_invalid_character: 'Ім\'я користувача містить недопустимий символ.',
+    form_username_invalid_length: "Ім'я користувача має неправильну довжину.",
+    form_username_invalid_character: "Ім'я користувача містить недопустимий символ.",
     form_param_format_invalid: 'Формат параметра недійсний.',
     form_param_format_invalid__email_address: 'Електронна адреса має бути дійсною адресою електронної пошти.',
     form_param_format_invalid__phone_number: 'Номер телефону має бути у дійсному міжнародному форматі',
     form_param_nil: 'Параметр не може бути порожнім.',
     form_password_length_too_short: 'Пароль занадто короткий.',
-    form_param_max_length_exceeded__name: 'Ім\'я занадто довге.',
+    form_param_max_length_exceeded__name: "Ім'я занадто довге.",
     form_password_not_strong_enough: 'Ваш пароль недостатньо надійний.',
     form_password_size_in_bytes_exceeded: 'Ваш пароль перевищив максимальну кількість байтів, будь ласка, скоротіть його або видаліть деякі спеціальні символи.',
     form_code_incorrect: 'Код невірний. Будь ласка, спробуйте ще раз.',
@@ -527,7 +528,7 @@ export const ukUA = {
         wordByItself: 'Окремі слова легко вгадати.',
         namesByThemselves: 'Окремі імена або прізвища легко вгадати.',
         commonNames: 'Поширені імена та прізвища легко вгадати.',
-        userInputs: 'Не повинно бути жодних особистих або пов\'язаних зі сторінкою даних.',
+        userInputs: "Не повинно бути жодних особистих або пов'язаних зі сторінкою даних.",
         pwned: 'Ваш пароль був розкритий в результаті витоку даних в Інтернеті.',
       },
       suggestions: {
@@ -535,9 +536,9 @@ export const ukUA = {
         reverseWords: 'Уникайте зворотного написання поширених слів.',
         allUppercase: 'Використовуйте великі літери для деяких, але не всіх літер.',
         capitalization: 'Використовуйте великі літери не тільки для першої літери.',
-        dates: 'Уникайте дат та років, пов\'язаних з вами.',
+        dates: "Уникайте дат та років, пов'язаних з вами.",
         recentYears: 'Уникайте останніх років.',
-        associatedYears: 'Уникайте років, пов\'язаних з вами.',
+        associatedYears: "Уникайте років, пов'язаних з вами.",
         sequences: 'Уникайте поширених послідовностей символів.',
         repeated: 'Уникайте повторюваних слів та символів.',
         longerKeyboardPattern: 'Використовуйте довші шаблони клавіатури та змінюйте напрямок набору кілька разів.',
@@ -571,7 +572,7 @@ export const ukUA = {
   // Reset password specific
   resetPasswordMfa__detailsLabel: 'Нам потрібно підтвердити вашу особу перед скиданням пароля.',
 
-  // Account switcher  
+  // Account switcher
   reverification: {
     alternativeMethods: {
       actionLink: 'Отримати допомогу',
@@ -624,7 +625,7 @@ export const ukUA = {
   // Help texts
   signIn_getHelp: {
     title: 'Отримати допомогу',
-    content: 'Якщо у вас виникли труднощі з входом до вашого акаунту, зв\'яжіться з нами, і ми допоможемо вам відновити доступ.',
+    content: "Якщо у вас виникли труднощі з входом до вашого акаунту, зв'яжіться з нами, і ми допоможемо вам відновити доступ.",
     blockButton__emailSupport: 'Написати на підтримку',
   },
-}
+};

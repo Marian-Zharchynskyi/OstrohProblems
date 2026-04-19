@@ -1,26 +1,21 @@
-import { useState } from 'react'
-import type { Rating } from '@/types'
-import { DataTable, type Column } from '@/components/shared/data-table'
-import { PageHeader } from '@/components/shared/page-header'
-import { DeleteDialog } from '@/components/shared/delete-dialog'
-import { RatingForm } from './rating-form'
-import {
-  useRatings,
-  useCreateRating,
-  useUpdateRating,
-  useDeleteRating,
-} from '../hooks/use-ratings'
-import { toast } from '@/lib/toast'
+import { useState } from 'react';
+import type { Rating } from '@/types';
+import { DataTable, type Column } from '@/components/shared/data-table';
+import { PageHeader } from '@/components/shared/page-header';
+import { DeleteDialog } from '@/components/shared/delete-dialog';
+import { RatingForm } from './rating-form';
+import { useRatings, useCreateRating, useUpdateRating, useDeleteRating } from '../hooks/use-ratings';
+import { toast } from '@/lib/toast';
 
 export function RatingsList() {
-  const [isFormOpen, setIsFormOpen] = useState(false)
-  const [isDeleteOpen, setIsDeleteOpen] = useState(false)
-  const [selectedRating, setSelectedRating] = useState<Rating | null>(null)
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+  const [selectedRating, setSelectedRating] = useState<Rating | null>(null);
 
-  const { data: ratings, isLoading } = useRatings()
-  const createMutation = useCreateRating()
-  const updateMutation = useUpdateRating()
-  const deleteMutation = useDeleteRating()
+  const { data: ratings, isLoading } = useRatings();
+  const createMutation = useCreateRating();
+  const updateMutation = useUpdateRating();
+  const deleteMutation = useDeleteRating();
 
   const columns: Column<Rating>[] = [
     {
@@ -40,63 +35,50 @@ export function RatingsList() {
       accessor: 'createdAt',
       cell: (value) => new Date(String(value)).toLocaleDateString('uk-UA'),
     },
-  ]
-
-
+  ];
 
   const handleEdit = (rating: Rating) => {
-    setSelectedRating(rating)
-    setIsFormOpen(true)
-  }
+    setSelectedRating(rating);
+    setIsFormOpen(true);
+  };
 
   const handleDelete = (rating: Rating) => {
-    setSelectedRating(rating)
-    setIsDeleteOpen(true)
-  }
+    setSelectedRating(rating);
+    setIsDeleteOpen(true);
+  };
 
   const handleSubmit = async (data: { points: number; problemId: string }, id?: string) => {
     try {
       if (id) {
-        await updateMutation.mutateAsync({ id, data })
-        toast.success('Рейтинг успішно оновлено')
+        await updateMutation.mutateAsync({ id, data });
+        toast.success('Рейтинг успішно оновлено');
       } else {
-        await createMutation.mutateAsync(data)
-        toast.success('Рейтинг успішно створено')
+        await createMutation.mutateAsync(data);
+        toast.success('Рейтинг успішно створено');
       }
-      setIsFormOpen(false)
+      setIsFormOpen(false);
     } catch (error) {
-      toast.error('Виникла помилка: ' + error)
+      toast.error('Виникла помилка: ' + error);
     }
-  }
+  };
 
   const handleConfirmDelete = async () => {
-    if (!selectedRating?.id) return
+    if (!selectedRating?.id) return;
 
     try {
-      await deleteMutation.mutateAsync(selectedRating.id)
-      toast.success('Рейтинг успішно видалено')
-      setIsDeleteOpen(false)
+      await deleteMutation.mutateAsync(selectedRating.id);
+      toast.success('Рейтинг успішно видалено');
+      setIsDeleteOpen(false);
     } catch (error) {
-      toast.error('Виникла помилка: ' + error)
+      toast.error('Виникла помилка: ' + error);
     }
-  }
+  };
 
   return (
     <div>
-      <PageHeader
-        title="Рейтинги"
-        description="Управління рейтингами проблем"
+      <PageHeader title="Рейтинги" description="Управління рейтингами проблем" />
 
-      />
-
-      <DataTable
-        data={ratings || []}
-        columns={columns}
-        onEdit={handleEdit}
-        onDelete={handleDelete}
-        isLoading={isLoading}
-        emptyMessage="Рейтингів не знайдено"
-      />
+      <DataTable data={ratings || []} columns={columns} onEdit={handleEdit} onDelete={handleDelete} isLoading={isLoading} emptyMessage="Рейтингів не знайдено" />
 
       <RatingForm
         open={isFormOpen}
@@ -115,5 +97,5 @@ export function RatingsList() {
         isLoading={deleteMutation.isPending}
       />
     </div>
-  )
+  );
 }

@@ -1,16 +1,14 @@
-import { useState, useRef, useEffect } from 'react'
-import { Link, useLocation, useNavigate } from 'react-router-dom'
-import { LogOut, ChevronDown, User as UserIcon, FileText, Plus } from 'lucide-react'
-import { cn } from '@/lib/utils'
-import { useAuth } from '@/contexts/auth-context'
-import { NotificationsBell } from '@/components/notifications/notifications-bell'
-import { designSystem } from '@/lib/design-system'
-import { useQuery } from '@tanstack/react-query'
-import { userService } from '@/services/user.service'
+import { useState, useRef, useEffect } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { LogOut, ChevronDown, User as UserIcon, FileText, Plus } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { useAuth } from '@/contexts/auth-context';
+import { NotificationsBell } from '@/components/notifications/notifications-bell';
+import { designSystem } from '@/lib/design-system';
+import { useQuery } from '@tanstack/react-query';
+import { userService } from '@/services/user.service';
 
-const publicNavItems = [
-  { path: '/map', label: 'Всі проблеми' },
-]
+const publicNavItems = [{ path: '/map', label: 'Всі проблеми' }];
 
 const adminNavItems = [
   { path: '/admin/dashboard', label: 'Головна' },
@@ -18,72 +16,66 @@ const adminNavItems = [
   { path: '/admin/comments', label: 'Коментарі' },
   { path: '/admin/ratings', label: 'Рейтинги' },
   { path: '/admin/users', label: 'Користувачі' },
-]
+];
 
-const coordinatorNavItems = [
-  { path: '/coordinator', label: 'Панель координатора' },
-]
+const coordinatorNavItems = [{ path: '/coordinator', label: 'Панель координатора' }];
 
-const userNavItems = [
-  { path: '/map', label: 'Всі проблеми' },
-]
+const userNavItems = [{ path: '/map', label: 'Всі проблеми' }];
 
 export const Header = () => {
-  const location = useLocation()
-  const navigate = useNavigate()
-  const { isAuthenticated, user, signOut, getClerkToken } = useAuth()
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false)
-  const dropdownRef = useRef<HTMLDivElement>(null)
+  const location = useLocation();
+  const navigate = useNavigate();
+  const { isAuthenticated, user, signOut, getClerkToken } = useAuth();
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Fetch full user details to get avatar
   const { data: userProfile } = useQuery({
     queryKey: ['currentUser', user?.id],
     queryFn: async () => {
-      if (!getClerkToken) return null
-      const token = await getClerkToken()
-      if (!token) return null
-      return userService.getCurrentUser(token)
+      if (!getClerkToken) return null;
+      const token = await getClerkToken();
+      if (!token) return null;
+      return userService.getCurrentUser(token);
     },
-    enabled: !!isAuthenticated && !!user?.id && !!getClerkToken
-  })
+    enabled: !!isAuthenticated && !!user?.id && !!getClerkToken,
+  });
 
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setIsDropdownOpen(false)
+        setIsDropdownOpen(false);
       }
-    }
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [])
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
-  const isAdmin = user?.roles?.includes('Administrator')
-  const isCoordinator = user?.roles?.includes('Coordinator')
-  const isUser = user?.roles?.includes('User')
+  const isAdmin = user?.roles?.includes('Administrator');
+  const isCoordinator = user?.roles?.includes('Coordinator');
+  const isUser = user?.roles?.includes('User');
 
   const getNavItems = () => {
-    if (!isAuthenticated) return publicNavItems
-    if (isAdmin) return adminNavItems
-    if (isCoordinator) return coordinatorNavItems
-    return userNavItems
-  }
+    if (!isAuthenticated) return publicNavItems;
+    if (isAdmin) return adminNavItems;
+    if (isCoordinator) return coordinatorNavItems;
+    return userNavItems;
+  };
 
-  const navItems = getNavItems()
-  const logoLink = isAuthenticated && !isUser ? (isAdmin ? '/admin/dashboard' : '/coordinator') : '/'
+  const navItems = getNavItems();
+  const logoLink = isAuthenticated && !isUser ? (isAdmin ? '/admin/dashboard' : '/coordinator') : '/';
 
-  const userRoleLabel = isAdmin ? 'Адміністратор' : isCoordinator ? 'Координатор' : 'Користувач'
+  const userRoleLabel = isAdmin ? 'Адміністратор' : isCoordinator ? 'Координатор' : 'Користувач';
 
   const getDisplayName = () => {
-    const name = userProfile?.name
-      ? `${userProfile.name} ${userProfile.surname || ''}`
-      : user?.name || user?.email || 'Користувач'
-    return String(name).trim()
-  }
+    const name = userProfile?.name ? `${userProfile.name} ${userProfile.surname || ''}` : user?.name || user?.email || 'Користувач';
+    return String(name).trim();
+  };
 
-  const userDisplayName = getDisplayName()
+  const userDisplayName = getDisplayName();
 
-  const userAvatarUrl = userProfile?.image?.url
+  const userAvatarUrl = userProfile?.image?.url;
 
   return (
     <header className="py-4 bg-transparent relative z-40">
@@ -92,13 +84,9 @@ export const Header = () => {
           className="flex items-center justify-between px-6 py-4 rounded-[30px] shadow-[0_4px_12px_rgba(0,0,0,0.25)]"
           style={{
             backgroundColor: designSystem.colors.header.background,
-          }}
-        >
+          }}>
           {/* Logo */}
-          <Link
-            to={logoLink}
-            className="text-xl font-heading font-semibold text-black"
-          >
+          <Link to={logoLink} className="text-xl font-heading font-semibold text-black">
             Острог Разом
           </Link>
 
@@ -106,22 +94,19 @@ export const Header = () => {
           {navItems.length > 0 && (
             <ul className="hidden md:flex items-center gap-2">
               {navItems.map((item) => {
-                const isActive = location.pathname === item.path
+                const isActive = location.pathname === item.path;
                 return (
                   <li key={item.path}>
                     <Link
                       to={item.path}
                       className={cn(
                         'text-sm font-heading font-semibold px-5 py-2.5 rounded-full transition-all duration-200',
-                        isActive
-                          ? 'bg-black text-white shadow-md transform scale-105'
-                          : 'text-black/70 hover:text-black hover:bg-black/5'
-                      )}
-                    >
+                        isActive ? 'bg-black text-white shadow-md transform scale-105' : 'text-black/70 hover:text-black hover:bg-black/5'
+                      )}>
                       {item.label}
                     </Link>
                   </li>
-                )
+                );
               })}
             </ul>
           )}
@@ -140,9 +125,12 @@ export const Header = () => {
                         backgroundColor: '#E42556',
                         color: '#FFFFFF',
                       }}
-                      onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#c8204b' }}
-                      onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#E42556' }}
-                    >
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.backgroundColor = '#c8204b';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.backgroundColor = '#E42556';
+                      }}>
                       <Plus className="h-4 w-4" />
                       Подати проблему
                     </Link>
@@ -155,18 +143,15 @@ export const Header = () => {
                 <div className="relative" ref={dropdownRef}>
                   <button
                     onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                    className="flex items-center gap-2 pl-2 pr-1 py-1 rounded-full hover:bg-black/5 transition-all text-left outline-none focus:outline-none bg-transparent border-none"
-                  >
+                    className="flex items-center gap-2 pl-2 pr-1 py-1 rounded-full hover:bg-black/5 transition-all text-left outline-none focus:outline-none bg-transparent border-none">
                     <div className="w-10 h-10 rounded-full overflow-hidden border border-gray-200 bg-gray-100 flex items-center justify-center">
                       {userAvatarUrl ? (
                         <img src={userAvatarUrl} alt={userDisplayName} className="w-full h-full object-cover" />
                       ) : (
-                        <div className="text-gray-500 font-bold text-lg">
-                          {userDisplayName.charAt(0).toUpperCase()}
-                        </div>
+                        <div className="text-gray-500 font-bold text-lg">{userDisplayName.charAt(0).toUpperCase()}</div>
                       )}
                     </div>
-                    <ChevronDown className={cn("w-4 h-4 text-gray-500 transition-transform duration-200", isDropdownOpen && "rotate-180")} />
+                    <ChevronDown className={cn('w-4 h-4 text-gray-500 transition-transform duration-200', isDropdownOpen && 'rotate-180')} />
                   </button>
 
                   {/* Dropdown Menu */}
@@ -184,8 +169,7 @@ export const Header = () => {
                           <Link
                             to="/profile"
                             onClick={() => setIsDropdownOpen(false)}
-                            className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-50 text-gray-700 transition-colors group"
-                          >
+                            className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-50 text-gray-700 transition-colors group">
                             <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 group-hover:bg-white group-hover:shadow-sm transition-all">
                               <UserIcon className="w-4 h-4" />
                             </div>
@@ -197,8 +181,7 @@ export const Header = () => {
                           <Link
                             to="/problems/my"
                             onClick={() => setIsDropdownOpen(false)}
-                            className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-50 text-gray-700 transition-colors group"
-                          >
+                            className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-50 text-gray-700 transition-colors group">
                             <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 group-hover:bg-white group-hover:shadow-sm transition-all">
                               <FileText className="w-4 h-4" />
                             </div>
@@ -208,11 +191,10 @@ export const Header = () => {
 
                         <button
                           onClick={() => {
-                            setIsDropdownOpen(false)
-                            signOut(navigate)
+                            setIsDropdownOpen(false);
+                            signOut(navigate);
                           }}
-                          className="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-red-50 text-red-600 transition-colors group mt-2 outline-none focus:outline-none bg-transparent border-none"
-                        >
+                          className="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-red-50 text-red-600 transition-colors group mt-2 outline-none focus:outline-none bg-transparent border-none">
                           <div className="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center text-red-500 group-hover:bg-white group-hover:shadow-sm transition-all">
                             <LogOut className="w-4 h-4" />
                           </div>
@@ -226,16 +208,12 @@ export const Header = () => {
             ) : (
               // Unauthenticated Actions
               <div className="flex items-center gap-2">
-                <Link
-                  to="/login"
-                  className="text-sm font-heading font-semibold text-black hover:bg-black/5 px-5 py-2.5 rounded-full transition-all"
-                >
+                <Link to="/login" className="text-sm font-heading font-semibold text-black hover:bg-black/5 px-5 py-2.5 rounded-full transition-all">
                   Увійти
                 </Link>
                 <Link
                   to="/register"
-                  className="text-sm font-heading font-semibold bg-black text-white px-5 py-2.5 rounded-full hover:bg-black/80 transition-all shadow-md hover:shadow-lg active:scale-95"
-                >
+                  className="text-sm font-heading font-semibold bg-black text-white px-5 py-2.5 rounded-full hover:bg-black/80 transition-all shadow-md hover:shadow-lg active:scale-95">
                   Реєстрація
                 </Link>
               </div>
@@ -244,5 +222,5 @@ export const Header = () => {
         </nav>
       </div>
     </header>
-  )
-}
+  );
+};

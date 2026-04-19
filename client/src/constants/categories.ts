@@ -9,9 +9,9 @@ export const CategoryConstants = {
   Noise: 'Шум',
   Animals: 'Тварини',
   Other: 'Інше',
-} as const
+} as const;
 
-export type CategoryType = (typeof CategoryConstants)[keyof typeof CategoryConstants]
+export type CategoryType = (typeof CategoryConstants)[keyof typeof CategoryConstants];
 
 export const CATEGORIES: { value: string; label: string }[] = [
   { value: CategoryConstants.Roads, label: 'Дороги' },
@@ -24,6 +24,6 @@ export const CATEGORIES: { value: string; label: string }[] = [
   { value: CategoryConstants.Noise, label: 'Шум' },
   { value: CategoryConstants.Animals, label: 'Тварини' },
   { value: CategoryConstants.Other, label: 'Інше' },
-]
+];
 
-export const getAllCategoryNames = (): string[] => CATEGORIES.map((c) => c.value)
+export const getAllCategoryNames = (): string[] => CATEGORIES.map((c) => c.value);

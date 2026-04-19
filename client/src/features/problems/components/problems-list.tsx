@@ -1,41 +1,35 @@
-import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { useQueryClient } from '@tanstack/react-query'
-import type { ProblemSummary, CreateProblem } from '@/types'
-import { DataTable, type Column } from '@/components/shared/data-table'
-import { PageHeader } from '@/components/shared/page-header'
-import { DeleteDialog } from '@/components/shared/delete-dialog'
-import { ProblemForm } from './problem-form'
-import {
-  useProblems,
-  useCreateProblem,
-  useUpdateProblem,
-  useDeleteProblem,
-  useProblem,
-} from '../hooks/use-problems'
-import { useSignalR } from '@/contexts/use-signalr'
-import { toast } from '@/lib/toast'
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
+import type { ProblemSummary, CreateProblem } from '@/types';
+import { DataTable, type Column } from '@/components/shared/data-table';
+import { PageHeader } from '@/components/shared/page-header';
+import { DeleteDialog } from '@/components/shared/delete-dialog';
+import { ProblemForm } from './problem-form';
+import { useProblems, useCreateProblem, useUpdateProblem, useDeleteProblem, useProblem } from '../hooks/use-problems';
+import { useSignalR } from '@/contexts/use-signalr';
+import { toast } from '@/lib/toast';
 
 export function ProblemsList() {
-  const navigate = useNavigate()
-  const queryClient = useQueryClient()
-  const { onProblemsUpdated } = useSignalR()
-  const [isFormOpen, setIsFormOpen] = useState(false)
-  const [isDeleteOpen, setIsDeleteOpen] = useState(false)
-  const [selectedProblemId, setSelectedProblemId] = useState<string | null>(null)
-  const { data: selectedProblem } = useProblem(selectedProblemId || '')
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const { onProblemsUpdated } = useSignalR();
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+  const [selectedProblemId, setSelectedProblemId] = useState<string | null>(null);
+  const { data: selectedProblem } = useProblem(selectedProblemId || '');
 
   // Subscribe to SignalR refresh events for auto-refresh
   useEffect(() => {
     onProblemsUpdated(() => {
-      queryClient.invalidateQueries({ queryKey: ['problems'] })
-    })
-  }, [onProblemsUpdated, queryClient])
+      queryClient.invalidateQueries({ queryKey: ['problems'] });
+    });
+  }, [onProblemsUpdated, queryClient]);
 
-  const { data: problems, isLoading } = useProblems()
-  const createMutation = useCreateProblem()
-  const updateMutation = useUpdateProblem()
-  const deleteMutation = useDeleteProblem()
+  const { data: problems, isLoading } = useProblems();
+  const createMutation = useCreateProblem();
+  const updateMutation = useUpdateProblem();
+  const deleteMutation = useDeleteProblem();
 
   const columns: Column<ProblemSummary>[] = [
     {
@@ -56,58 +50,57 @@ export function ProblemsList() {
     },
     {
       header: 'Категорії',
-      accessor: (item) =>
-        item.categories?.join(', ') || 'N/A',
+      accessor: (item) => item.categories?.join(', ') || 'N/A',
     },
     {
       header: 'Створено',
       accessor: 'createdAt',
       cell: (value) => new Date(String(value)).toLocaleDateString('uk-UA'),
     },
-  ]
+  ];
 
   const handleCreate = () => {
-    setSelectedProblemId(null)
-    setIsFormOpen(true)
-  }
+    setSelectedProblemId(null);
+    setIsFormOpen(true);
+  };
 
   const handleEdit = (problem: ProblemSummary) => {
-    setSelectedProblemId(problem.id)
-    setIsFormOpen(true)
-  }
+    setSelectedProblemId(problem.id);
+    setIsFormOpen(true);
+  };
 
   const handleDelete = (problem: ProblemSummary) => {
-    setSelectedProblemId(problem.id)
-    setIsDeleteOpen(true)
-  }
+    setSelectedProblemId(problem.id);
+    setIsDeleteOpen(true);
+  };
 
   const handleSubmit = async (data: CreateProblem, id?: string) => {
     try {
       if (id) {
-        await updateMutation.mutateAsync({ id, data })
-        toast.success('Проблему успішно оновлено')
+        await updateMutation.mutateAsync({ id, data });
+        toast.success('Проблему успішно оновлено');
       } else {
-        await createMutation.mutateAsync(data)
-        toast.success('Проблему успішно створено')
+        await createMutation.mutateAsync(data);
+        toast.success('Проблему успішно створено');
       }
-      setIsFormOpen(false)
+      setIsFormOpen(false);
     } catch (error) {
-      toast.error('Виникла помилка: ' + error)
+      toast.error('Виникла помилка: ' + error);
     }
-  }
+  };
 
   const handleConfirmDelete = async () => {
-    if (!selectedProblemId) return
+    if (!selectedProblemId) return;
 
     try {
-      await deleteMutation.mutateAsync(selectedProblemId)
-      toast.success('Проблему успішно видалено')
-      setIsDeleteOpen(false)
-      setSelectedProblemId(null)
+      await deleteMutation.mutateAsync(selectedProblemId);
+      toast.success('Проблему успішно видалено');
+      setIsDeleteOpen(false);
+      setSelectedProblemId(null);
     } catch (error) {
-      toast.error('Виникла помилка: ' + error)
+      toast.error('Виникла помилка: ' + error);
     }
-  }
+  };
 
   return (
     <div>
@@ -147,5 +140,5 @@ export function ProblemsList() {
         isLoading={deleteMutation.isPending}
       />
     </div>
-  )
+  );
 }

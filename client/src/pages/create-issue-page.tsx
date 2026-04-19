@@ -1,26 +1,23 @@
-import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
-import type { CreateProblem } from '@/types'
-import { CATEGORIES } from '@/constants/categories'
-import {
-  useCreateProblem,
-  useUploadProblemImages,
-} from '@/features/problems/hooks/use-problems'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Label } from '@/components/ui/label'
-import { LocationPickerMap } from '@/components/location-picker-map'
-import { toast } from '@/lib/toast'
-import { Camera, Plus, RotateCcw, Crosshair, X } from 'lucide-react'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import type { CreateProblem } from '@/types';
+import { CATEGORIES } from '@/constants/categories';
+import { useCreateProblem, useUploadProblemImages } from '@/features/problems/hooks/use-problems';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
+import { LocationPickerMap } from '@/components/location-picker-map';
+import { toast } from '@/lib/toast';
+import { Camera, Plus, RotateCcw, Crosshair, X } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
-const MAX_IMAGES_COUNT = 4 // Changed to 4 as per UI requirement "Grid of 4 slots"
-const PRIORITIES = ['Низький', 'Середній', 'Високий', 'Критичний']
+const MAX_IMAGES_COUNT = 4; // Changed to 4 as per UI requirement "Grid of 4 slots"
+const PRIORITIES = ['Низький', 'Середній', 'Високий', 'Критичний'];
 
 export function CreateIssuePage() {
-  const navigate = useNavigate()
-  const createMutation = useCreateProblem()
-  const uploadImagesMutation = useUploadProblemImages()
+  const navigate = useNavigate();
+  const createMutation = useCreateProblem();
+  const uploadImagesMutation = useUploadProblemImages();
 
   const [formData, setFormData] = useState<CreateProblem>({
     title: '',
@@ -29,151 +26,147 @@ export function CreateIssuePage() {
     description: '',
     categoryNames: [],
     priority: '',
-  })
+  });
 
-  const [files, setFiles] = useState<FileList | null>(null)
-  const [imagePreviews, setImagePreviews] = useState<string[]>([])
-  const [descriptionError, setDescriptionError] = useState('')
-  const [streetName, setStreetName] = useState('')
-  const [mapKey, setMapKey] = useState(0)
+  const [files, setFiles] = useState<FileList | null>(null);
+  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
+  const [descriptionError, setDescriptionError] = useState('');
+  const [streetName, setStreetName] = useState('');
+  const [mapKey, setMapKey] = useState(0);
 
   // Helper for single category selection
-  const selectedCategory = formData.categoryNames[0] || ''
+  const selectedCategory = formData.categoryNames[0] || '';
 
   // Cleanup preview URLs on unmount
   useEffect(() => {
     return () => {
-      imagePreviews.forEach(url => URL.revokeObjectURL(url))
-    }
-  }, [imagePreviews])
+      imagePreviews.forEach((url) => URL.revokeObjectURL(url));
+    };
+  }, [imagePreviews]);
 
   const handleLocationChange = (lat: number, lng: number, street: string) => {
-    setFormData({ ...formData, latitude: lat, longitude: lng })
-    setStreetName(street)
-  }
+    setFormData({ ...formData, latitude: lat, longitude: lng });
+    setStreetName(street);
+  };
 
   const handleCategoryChange = (value: string) => {
     setFormData({
       ...formData,
       categoryNames: value ? [value] : [],
-    })
-  }
+    });
+  };
 
   const handlePriorityChange = (value: string) => {
-    setFormData({ ...formData, priority: value })
-  }
+    setFormData({ ...formData, priority: value });
+  };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const selectedFiles = e.target.files
+    const selectedFiles = e.target.files;
     if (selectedFiles && selectedFiles.length > MAX_IMAGES_COUNT) {
-      toast.error(`Максимальна кількість фото: ${MAX_IMAGES_COUNT}`)
-      e.target.value = ''
-      setFiles(null)
-      setImagePreviews([])
-      return
+      toast.error(`Максимальна кількість фото: ${MAX_IMAGES_COUNT}`);
+      e.target.value = '';
+      setFiles(null);
+      setImagePreviews([]);
+      return;
     }
 
     // Cleanup old previews
-    imagePreviews.forEach(url => URL.revokeObjectURL(url))
+    imagePreviews.forEach((url) => URL.revokeObjectURL(url));
 
     // Create new previews
     if (selectedFiles && selectedFiles.length > 0) {
-      const previews = Array.from(selectedFiles).map(file => URL.createObjectURL(file))
-      setImagePreviews(previews)
+      const previews = Array.from(selectedFiles).map((file) => URL.createObjectURL(file));
+      setImagePreviews(previews);
     } else {
-      setImagePreviews([])
+      setImagePreviews([]);
     }
 
-    setFiles(selectedFiles)
-  }
+    setFiles(selectedFiles);
+  };
 
   const handleRemoveImage = (index: number) => {
-    if (!files) return
+    if (!files) return;
 
     // Cleanup the preview URL
-    URL.revokeObjectURL(imagePreviews[index])
+    URL.revokeObjectURL(imagePreviews[index]);
 
     // Create new FileList without the removed file
-    const dt = new DataTransfer()
+    const dt = new DataTransfer();
     Array.from(files).forEach((file, i) => {
-      if (i !== index) dt.items.add(file)
-    })
+      if (i !== index) dt.items.add(file);
+    });
 
-    const newFiles = dt.files.length > 0 ? dt.files : null
-    setFiles(newFiles)
-    setImagePreviews(prev => prev.filter((_, i) => i !== index))
+    const newFiles = dt.files.length > 0 ? dt.files : null;
+    setFiles(newFiles);
+    setImagePreviews((prev) => prev.filter((_, i) => i !== index));
 
     // Reset input value
-    const input = document.getElementById('problem-images') as HTMLInputElement
-    if (input) input.value = ''
-  }
+    const input = document.getElementById('problem-images') as HTMLInputElement;
+    if (input) input.value = '';
+  };
 
   const handleResetLocation = () => {
-    setFormData({ ...formData, latitude: 0, longitude: 0 })
-    setStreetName('')
-    setMapKey((prev) => prev + 1) // Force re-render to reset map view
-  }
+    setFormData({ ...formData, latitude: 0, longitude: 0 });
+    setStreetName('');
+    setMapKey((prev) => prev + 1); // Force re-render to reset map view
+  };
 
   const handleCenterLocation = () => {
     // Re-centers the map (conceptually). If we have a location, maybe center on it?
     // Since we don't have map ref, forcing re-render with current coords (if any) or default
     // works to "Center" the view.
-    setMapKey((prev) => prev + 1)
-  }
+    setMapKey((prev) => prev + 1);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setDescriptionError('')
+    e.preventDefault();
+    setDescriptionError('');
 
     if (files && files.length > MAX_IMAGES_COUNT) {
-      toast.error(`Максимальна кількість фото: ${MAX_IMAGES_COUNT}`)
-      return
+      toast.error(`Максимальна кількість фото: ${MAX_IMAGES_COUNT}`);
+      return;
     }
 
     if (formData.description.trim().length < 30) {
-      setDescriptionError("Введіть щонайменше 30 символів")
-      return
+      setDescriptionError('Введіть щонайменше 30 символів');
+      return;
     }
 
     if (formData.latitude === 0 || formData.longitude === 0) {
-      toast.error('Будь ласка, виберіть місце на карті')
-      return
+      toast.error('Будь ласка, виберіть місце на карті');
+      return;
     }
 
     try {
-      const createdProblem = await createMutation.mutateAsync(formData)
+      const createdProblem = await createMutation.mutateAsync(formData);
 
       if (files && files.length > 0 && createdProblem.id) {
-        await uploadImagesMutation.mutateAsync({ id: createdProblem.id, files })
+        await uploadImagesMutation.mutateAsync({ id: createdProblem.id, files });
       }
 
-      toast.success('Проблему створено успішно')
-      navigate('/map')
+      toast.success('Проблему створено успішно');
+      navigate('/map');
     } catch (error) {
-      toast.error('Сталася помилка під час створення проблеми')
-      console.error(error)
+      toast.error('Сталася помилка під час створення проблеми');
+      console.error(error);
     }
-  }
+  };
 
-  const isSubmitting = createMutation.isPending || uploadImagesMutation.isPending
+  const isSubmitting = createMutation.isPending || uploadImagesMutation.isPending;
 
   // Input styles
-  const inputBaseClasses = "w-full bg-[#F5F6F7] border-none rounded-[10px] px-4 text-sm focus:ring-0 transition-all outline-none placeholder:text-gray-400"
+  const inputBaseClasses = 'w-full bg-[#F5F6F7] border-none rounded-[10px] px-4 text-sm focus:ring-0 transition-all outline-none placeholder:text-gray-400';
 
   return (
     <div className="w-full max-w-[1600px] mx-auto py-8 px-4 md:px-8 font-sans">
       {/* Page Title */}
-      <h1 className="text-[#1F2732] text-3xl font-bold mb-8 font-heading">
-        Створення проблеми
-      </h1>
+      <h1 className="text-[#1F2732] text-3xl font-bold mb-8 font-heading">Створення проблеми</h1>
 
       <form onSubmit={handleSubmit} className="space-y-8">
         {/* Card 1: Details */}
         <Card className="bg-white border text-card-foreground shadow-sm rounded-xl overflow-hidden">
           <CardHeader className="border-b border-gray-100 bg-white pb-4">
-            <CardTitle className="font-heading font-semibold text-lg text-[#1F2732]">
-              Надайте подробиці
-            </CardTitle>
+            <CardTitle className="font-heading font-semibold text-lg text-[#1F2732]">Надайте подробиці</CardTitle>
           </CardHeader>
           <CardContent className="p-6 space-y-6">
             {/* Title Input */}
@@ -204,7 +197,9 @@ export function CreateIssuePage() {
                   </SelectTrigger>
                   <SelectContent>
                     {CATEGORIES.map((cat) => (
-                      <SelectItem key={cat.value} value={cat.value}>{cat.label}</SelectItem>
+                      <SelectItem key={cat.value} value={cat.value}>
+                        {cat.label}
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -221,7 +216,9 @@ export function CreateIssuePage() {
                   </SelectTrigger>
                   <SelectContent>
                     {PRIORITIES.map((p) => (
-                      <SelectItem key={p} value={p}>{p}</SelectItem>
+                      <SelectItem key={p} value={p}>
+                        {p}
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -240,9 +237,7 @@ export function CreateIssuePage() {
                 className={`${inputBaseClasses} min-h-[140px] py-3 resize-y`}
               />
               <div className="flex justify-between items-start">
-                <p className="text-xs text-red-500 ml-1">
-                  {descriptionError || (formData.description.length < 30 ? "Введіть щонайменше 30 символів" : "")}
-                </p>
+                <p className="text-xs text-red-500 ml-1">{descriptionError || (formData.description.length < 30 ? 'Введіть щонайменше 30 символів' : '')}</p>
               </div>
             </div>
           </CardContent>
@@ -251,49 +246,32 @@ export function CreateIssuePage() {
         {/* Card 2: Media */}
         <Card className="bg-white border text-card-foreground shadow-sm rounded-xl overflow-hidden">
           <CardHeader className="border-b border-gray-100 bg-white pb-4">
-            <CardTitle className="font-heading font-semibold text-lg text-[#1F2732]">
-              Фото
-            </CardTitle>
-            <p className="text-sm text-gray-500 font-sans">
-              Для кращого відображення проблеми ви можете прикріпити фото
-            </p>
+            <CardTitle className="font-heading font-semibold text-lg text-[#1F2732]">Фото</CardTitle>
+            <p className="text-sm text-gray-500 font-sans">Для кращого відображення проблеми ви можете прикріпити фото</p>
           </CardHeader>
           <CardContent className="p-6">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {/* Add Button Slot */}
               <div
                 onClick={() => document.getElementById('problem-images')?.click()}
-                className="aspect-[2/1] bg-[#F5F6F7] rounded-[10px] flex flex-col items-center justify-center cursor-pointer hover:bg-gray-200 transition-colors group"
-              >
+                className="aspect-[2/1] bg-[#F5F6F7] rounded-[10px] flex flex-col items-center justify-center cursor-pointer hover:bg-gray-200 transition-colors group">
                 <span className="text-sm text-[#1F2732] border-b border-black pb-0.5 mb-1 font-medium">Додати фото</span>
-                <input
-                  id="problem-images"
-                  type="file"
-                  multiple
-                  accept="image/*"
-                  className="hidden"
-                  onChange={handleFileChange}
-                />
+                <input id="problem-images" type="file" multiple accept="image/*" className="hidden" onChange={handleFileChange} />
               </div>
 
               {/* Preview Slots or Placeholders */}
               {[...Array(3)].map((_, i) => {
-                const hasPreview = imagePreviews[i]
+                const hasPreview = imagePreviews[i];
 
                 return (
                   <div key={i} className="aspect-[2/1] bg-[#F5F6F7] rounded-[10px] flex items-center justify-center relative overflow-hidden">
                     {hasPreview ? (
                       <>
-                        <img
-                          src={hasPreview}
-                          alt={`Preview ${i + 1}`}
-                          className="w-full h-full object-cover"
-                        />
+                        <img src={hasPreview} alt={`Preview ${i + 1}`} className="w-full h-full object-cover" />
                         <button
                           type="button"
                           onClick={() => handleRemoveImage(i)}
-                          className="absolute top-1 right-1 bg-red-500 hover:bg-red-600 text-white rounded-full p-1 transition-colors"
-                        >
+                          className="absolute top-1 right-1 bg-red-500 hover:bg-red-600 text-white rounded-full p-1 transition-colors">
                           <X className="w-3 h-3" />
                         </button>
                       </>
@@ -304,7 +282,7 @@ export function CreateIssuePage() {
                       </div>
                     )}
                   </div>
-                )
+                );
               })}
             </div>
             {files && files.length > 0 && (
@@ -319,43 +297,25 @@ export function CreateIssuePage() {
         <Card className="bg-white border text-card-foreground shadow-sm rounded-xl overflow-hidden">
           <CardHeader className="border-b border-gray-100 bg-white pb-4">
             <div className="flex items-center gap-1">
-              <CardTitle className="font-heading font-semibold text-lg text-[#1F2732]">
-                Місце на карті
-              </CardTitle>
+              <CardTitle className="font-heading font-semibold text-lg text-[#1F2732]">Місце на карті</CardTitle>
               <span className="text-destructive text-lg">*</span>
             </div>
-            <p className="text-sm text-gray-500 font-sans">
-              Виберіть наближене місце на карті Острога, де наявна ваша проблема
-            </p>
+            <p className="text-sm text-gray-500 font-sans">Виберіть наближене місце на карті Острога, де наявна ваша проблема</p>
           </CardHeader>
           <CardContent className="p-6">
             <div className="flex flex-col md:flex-row gap-6">
               {/* Map View */}
               <div className="flex-1 relative rounded-lg overflow-hidden border border-gray-200">
-                <LocationPickerMap
-                  key={mapKey}
-                  latitude={formData.latitude}
-                  longitude={formData.longitude}
-                  onLocationChange={handleLocationChange}
-                  height="345px"
-                />
+                <LocationPickerMap key={mapKey} latitude={formData.latitude} longitude={formData.longitude} onLocationChange={handleLocationChange} height="345px" />
               </div>
 
               {/* Controls */}
               <div className="flex flex-row md:flex-col gap-3 justify-center md:min-w-[120px]">
-                <Button
-                  type="button"
-                  onClick={handleResetLocation}
-                  className="bg-[#1F2732] hover:bg-[#2d3845] text-white rounded-lg flex items-center justify-center gap-2"
-                >
+                <Button type="button" onClick={handleResetLocation} className="bg-[#1F2732] hover:bg-[#2d3845] text-white rounded-lg flex items-center justify-center gap-2">
                   <RotateCcw className="w-4 h-4" />
                   Скинути
                 </Button>
-                <Button
-                  type="button"
-                  onClick={handleCenterLocation}
-                  className="bg-[#1F2732] hover:bg-[#2d3845] text-white rounded-lg flex items-center justify-center gap-2"
-                >
+                <Button type="button" onClick={handleCenterLocation} className="bg-[#1F2732] hover:bg-[#2d3845] text-white rounded-lg flex items-center justify-center gap-2">
                   <Crosshair className="w-4 h-4" />
                   Центрувати
                 </Button>
@@ -372,8 +332,7 @@ export function CreateIssuePage() {
               <Button
                 type="submit"
                 disabled={isSubmitting}
-                className="bg-[#E42556]/80 hover:bg-[#E42556] text-white font-extrabold font-sans text-lg px-8 py-6 rounded-[20px] shadow-lg transition-all transform hover:scale-105"
-              >
+                className="bg-[#E42556]/80 hover:bg-[#E42556] text-white font-extrabold font-sans text-lg px-8 py-6 rounded-[20px] shadow-lg transition-all transform hover:scale-105">
                 {isSubmitting ? 'Створення...' : 'Створити'}
               </Button>
             </div>
@@ -381,5 +340,5 @@ export function CreateIssuePage() {
         </Card>
       </form>
     </div>
-  )
+  );
 }
