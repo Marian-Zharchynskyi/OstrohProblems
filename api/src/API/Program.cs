@@ -33,8 +33,11 @@ if (!app.Environment.IsDevelopment())
 
 app.UseRouting();
 
+var allowedOrigins = builder.Configuration.GetSection("AllowedOrigins").Get<string[]>() 
+    ?? new[] { "http://localhost:3000", "http://localhost:5173" };
+
 app.UseCors(options => options
-    .WithOrigins("http://localhost:3000", "http://localhost:5173")
+    .WithOrigins(allowedOrigins)
     .AllowAnyMethod()
     .AllowAnyHeader()
     .AllowCredentials()
