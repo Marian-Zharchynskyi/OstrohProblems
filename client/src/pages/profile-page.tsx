@@ -90,11 +90,12 @@ export function ProfilePage() {
       setUserDetails(updated)
       setIsBasicInfoEditing(false)
       toast.success('Профіль успішно оновлено')
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Failed to update user:', error)
 
       // Parse error message
-      const errorMessage = error?.response?.data?.title || error?.message || 'Не вдалося оновити профіль'
+      const axiosError = error as { response?: { data?: { title?: string } }; message?: string }
+      const errorMessage = axiosError?.response?.data?.title || axiosError?.message || 'Не вдалося оновити профіль'
 
       // Check for specific errors
       if (errorMessage.includes('OAuth') || errorMessage.includes('linked to OAuth provider')) {

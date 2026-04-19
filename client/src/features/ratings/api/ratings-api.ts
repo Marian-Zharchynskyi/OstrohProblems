@@ -46,8 +46,9 @@ export const ratingsApi = {
     try {
       const response = await apiClient.get<Rating>(`${BASE_URL}/user-rating/${problemId}`)
       return response.data
-    } catch (error: any) {
-      if (error?.response?.status === 404) {
+    } catch (error: unknown) {
+      const axiosError = error as { response?: { status: number } }
+      if (axiosError?.response?.status === 404) {
         return null
       }
       throw error
