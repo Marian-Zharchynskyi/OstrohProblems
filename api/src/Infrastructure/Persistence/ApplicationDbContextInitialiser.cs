@@ -12,20 +12,9 @@ public class ApplicationDbContextInitialiser(
         try
         {
             // Ensure database is created and migrations are applied
-            logger.LogInformation("Checking database connection...");
-            
-            if (await context.Database.CanConnectAsync())
-            {
-                logger.LogInformation("Database connection successful. Applying migrations...");
-                await context.Database.MigrateAsync();
-                logger.LogInformation("Migrations applied successfully.");
-            }
-            else
-            {
-                logger.LogWarning("Cannot connect to database. Creating database...");
-                await context.Database.EnsureCreatedAsync();
-                logger.LogInformation("Database created successfully.");
-            }
+            logger.LogInformation("Checking database connection and applying migrations...");
+            await context.Database.MigrateAsync();
+            logger.LogInformation("Migrations applied successfully.");
 
             // Check if data exists and seed if necessary
             await SeedDataIfNeededAsync();

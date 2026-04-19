@@ -64,6 +64,12 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+# Terraform
+terraform/terraform.tfvars
+terraform/*.tfstate
+terraform/*.tfstate.backup
+terraform/.terraform/
+
 # Client specific
 .eslintcache
 
