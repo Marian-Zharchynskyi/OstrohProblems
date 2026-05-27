@@ -120,15 +120,28 @@ export function ProblemImagesManager({
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
             {images.map((image, index) => (
               <div key={image.id} className="relative group">
-                <img
-                  src={image.url}
-                  alt="Problem"
-                  className="h-32 w-full rounded-lg object-cover cursor-pointer hover:opacity-90 transition-opacity"
+                <div
+                  role="button"
+                  tabIndex={0}
+                  className="cursor-pointer group"
                   onClick={() => {
                     setLightboxInitialIndex(index)
                     setLightboxOpen(true)
                   }}
-                />
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault()
+                      setLightboxInitialIndex(index)
+                      setLightboxOpen(true)
+                    }
+                  }}
+                >
+                  <img
+                    src={image.url}
+                    alt="Problem"
+                    className="h-32 w-full rounded-lg object-cover hover:opacity-90 transition-opacity"
+                  />
+                </div>
                 {canEdit && (
                   <button
                     onClick={(e) => {

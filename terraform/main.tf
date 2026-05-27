@@ -5,6 +5,12 @@ terraform {
       version = "~> 5.0"
     }
   }
+
+  backend "s3" {
+    bucket = "ostroh-problems-tf-state-657082817242"
+    key    = "state/terraform.tfstate"
+    region = "eu-central-1"
+  }
 }
 
 provider "aws" {

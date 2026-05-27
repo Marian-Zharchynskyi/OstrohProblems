@@ -146,37 +146,36 @@ export default function CoordinatorPage() {
                   </div>
                   <div
                     className="flex flex-col gap-2 shrink-0 min-w-[200px] justify-end sm:items-end"
-                    onClick={(e) => e.stopPropagation()}
                   >
                     {activeTab === 'new' ? (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        disabled={!problem.id}
-                        className="border-[#D0D5DD] text-[#1F2732] hover:bg-[#EAEAEA] hover:text-[#1F2732] transition-colors focus:outline-none focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0"
-                        onClick={() => problem.id && navigate(`/coordinator/problems/${problem.id}/update`)}
-                      >
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          disabled={!problem.id}
+                          className="border-[#D0D5DD] text-[#1F2732] hover:bg-[#EAEAEA] hover:text-[#1F2732] transition-colors focus:outline-none focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+                          onClick={(e) => { e.stopPropagation(); if (problem.id) navigate(`/coordinator/problems/${problem.id}/update`); }}
+                        >
                         Переглянути та призначити
                       </Button>
                     ) : (
                       <>
                         {activeTab === 'my' && (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="border-[#D0D5DD] text-[#1F2732] hover:bg-[#EAEAEA] hover:text-[#1F2732] transition-colors focus:outline-none focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0"
-                            onClick={() => problem.id && navigate(`/coordinator/problems/${problem.id}/update`)}
-                          >
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="border-[#D0D5DD] text-[#1F2732] hover:bg-[#EAEAEA] hover:text-[#1F2732] transition-colors focus:outline-none focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+                              onClick={(e) => { e.stopPropagation(); if (problem.id) navigate(`/coordinator/problems/${problem.id}/update`); }}
+                            >
                             Оновити
                           </Button>
                         )}
                         {activeTab === 'rejected' && (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="border-[#E42556] text-[#E42556] hover:bg-[#FFE5EC] hover:text-[#C41C47] transition-colors"
-                            onClick={() => handleRestoreProblem(problem.id || undefined)}
-                          >
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="border-[#E42556] text-[#E42556] hover:bg-[#FFE5EC] hover:text-[#C41C47] transition-colors"
+                              onClick={(e) => { e.stopPropagation(); handleRestoreProblem(problem.id || undefined); }}
+                            >
                             Повернути в роботу
                           </Button>
                         )}

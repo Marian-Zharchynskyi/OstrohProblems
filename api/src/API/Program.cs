@@ -28,7 +28,7 @@ app.UseSwaggerUI();
 
 if (!app.Environment.IsDevelopment())
 {
-    app.UseHttpsRedirection();
+    // app.UseHttpsRedirection(); // Disabled because ALB handles HTTPS and this breaks HTTP health checks
 }
 
 app.UseRouting();
@@ -52,5 +52,7 @@ await app.InitialiseDb();
 app.MapControllers();
 app.MapHub<Infrastructure.SignalR.Hubs.CommentsHub>("/hubs/comments");
 app.MapHub<Infrastructure.SignalR.Hubs.NotificationsHub>("/hubs/notifications");
+
+app.MapGet("/health", () => "OK");
 
 app.Run();
