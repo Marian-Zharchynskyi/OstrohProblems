@@ -262,8 +262,9 @@ export function LoginPage() {
               {!resetSuccess && (
                 <form onSubmit={handleChangePassword} className="space-y-6">
                   <div>
-                    <label className="block text-sm font-bold text-gray-700 mb-2 font-['Mulish']">Email</label>
+                    <label htmlFor="reset-email" className="block text-sm font-bold text-gray-700 mb-2 font-['Mulish']">Email</label>
                     <input
+                      id="reset-email"
                       type="email"
                       required
                       value={resetEmail}
@@ -274,8 +275,9 @@ export function LoginPage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-bold text-gray-700 mb-2 font-['Mulish']">Старий пароль</label>
+                    <label htmlFor="old-password" className="block text-sm font-bold text-gray-700 mb-2 font-['Mulish']">Старий пароль</label>
                     <PasswordInput
+                      id="old-password"
                       required
                       value={oldPassword}
                       onChange={e => setOldPassword(e.target.value)}
@@ -285,8 +287,9 @@ export function LoginPage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-bold text-gray-700 mb-2 font-['Mulish']">Новий пароль</label>
+                    <label htmlFor="new-password" className="block text-sm font-bold text-gray-700 mb-2 font-['Mulish']">Новий пароль</label>
                     <PasswordInput
+                      id="new-password"
                       required
                       minLength={6}
                       value={newPassword}

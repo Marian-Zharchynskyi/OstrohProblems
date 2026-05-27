@@ -619,8 +619,9 @@ const ProblemDetailsCard = memo(function ProblemDetailsCard({ problem, onUpdate 
           {isEditing ? (
             <div className="space-y-4">
               <div>
-                <label className="text-sm font-bold text-gray-700 mb-1 block">Назва</label>
+                <label htmlFor="edit-title-input" className="text-sm font-bold text-gray-700 mb-1 block">Назва</label>
                 <Input
+                  id="edit-title-input"
                   value={editTitle}
                   onChange={(e) => setEditTitle(e.target.value)}
                   className="bg-[#F0F1F2] border-none rounded-lg"
@@ -628,7 +629,7 @@ const ProblemDetailsCard = memo(function ProblemDetailsCard({ problem, onUpdate 
                 />
               </div>
               <div>
-                <label className="text-sm font-bold text-gray-700 mb-2 block">Категорії</label>
+                <span className="text-sm font-bold text-gray-700 mb-2 block">Категорії</span>
                 <div className="flex flex-wrap gap-2">
                   {Object.values(CategoryConstants).map((cat) => (
                     <button
@@ -684,8 +685,16 @@ const ProblemDetailsCard = memo(function ProblemDetailsCard({ problem, onUpdate 
                   )}
                   <div className="flex flex-col items-end group">
                     <div
+                      role="button"
+                      tabIndex={0}
                       className="flex items-center gap-0.5 cursor-pointer"
                       onClick={() => setIsRatingModalOpen(true)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault()
+                          setIsRatingModalOpen(true)
+                        }
+                      }}
                     >
                       {renderStars(displayRating)}
                     </div>

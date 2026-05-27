@@ -136,11 +136,20 @@ const SelectItem: React.FC<SelectItemProps> = ({ value, className, children, onS
   
   return (
     <div
+      role="option"
+      tabIndex={0}
+      aria-selected={false}
       className={cn(
         "relative flex w-full cursor-pointer select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground",
         className
       )}
       onClick={handleSelect}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault()
+          handleSelect()
+        }
+      }}
     >
       {children}
     </div>

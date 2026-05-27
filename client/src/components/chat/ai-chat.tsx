@@ -221,7 +221,15 @@ export function AiChat() {
   const renderProblemCard = (problem: ProblemSummaryChat) => (
     <div
       key={problem.id}
+      role="button"
+      tabIndex={0}
       onClick={() => navigateToProblem(problem.id)}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault()
+          navigateToProblem(problem.id)
+        }
+      }}
       className="bg-white border border-gray-200 rounded-lg p-3 cursor-pointer hover:shadow-md transition-shadow"
     >
       <div className="flex items-start justify-between gap-2">

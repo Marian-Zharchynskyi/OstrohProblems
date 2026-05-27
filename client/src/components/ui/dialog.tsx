@@ -91,11 +91,18 @@ const DialogOverlay = React.forwardRef<
   return (
     <div
       ref={ref}
+      role="button"
+      tabIndex={-1}
       className={cn(
         "fixed inset-0 z-50 bg-background/80 backdrop-blur-sm",
         className
       )}
       onClick={() => onOpenChange(false)}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          onOpenChange(false)
+        }
+      }}
       {...props}
     />
   )
@@ -112,13 +119,12 @@ const DialogContent = React.forwardRef<
     <DialogPortal>
       <DialogOverlay />
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-        <div
+          <div
           ref={ref}
           className={cn(
             "relative z-50 grid w-full max-w-lg gap-4 border bg-background p-6 shadow-lg sm:rounded-lg",
             className
           )}
-          onClick={(e) => e.stopPropagation()}
           {...props}
         >
           {children}
@@ -177,7 +183,7 @@ DialogFooter.displayName = "DialogFooter"
 const DialogTitle = React.forwardRef<
   HTMLHeadingElement,
   React.HTMLAttributes<HTMLHeadingElement>
->(({ className, ...props }, ref) => (
+>(({ className, children, ...props }, ref) => (
   <h2
     ref={ref}
     className={cn(
@@ -185,7 +191,9 @@ const DialogTitle = React.forwardRef<
       className
     )}
     {...props}
-  />
+  >
+    {children}
+  </h2>
 ))
 DialogTitle.displayName = "DialogTitle"
 
