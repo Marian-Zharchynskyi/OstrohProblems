@@ -255,8 +255,16 @@ export function ProblemDetailPage() {
                 </div>
               ) : (
                 <div
+                  role="button"
+                  tabIndex={0}
                   className="flex gap-2 cursor-pointer"
                   onClick={() => snackbar.show('У анонімному перегляді доступно лише перегляд проблем. Увійдіть, щоб залишити коментар.', 'info', 5000)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault()
+                      snackbar.show('У анонімному перегляді доступно лише перегляд проблем. Увійдіть, щоб залишити коментар.', 'info', 5000)
+                    }
+                  }}
                 >
                   <Input
                     placeholder="Напишіть коментар..."

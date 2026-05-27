@@ -172,6 +172,14 @@ resource "aws_ecs_task_definition" "api" {
         {
           name  = "AllowedOrigins__1"
           value = "http://localhost:5173"
+        },
+        {
+          name  = "AllowedOrigins__2"
+          value = "https://ostroh-problems.pp.ua"
+        },
+        {
+          name  = "AllowedOrigins__3"
+          value = "https://www.ostroh-problems.pp.ua"
         }
       ]
 

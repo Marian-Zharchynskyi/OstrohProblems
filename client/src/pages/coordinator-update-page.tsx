@@ -409,7 +409,15 @@ export default function CoordinatorUpdatePage() {
                 <div className="grid grid-cols-2 gap-4">
                   {/* Add Button Slot */}
                   <div
+                    role="button"
+                    tabIndex={0}
                     onClick={() => fileInputRef.current?.click()}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault()
+                        fileInputRef.current?.click()
+                      }
+                    }}
                     className="aspect-[2/1] bg-[#F5F6F7] rounded-[10px] flex flex-col items-center justify-center cursor-pointer hover:bg-gray-200 transition-colors group"
                   >
                     <span className="text-sm text-[#1F2732] border-b border-black pb-0.5 mb-1 font-medium">Додати фото</span>

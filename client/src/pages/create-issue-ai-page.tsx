@@ -516,8 +516,16 @@ export function CreateIssueAiPage() {
           {/* Tips Section */}
           <Card className="bg-gradient-to-br from-violet-50 to-purple-50 border border-violet-200 shadow-sm rounded-xl overflow-hidden">
             <div
+              role="button"
+              tabIndex={0}
               className="px-4 py-3 flex items-center justify-between cursor-pointer hover:bg-violet-100/50 transition-colors group select-none"
               onClick={() => setTipsExpanded(!tipsExpanded)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault()
+                  setTipsExpanded(!tipsExpanded)
+                }
+              }}
             >
               <div className="flex items-center gap-2 text-violet-700">
                 <Lightbulb className="w-5 h-5" />
@@ -731,7 +739,15 @@ export function CreateIssueAiPage() {
                 <CardContent className="p-6">
                   <div className="grid grid-cols-4 gap-3">
                     <div
+                      role="button"
+                      tabIndex={0}
                       onClick={() => document.getElementById('ai-problem-images')?.click()}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault()
+                          document.getElementById('ai-problem-images')?.click()
+                        }
+                      }}
                       className="aspect-square bg-[#F5F6F7] rounded-lg flex flex-col items-center justify-center cursor-pointer hover:bg-gray-200 transition-colors"
                     >
                       <Plus className="w-6 h-6 text-gray-400" />
