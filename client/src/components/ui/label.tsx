@@ -5,8 +5,9 @@ export type LabelProps = React.LabelHTMLAttributes<HTMLLabelElement>
 
 const Label = React.forwardRef<HTMLLabelElement, LabelProps>(
   ({ className, ...props }, ref) => {
+    const Element = 'label' as React.ElementType
     return (
-      <label
+      <Element
         ref={ref}
         className={cn(
           "text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70",

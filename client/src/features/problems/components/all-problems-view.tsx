@@ -517,8 +517,16 @@ const ProblemDetailsCard = memo(function ProblemDetailsCard({ problem }: Problem
                 className="flex flex-col items-end group"
               >
                 <div
+                  role="button"
+                  tabIndex={0}
                   className="flex items-center gap-0.5 cursor-pointer"
                   onClick={() => setIsRatingModalOpen(true)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault()
+                      setIsRatingModalOpen(true)
+                    }
+                  }}
                 >
                   {renderStars(displayRating)}
                 </div>
