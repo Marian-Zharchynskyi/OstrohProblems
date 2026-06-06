@@ -79,8 +79,13 @@ resource "aws_cloudfront_distribution" "cdn" {
     }
   }
 
+  aliases = ["ostroh-problems.pp.ua", "www.ostroh-problems.pp.ua"]
+
   viewer_certificate {
-    cloudfront_default_certificate = true
+    acm_certificate_arn            = "arn:aws:acm:us-east-1:657082817242:certificate/7887c52a-4c9f-4ad9-a9f1-9b702790b117"
+    cloudfront_default_certificate = false
+    minimum_protocol_version       = "TLSv1.2_2021"
+    ssl_support_method             = "sni-only"
   }
 }
 
