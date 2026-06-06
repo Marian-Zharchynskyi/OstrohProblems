@@ -95,6 +95,19 @@ resource "aws_lb_listener" "api_listener" {
   }
 }
 
+resource "aws_lb_listener" "api_listener_https" {
+  load_balancer_arn = aws_lb.api_alb.arn
+  port              = "443"
+  protocol          = "HTTPS"
+  ssl_policy        = "ELBSecurityPolicy-2016-08"
+  certificate_arn   = "arn:aws:acm:eu-central-1:657082817242:certificate/377684fc-330a-4699-a70c-2f4ed26e7d31"
+
+  default_action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.api_tg.arn
+  }
+}
+
 # ECS Cluster
 resource "aws_ecs_cluster" "main" {
   name = "${var.project_name}-cluster"
